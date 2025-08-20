@@ -1,0 +1,106 @@
+[
+  {
+    "name": "Pocket Knife",
+    "class": "weapon",
+    "subtype": "melee",
+    "weight": 0.2,
+    "slot": "secondary",
+    "illegal": false,
+    "base_stats": {
+      "dmg": 6,
+      "acc": 5
+    }
+  },
+  {
+    "name": "Crowbar",
+    "class": "weapon",
+    "subtype": "melee",
+    "weight": 2.5,
+    "slot": "primary",
+    "illegal": false,
+    "base_stats": {
+      "dmg": 12,
+      "acc": 0
+    }
+  },
+  {
+    "name": "9mm Pistol",
+    "class": "weapon",
+    "subtype": "pistol",
+    "weight": 0.9,
+    "slot": "primary",
+    "illegal": true,
+    "base_stats": {
+      "dmg": 10,
+      "acc": 10
+    }
+  },
+  {
+    "name": "Street SMG",
+    "class": "weapon",
+    "subtype": "smg",
+    "weight": 2.8,
+    "slot": "primary",
+    "illegal": true,
+    "base_stats": {
+      "dmg": 12,
+      "acc": 8
+    }
+  },
+  {
+    "name": "Pump Shotgun",
+    "class": "weapon",
+    "subtype": "shotgun",
+    "weight": 3.2,
+    "slot": "primary",
+    "illegal": true,
+    "base_stats": {
+      "dmg": 18,
+      "acc": 6
+    }
+  },
+  {
+    "name": "Denim Jacket",
+    "class": "armor",
+    "subtype": "light",
+    "weight": 1.2,
+    "slot": "body",
+    "illegal": false,
+    "base_stats": {
+      "armor": 2
+    }
+  },
+  {
+    "name": "Kevlar Vest",
+    "class": "armor",
+    "subtype": "medium",
+    "weight": 3.5,
+    "slot": "body",
+    "illegal": false,
+    "base_stats": {
+      "armor": 8
+    }
+  },
+  {
+    "name": "Medkit",
+    "class": "consumable",
+    "subtype": "heal",
+    "weight": 0.6,
+    "slot": null,
+    "illegal": false,
+    "base_stats": {
+      "heal": 25
+    }
+  },
+  {
+    "name": "Smoke Grenade",
+    "class": "utility",
+    "subtype": "smoke",
+    "weight": 0.4,
+    "slot": null,
+    "illegal": true,
+    "base_stats": {
+      "concealment": 20
+    }
+  }
+]

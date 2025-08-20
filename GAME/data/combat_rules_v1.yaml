@@ -1,0 +1,27 @@
+version: 1
+ranges:
+  Close:
+    meters: [0, 1]
+    melee_allowed: true
+    accuracy_mod:
+      pistols: 0
+      smg: -5
+      shotgun: +5
+      rifle: -15
+      sniper: -30
+  Near:
+    meters: [2, 5]
+    melee_allowed: true
+    accuracy_mod: { pistols: +10, smg: +10, shotgun: +10, rifle: 0, sniper: -20 }
+  Mid:
+    meters: [6, 15]
+    melee_allowed: false
+    accuracy_mod: { pistols: -10, smg: +5, shotgun: -10, rifle: +10, sniper: 0 }
+  Far:
+    meters: [16, 30]
+    melee_allowed: false
+    accuracy_mod: { pistols: -25, smg: -10, shotgun: -25, rifle: +10, sniper: +20 }
+  OutOfRange:
+    meters: [31, 999]
+    melee_allowed: false
+    accuracy_mod: { pistols: -999, smg: -999, shotgun: -999, rifle: -15, sniper: +10 }
