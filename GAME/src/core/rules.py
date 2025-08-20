@@ -1,14 +1,26 @@
+
+
+# =================================
+# FILE: GAME/src/core/rules.py
+# =================================
 from __future__ import annotations
-import os, json, yaml
 from pathlib import Path
-from typing import Any, Dict
+import yaml
 
-DATA_DIR = Path(os.getenv("LOWLIFE_DATA_DIR", "."))
 
-def load_rules() -> Dict[str, Any]:
-    with open(DATA_DIR / "combat_rules_v1.yaml", "r", encoding="utf-8") as f:
-        return yaml.safe_load(f)
+RULES_PATH = Path("GAME/data/rules.yml")
+_CACHED: dict | None = None
 
-def load_templates() -> Dict[str, Any]:
-    with open(DATA_DIR / "embed_templates_v1.json", "r", encoding="utf-8") as f:
-        return json.load(f)
+
+
+
+def load_rules() -> dict:
+global _CACHED
+if _CACHED is not None:
+return _CACHED
+if RULES_PATH.exists():
+_CACHED = yaml.safe_load(RULES_PATH.read_text(encoding="utf-8")) or {}
+else:
+_CACHED = {}
+return _CACHED
+
