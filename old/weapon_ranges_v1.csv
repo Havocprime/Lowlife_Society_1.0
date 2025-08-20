@@ -1,6 +1,0 @@
-Range,Melee,Pistols/SMGs,Shotguns,Rifles/DMR,Sniper/Scoped
-Close (0-1m),Optimal,Usable,Optimal (+),Poor,No
-Near (2-5m),Usable,Optimal,Optimal,Usable,Poor
-Mid (6-15m),No,Usable,Penalty,Optimal,Usable
-Far (16-30m),No,Penalty,Poor,Optimal,Optimal
->30m,No,No,No,Edge cases (scoped),Optimal
