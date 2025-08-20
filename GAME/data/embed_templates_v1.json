@@ -1,0 +1,24 @@
+{
+  "combat_log": {
+    "title": "\u2694\ufe0f {attacker} vs {defender} \u2014 {range_state}",
+    "color": "red",
+    "description": "{round_summary}",
+    "fields": [
+      {
+        "name": "{attacker} HP",
+        "value": "{attacker_hp_bar}",
+        "inline": true
+      },
+      {
+        "name": "{defender} HP",
+        "value": "{defender_hp_bar}",
+        "inline": true
+      },
+      {
+        "name": "Statuses",
+        "value": "{statuses}",
+        "inline": false
+      }
+    ]
+  }
+}

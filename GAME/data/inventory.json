@@ -1,0 +1,14 @@
+{
+  "players": {
+    "777039317918679070": {
+      "items": {
+        "bat": 1,
+        "pistol": 1
+      },
+      "equipped": {
+        "primary": "bat",
+        "secondary": "pistol"
+      }
+    }
+  }
+}
