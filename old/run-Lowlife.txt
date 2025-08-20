@@ -1,4 +1,0 @@
-cd "C:\Users\Havocprime\Desktop\Lowlife_Society\lowlife_starter"
-Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
-.\.venv\Scripts\Activate.ps1
-python -m src.bot.bot
