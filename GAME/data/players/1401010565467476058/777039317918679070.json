@@ -1,0 +1,45 @@
+{
+  "guild_id": 1401010565467476058,
+  "user_id": 777039317918679070,
+  "created_at": 1755343975.1691093,
+  "profile": {
+    "name": null
+  },
+  "inventory": [
+    {
+      "inst_id": "2cdb9bc54b",
+      "def_id": "med.basic",
+      "name": "Basic Medkit",
+      "type": "consumable",
+      "slot": null,
+      "fit_slots": [],
+      "weight": 0.6,
+      "value": 80,
+      "tier": "common",
+      "tags": [
+        "consumable",
+        "med"
+      ],
+      "mods": {
+        "accuracy": 0,
+        "damage": 0,
+        "concealment": 0,
+        "escape_bonus": 0
+      },
+      "seed": 579170613,
+      "created_at": 1755343975.1691093
+    }
+  ],
+  "equipment": {
+    "primary": null,
+    "secondary": null,
+    "armor": null,
+    "accessory": null
+  },
+  "limits": {
+    "carry_capacity": 25.0
+  },
+  "meta": {
+    "version": 1
+  }
+}

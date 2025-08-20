@@ -1,0 +1,1518 @@
+[2025-08-14 15:13:20] INFO duel: Registered duel commands
+[2025-08-14 15:14:29] INFO duel: End duel (guild=1401010565467476058) by user=777039317918679070
+[2025-08-14 15:14:35] INFO duel: Duel start (guild=1401010565467476058): attacker=777039317918679070 defender=101955075550773248
+[2025-08-14 15:18:02] INFO duel: Registered duel commands
+[2025-08-14 16:14:52] INFO duel: Registered duel commands
+[2025-08-14 16:16:12] INFO duel: Registered duel commands
+[2025-08-14 16:16:18] INFO duel: Registered duel commands
+[2025-08-14 16:20:08] INFO duel: Registered duel commands
+[2025-08-14 16:23:24] INFO duel: Duel started in (1401010565467476058, 1401010932364218378)
+[2025-08-14 16:29:57] INFO duel: Registered duel commands
+[2025-08-14 16:30:18] INFO duel: Duel started in (1401010565467476058, 1401010932364218378) (attacker=777039317918679070 defender=0)
+[2025-08-14 16:34:49] INFO duel: Registered duel commands
+[2025-08-14 16:35:22] INFO duel: Duel started in (1401010565467476058, 1401010932364218378) (attacker=777039317918679070 defender=0)
+[2025-08-14 16:42:16] INFO duel: Registered duel commands
+[2025-08-14 16:42:33] INFO duel: Duel started in (1401010565467476058, 1401010932364218378) (attacker=777039317918679070 defender=0)
+[2025-08-14 16:55:45] INFO duel: Registered duel commands
+[2025-08-14 16:56:01] INFO duel: Duel started in (1401010565467476058, 1401010932364218378) (attacker=777039317918679070 defender=0)
+[2025-08-14 16:58:04] ERROR duel: safe_reply failed
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\Desktop\Lowlife_Society\lowlife_starter\src\bot\duel.py", line 31, in _safe_reply
+    await inter.response.send_message(content=content, embed=embed, view=view, ephemeral=ephemeral)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\interactions.py", line 1013, in send_message
+    if view is not MISSING and not view.is_finished():
+AttributeError: 'NoneType' object has no attribute 'is_finished'
+[2025-08-14 16:58:09] INFO duel: Duel started in (1401010565467476058, 1401010932364218378) (attacker=777039317918679070 defender=0)
+[2025-08-14 17:07:19] INFO duel: Registered duel commands
+[2025-08-14 17:07:32] INFO duel: Duel started in (1401010565467476058, 1401010932364218378) (attacker=777039317918679070 defender=0)
+[2025-08-14 17:13:42] INFO duel: Registered duel commands
+[2025-08-14 17:13:52] ERROR duel: safe_reply failed
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\Desktop\Lowlife_Society\lowlife_starter\src\bot\duel.py", line 31, in _safe_reply
+    await inter.response.send_message(content=content, embed=embed, view=view, ephemeral=ephemeral)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\interactions.py", line 1013, in send_message
+    if view is not MISSING and not view.is_finished():
+AttributeError: 'NoneType' object has no attribute 'is_finished'
+[2025-08-14 17:14:13] INFO duel: Duel started in (1401010565467476058, 1401010932364218378) (attacker=777039317918679070 defender=0)
+[2025-08-14 17:22:00] INFO duel: Registered duel commands
+[2025-08-14 17:22:13] ERROR duel: safe_reply failed
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\Desktop\Lowlife_Society\lowlife_starter\src\bot\duel.py", line 32, in _safe_reply
+    await inter.response.send_message(content=content, embed=embed, view=view, ephemeral=ephemeral)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\interactions.py", line 1013, in send_message
+    if view is not MISSING and not view.is_finished():
+AttributeError: 'NoneType' object has no attribute 'is_finished'
+[2025-08-14 17:22:18] INFO duel: Duel started in (1401010565467476058, 1401010932364218378) (attacker=777039317918679070 defender=0)
+[2025-08-14 17:31:46] INFO duel: Registered duel commands
+[2025-08-14 17:31:53] ERROR duel: safe_reply failed
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\Desktop\Lowlife_Society\lowlife_starter\src\bot\duel.py", line 32, in _safe_reply
+    await inter.response.send_message(content=content, embed=embed, view=view, ephemeral=ephemeral)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\interactions.py", line 1013, in send_message
+    if view is not MISSING and not view.is_finished():
+AttributeError: 'NoneType' object has no attribute 'is_finished'
+[2025-08-14 17:31:59] INFO duel: Duel started in (1401010565467476058, 1401010932364218378) (attacker=777039317918679070 defender=0)
+[2025-08-14 17:40:52] INFO duel: Registered duel commands
+[2025-08-14 17:41:02] INFO duel: Duel started in (1401010565467476058, 1401010932364218378) (attacker=777039317918679070 defender=0)
+[2025-08-14 17:45:32] INFO duel: Registered duel commands
+[2025-08-14 17:45:56] INFO duel: Duel started in (1401010565467476058, 1401010932364218378) (attacker=777039317918679070 defender=0)
+[2025-08-14 17:58:01] INFO duel: Registered duel commands
+[2025-08-14 17:58:15] INFO duel: Duel started in (1401010565467476058, 1401010932364218378) (attacker=777039317918679070 defender=0)
+[2025-08-14 18:00:06] INFO duel: Duel started in (1401010565467476058, 1401010932364218378) (attacker=777039317918679070 defender=0)
+[2025-08-14 18:49:02] INFO duel: Registered duel commands
+[2025-08-14 18:52:32] INFO duel: Duel started in (1401010565467476058, 1401010932364218378) (attacker=777039317918679070 defender=0)
+[2025-08-14 19:08:38] INFO duel: Registered duel commands
+[2025-08-14 19:08:51] INFO duel: Duel started in (1401010565467476058, 1401010932364218378) (attacker=777039317918679070 defender=0)
+[2025-08-14 19:27:39] INFO duel: Duel started in (1401010565467476058, 1401010932364218378) (attacker=777039317918679070 defender=0)
+[2025-08-14 20:25:22] INFO duel: Duel started in (1401010565467476058, 1401010932364218378) (attacker=777039317918679070 defender=0)
+[2025-08-14 20:29:00] INFO duel: Registered duel commands
+[2025-08-14 20:29:11] INFO duel: Duel started in (1401010565467476058, 1401010932364218378) (attacker=777039317918679070 defender=0)
+[2025-08-14 20:36:50] INFO duel: Duel forcibly ended in (1401010565467476058, 1401010932364218378)
+[2025-08-14 20:36:58] INFO duel: Duel started in (1401010565467476058, 1401010932364218378) (attacker=777039317918679070 defender=0)
+[2025-08-14 22:02:33] INFO duel: Registered duel commands
+[2025-08-14 22:18:02] INFO duel: Registered duel commands
+[2025-08-14 22:18:11] INFO duel: Duel started in (1401010565467476058, 1401010932364218378) (attacker=777039317918679070 defender=0)
+[2025-08-14 22:42:37] INFO duel: Registered duel commands
+[2025-08-14 22:42:55] INFO duel: Duel started in (1401010565467476058, 1401010932364218378) (attacker=777039317918679070 defender=0)
+[2025-08-14 22:47:26] INFO duel: Registered duel commands
+[2025-08-14 22:48:14] INFO duel: Duel started in (1401010565467476058, 1401010932364218378) (attacker=777039317918679070 defender=0)
+[2025-08-14 22:50:24] INFO duel: Registered duel commands
+[2025-08-14 22:50:42] INFO duel: Duel started in (1401010565467476058, 1401010932364218378) (attacker=777039317918679070 defender=0)
+[2025-08-14 23:15:40] INFO boot: Local commands loaded: ['duel', 'inv', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet']
+[2025-08-14 23:15:40] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'inv', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet']
+[2025-08-14 23:15:40] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-14 23:42:47] INFO boot: Local commands loaded: ['duel', 'inv', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet']
+[2025-08-14 23:42:48] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'inv', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet']
+[2025-08-14 23:42:48] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-14 23:51:29] INFO boot: Local commands loaded: ['duel', 'inv', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet']
+[2025-08-14 23:51:29] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'inv', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet']
+[2025-08-14 23:51:29] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-15 00:01:11] INFO boot: Local commands loaded: ['duel', 'inv', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet']
+[2025-08-15 00:01:11] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'inv', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet']
+[2025-08-15 00:01:11] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-15 00:10:00] INFO boot: Local commands loaded: ['duel', 'inv', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet']
+[2025-08-15 00:10:00] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'inv', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet']
+[2025-08-15 00:10:00] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-15 01:22:24] INFO boot: Local commands loaded: ['duel', 'inv', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet']
+[2025-08-15 01:22:24] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'inv', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet']
+[2025-08-15 01:22:24] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-15 01:44:21] INFO boot: Local commands loaded: ['duel', 'inv', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet']
+[2025-08-15 01:44:21] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'inv', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet']
+[2025-08-15 01:44:21] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-15 10:02:09] INFO boot: Local commands loaded: ['duel', 'inv', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet']
+[2025-08-15 10:02:10] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'inv', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet']
+[2025-08-15 10:02:10] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-15 13:15:15] INFO boot: Local commands loaded: ['duel', 'inv', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet']
+[2025-08-15 13:15:15] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'inv', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet']
+[2025-08-15 13:15:15] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-15 13:16:19] INFO boot: Local commands loaded: ['duel', 'inv', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet']
+[2025-08-15 13:16:19] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'inv', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet']
+[2025-08-15 13:16:19] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-15 13:55:47] INFO boot: Local commands loaded: ['duel', 'inv', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet']
+[2025-08-15 13:55:47] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'inv', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet']
+[2025-08-15 13:55:47] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-15 14:19:09] INFO boot: Local commands loaded: ['duel', 'inv', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet']
+[2025-08-15 14:19:09] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'inv', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet']
+[2025-08-15 14:19:09] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-15 14:46:40] INFO boot: Local commands loaded: ['duel', 'inv', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet']
+[2025-08-15 14:46:40] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'inv', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet']
+[2025-08-15 14:46:40] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-15 15:28:24] INFO boot: Local commands loaded: ['duel', 'inv', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet']
+[2025-08-15 15:28:24] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'inv', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet']
+[2025-08-15 15:28:24] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-15 15:44:29] INFO boot: Local commands loaded: ['duel', 'inv', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet']
+[2025-08-15 15:44:29] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'inv', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet']
+[2025-08-15 15:44:29] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-15 15:54:34] INFO boot: Local commands loaded: ['duel', 'inv', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet']
+[2025-08-15 15:54:35] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'inv', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet']
+[2025-08-15 15:54:35] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-15 17:02:02] INFO boot: Local commands loaded: ['duel', 'inv', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet']
+[2025-08-15 17:02:02] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'inv', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet']
+[2025-08-15 17:02:02] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-15 17:20:36] INFO boot: Local commands loaded: ['duel', 'inv', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet']
+[2025-08-15 17:20:37] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'inv', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet']
+[2025-08-15 17:20:37] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-15 17:52:18] INFO boot: Local commands loaded: ['duel', 'inv', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet']
+[2025-08-15 17:52:18] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'inv', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet']
+[2025-08-15 17:52:18] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-15 18:17:18] INFO boot: Local commands loaded: ['duel', 'inv', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet']
+[2025-08-15 18:17:19] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'inv', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet']
+[2025-08-15 18:17:19] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-15 18:20:57] INFO boot: Local commands loaded: ['duel', 'inv', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet']
+[2025-08-15 18:20:57] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'inv', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet']
+[2025-08-15 18:20:57] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-15 18:24:39] INFO boot: Local commands loaded: ['duel', 'inv', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet']
+[2025-08-15 18:24:39] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'inv', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet']
+[2025-08-15 18:24:39] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-15 18:24:59] ERROR boot: App command error (guild=1401010565467476058 user=777039317918679070 cmd=?): Application command 'updates' not found
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\tree.py", line 1151, in wrapper
+    await self._call(interaction)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\tree.py", line 1283, in _call
+    command, options = self._get_app_command_options(data)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\tree.py", line 1187, in _get_app_command_options
+    raise CommandNotFound(name, parents)
+discord.app_commands.errors.CommandNotFound: Application command 'updates' not found
+[2025-08-15 18:24:59] ERROR boot: App command error (guild=1401010565467476058 user=777039317918679070 cmd=set_channel): Command 'set_channel' raised an exception: NotFound: 404 Not Found (error code: 10062): Unknown interaction
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 858, in _do_call
+    return await self._callback(interaction, **params)  # type: ignore
+  File "C:\Users\Havocprime\Desktop\Lowlife_Society\GAME\src\bot\updates.py", line 136, in set_channel
+    await inter.response.send_message(f"✅ Updatelog channel set to {channel.mention}.", ephemeral=True)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\interactions.py", line 1004, in send_message
+    response = await adapter.create_interaction_response(
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\webhook\async_.py", line 224, in request
+    raise NotFound(response, data)
+discord.errors.NotFound: 404 Not Found (error code: 10062): Unknown interaction
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\tree.py", line 1310, in _call
+    await command._invoke_with_namespace(interaction, namespace)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 883, in _invoke_with_namespace
+    return await self._do_call(interaction, transformed_values)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 876, in _do_call
+    raise CommandInvokeError(self, e) from e
+discord.app_commands.errors.CommandInvokeError: Command 'set_channel' raised an exception: NotFound: 404 Not Found (error code: 10062): Unknown interaction
+[2025-08-15 18:25:11] ERROR boot: App command error (guild=1401010565467476058 user=777039317918679070 cmd=?): Application command 'updates' not found
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\tree.py", line 1151, in wrapper
+    await self._call(interaction)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\tree.py", line 1283, in _call
+    command, options = self._get_app_command_options(data)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\tree.py", line 1187, in _get_app_command_options
+    raise CommandNotFound(name, parents)
+discord.app_commands.errors.CommandNotFound: Application command 'updates' not found
+[2025-08-15 18:25:11] ERROR boot: App command error (guild=1401010565467476058 user=777039317918679070 cmd=status): Command 'status' raised an exception: NotFound: 404 Not Found (error code: 10062): Unknown interaction
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 858, in _do_call
+    return await self._callback(interaction, **params)  # type: ignore
+  File "C:\Users\Havocprime\Desktop\Lowlife_Society\GAME\src\bot\updates.py", line 151, in status
+    await inter.response.send_message(msg, ephemeral=True)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\interactions.py", line 1004, in send_message
+    response = await adapter.create_interaction_response(
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\webhook\async_.py", line 224, in request
+    raise NotFound(response, data)
+discord.errors.NotFound: 404 Not Found (error code: 10062): Unknown interaction
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\tree.py", line 1310, in _call
+    await command._invoke_with_namespace(interaction, namespace)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 883, in _invoke_with_namespace
+    return await self._do_call(interaction, transformed_values)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 876, in _do_call
+    raise CommandInvokeError(self, e) from e
+discord.app_commands.errors.CommandInvokeError: Command 'status' raised an exception: NotFound: 404 Not Found (error code: 10062): Unknown interaction
+[2025-08-15 18:25:11] ERROR boot: App command error (guild=1401010565467476058 user=777039317918679070 cmd=status): Command 'status' raised an exception: NotFound: 404 Not Found (error code: 10062): Unknown interaction
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 858, in _do_call
+    return await self._callback(interaction, **params)  # type: ignore
+  File "C:\Users\Havocprime\Desktop\Lowlife_Society\GAME\src\bot\updates.py", line 151, in status
+    await inter.response.send_message(msg, ephemeral=True)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\interactions.py", line 1004, in send_message
+    response = await adapter.create_interaction_response(
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\webhook\async_.py", line 224, in request
+    raise NotFound(response, data)
+discord.errors.NotFound: 404 Not Found (error code: 10062): Unknown interaction
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\tree.py", line 1310, in _call
+    await command._invoke_with_namespace(interaction, namespace)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 883, in _invoke_with_namespace
+    return await self._do_call(interaction, transformed_values)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 876, in _do_call
+    raise CommandInvokeError(self, e) from e
+discord.app_commands.errors.CommandInvokeError: Command 'status' raised an exception: NotFound: 404 Not Found (error code: 10062): Unknown interaction
+[2025-08-15 18:28:30] INFO boot: Local commands loaded: ['duel', 'inv', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet']
+[2025-08-15 18:28:30] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'inv', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet']
+[2025-08-15 18:28:30] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-15 18:28:41] ERROR boot: App command error (guild=1401010565467476058 user=777039317918679070 cmd=cmds): Command 'cmds' raised an exception: NotFound: 404 Not Found (error code: 10062): Unknown interaction
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 858, in _do_call
+    return await self._callback(interaction, **params)  # type: ignore
+  File "C:\Users\Havocprime\Desktop\Lowlife_Society\GAME\src\bot\bot.py", line 114, in list_cmds
+    cmds = await tree.sync()
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\interactions.py", line 1004, in send_message
+    response = await adapter.create_interaction_response(
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\webhook\async_.py", line 224, in request
+    raise NotFound(response, data)
+discord.errors.NotFound: 404 Not Found (error code: 10062): Unknown interaction
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\tree.py", line 1310, in _call
+    await command._invoke_with_namespace(interaction, namespace)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 883, in _invoke_with_namespace
+    return await self._do_call(interaction, transformed_values)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 876, in _do_call
+    raise CommandInvokeError(self, e) from e
+discord.app_commands.errors.CommandInvokeError: Command 'cmds' raised an exception: NotFound: 404 Not Found (error code: 10062): Unknown interaction
+[2025-08-15 18:28:42] ERROR boot: App command error (guild=1401010565467476058 user=777039317918679070 cmd=cmds): Command 'cmds' raised an exception: HTTPException: 400 Bad Request (error code: 40060): Interaction has already been acknowledged.
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 858, in _do_call
+    return await self._callback(interaction, **params)  # type: ignore
+  File "C:\Users\Havocprime\Desktop\Lowlife_Society\GAME\src\bot\bot.py", line 122, in list_cmds
+    await inter.response.send_message("📜 " + ", ".join(names), ephemeral=True)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\interactions.py", line 1004, in send_message
+    response = await adapter.create_interaction_response(
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\webhook\async_.py", line 226, in request
+    raise HTTPException(response, data)
+discord.errors.HTTPException: 400 Bad Request (error code: 40060): Interaction has already been acknowledged.
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\tree.py", line 1310, in _call
+    await command._invoke_with_namespace(interaction, namespace)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 883, in _invoke_with_namespace
+    return await self._do_call(interaction, transformed_values)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 876, in _do_call
+    raise CommandInvokeError(self, e) from e
+discord.app_commands.errors.CommandInvokeError: Command 'cmds' raised an exception: HTTPException: 400 Bad Request (error code: 40060): Interaction has already been acknowledged.
+[2025-08-15 18:28:49] ERROR boot: App command error (guild=1401010565467476058 user=777039317918679070 cmd=?): Application command 'updates' not found
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\tree.py", line 1151, in wrapper
+    await self._call(interaction)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\tree.py", line 1283, in _call
+    command, options = self._get_app_command_options(data)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\tree.py", line 1187, in _get_app_command_options
+    raise CommandNotFound(name, parents)
+discord.app_commands.errors.CommandNotFound: Application command 'updates' not found
+[2025-08-15 18:28:50] ERROR boot: App command error (guild=1401010565467476058 user=777039317918679070 cmd=status): Command 'status' raised an exception: NotFound: 404 Not Found (error code: 10062): Unknown interaction
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 858, in _do_call
+    return await self._callback(interaction, **params)  # type: ignore
+  File "C:\Users\Havocprime\Desktop\Lowlife_Society\GAME\src\bot\updates.py", line 49, in status
+    await inter.response.defer(ephemeral=True, thinking=False)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\interactions.py", line 844, in defer
+    response = await adapter.create_interaction_response(
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\webhook\async_.py", line 224, in request
+    raise NotFound(response, data)
+discord.errors.NotFound: 404 Not Found (error code: 10062): Unknown interaction
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\tree.py", line 1310, in _call
+    await command._invoke_with_namespace(interaction, namespace)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 883, in _invoke_with_namespace
+    return await self._do_call(interaction, transformed_values)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 876, in _do_call
+    raise CommandInvokeError(self, e) from e
+discord.app_commands.errors.CommandInvokeError: Command 'status' raised an exception: NotFound: 404 Not Found (error code: 10062): Unknown interaction
+[2025-08-15 18:29:02] ERROR boot: App command error (guild=1401010565467476058 user=777039317918679070 cmd=?): Application command 'updates' not found
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\tree.py", line 1151, in wrapper
+    await self._call(interaction)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\tree.py", line 1283, in _call
+    command, options = self._get_app_command_options(data)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\tree.py", line 1187, in _get_app_command_options
+    raise CommandNotFound(name, parents)
+discord.app_commands.errors.CommandNotFound: Application command 'updates' not found
+[2025-08-15 18:29:03] ERROR boot: App command error (guild=1401010565467476058 user=777039317918679070 cmd=publish): Command 'publish' raised an exception: NotFound: 404 Not Found (error code: 10062): Unknown interaction
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 858, in _do_call
+    return await self._callback(interaction, **params)  # type: ignore
+  File "C:\Users\Havocprime\Desktop\Lowlife_Society\GAME\src\bot\updates.py", line 68, in publish
+    await inter.response.defer(ephemeral=True, thinking=False)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\interactions.py", line 844, in defer
+    response = await adapter.create_interaction_response(
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\webhook\async_.py", line 224, in request
+    raise NotFound(response, data)
+discord.errors.NotFound: 404 Not Found (error code: 10062): Unknown interaction
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\tree.py", line 1310, in _call
+    await command._invoke_with_namespace(interaction, namespace)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 883, in _invoke_with_namespace
+    return await self._do_call(interaction, transformed_values)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 876, in _do_call
+    raise CommandInvokeError(self, e) from e
+discord.app_commands.errors.CommandInvokeError: Command 'publish' raised an exception: NotFound: 404 Not Found (error code: 10062): Unknown interaction
+[2025-08-15 18:29:03] ERROR boot: App command error (guild=1401010565467476058 user=777039317918679070 cmd=publish): Command 'publish' raised an exception: HTTPException: 400 Bad Request (error code: 40060): Interaction has already been acknowledged.
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\Desktop\Lowlife_Society\GAME\src\bot\updates.py", line 170, in publish
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\interactions.py", line 1004, in send_message
+    response = await adapter.create_interaction_response(
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\webhook\async_.py", line 226, in request
+    raise HTTPException(response, data)
+discord.errors.HTTPException: 400 Bad Request (error code: 40060): Interaction has already been acknowledged.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 858, in _do_call
+    return await self._callback(interaction, **params)  # type: ignore
+  File "C:\Users\Havocprime\Desktop\Lowlife_Society\GAME\src\bot\updates.py", line 172, in publish
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\interactions.py", line 1004, in send_message
+    response = await adapter.create_interaction_response(
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\webhook\async_.py", line 226, in request
+    raise HTTPException(response, data)
+discord.errors.HTTPException: 400 Bad Request (error code: 40060): Interaction has already been acknowledged.
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\tree.py", line 1310, in _call
+    await command._invoke_with_namespace(interaction, namespace)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 883, in _invoke_with_namespace
+    return await self._do_call(interaction, transformed_values)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 876, in _do_call
+    raise CommandInvokeError(self, e) from e
+discord.app_commands.errors.CommandInvokeError: Command 'publish' raised an exception: HTTPException: 400 Bad Request (error code: 40060): Interaction has already been acknowledged.
+[2025-08-15 18:45:37] INFO boot: Local commands loaded: ['duel', 'inv', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet']
+[2025-08-15 18:45:37] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'inv', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet']
+[2025-08-15 18:45:37] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-15 18:46:00] ERROR boot: App command error (guild=1401010565467476058 user=777039317918679070 cmd=?): Application command 'updates' not found
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\tree.py", line 1151, in wrapper
+    await self._call(interaction)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\tree.py", line 1283, in _call
+    command, options = self._get_app_command_options(data)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\tree.py", line 1187, in _get_app_command_options
+    raise CommandNotFound(name, parents)
+discord.app_commands.errors.CommandNotFound: Application command 'updates' not found
+[2025-08-15 18:46:00] DEBUG boot: safe_ephemeral: interaction token expired
+[2025-08-15 18:46:08] ERROR boot: App command error (guild=1401010565467476058 user=777039317918679070 cmd=?): Application command 'updates' not found
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\tree.py", line 1151, in wrapper
+    await self._call(interaction)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\tree.py", line 1283, in _call
+    command, options = self._get_app_command_options(data)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\tree.py", line 1187, in _get_app_command_options
+    raise CommandNotFound(name, parents)
+discord.app_commands.errors.CommandNotFound: Application command 'updates' not found
+[2025-08-15 18:46:09] ERROR boot: safe_ephemeral failed
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\Desktop\Lowlife_Society\GAME\src\bot\updates.py", line 27, in _safe_ephemeral
+    await inter.response.send_message(content=content, embed=embed, ephemeral=True)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\interactions.py", line 1004, in send_message
+    response = await adapter.create_interaction_response(
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\webhook\async_.py", line 226, in request
+    raise HTTPException(response, data)
+discord.errors.HTTPException: 400 Bad Request (error code: 40060): Interaction has already been acknowledged.
+[2025-08-15 18:46:09] ERROR boot: App command error (guild=1401010565467476058 user=777039317918679070 cmd=publish): Command 'publish' raised an exception: HTTPException: 400 Bad Request (error code: 40060): Interaction has already been acknowledged.
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\Desktop\Lowlife_Society\GAME\src\bot\updates.py", line 170, in publish
+    channel = client.get_channel(ch_id) or await client.fetch_channel(ch_id)  # type: ignore
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\interactions.py", line 1004, in send_message
+    response = await adapter.create_interaction_response(
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\webhook\async_.py", line 226, in request
+    raise HTTPException(response, data)
+discord.errors.HTTPException: 400 Bad Request (error code: 40060): Interaction has already been acknowledged.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 858, in _do_call
+    return await self._callback(interaction, **params)  # type: ignore
+  File "C:\Users\Havocprime\Desktop\Lowlife_Society\GAME\src\bot\updates.py", line 172, in publish
+    raise TypeError("Configured channel is not a text channel")
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\interactions.py", line 1004, in send_message
+    response = await adapter.create_interaction_response(
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\webhook\async_.py", line 226, in request
+    raise HTTPException(response, data)
+discord.errors.HTTPException: 400 Bad Request (error code: 40060): Interaction has already been acknowledged.
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\tree.py", line 1310, in _call
+    await command._invoke_with_namespace(interaction, namespace)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 883, in _invoke_with_namespace
+    return await self._do_call(interaction, transformed_values)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 876, in _do_call
+    raise CommandInvokeError(self, e) from e
+discord.app_commands.errors.CommandInvokeError: Command 'publish' raised an exception: HTTPException: 400 Bad Request (error code: 40060): Interaction has already been acknowledged.
+[2025-08-15 18:49:48] INFO boot: Local commands loaded: ['duel', 'inv', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet']
+[2025-08-15 18:49:49] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'inv', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet']
+[2025-08-15 18:49:49] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-15 18:51:11] ERROR boot: App command error (guild=1401010565467476058 user=777039317918679070 cmd=?): Application command 'updates' not found
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\tree.py", line 1151, in wrapper
+    await self._call(interaction)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\tree.py", line 1283, in _call
+    command, options = self._get_app_command_options(data)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\tree.py", line 1187, in _get_app_command_options
+    raise CommandNotFound(name, parents)
+discord.app_commands.errors.CommandNotFound: Application command 'updates' not found
+[2025-08-15 18:51:17] ERROR boot: App command error (guild=1401010565467476058 user=777039317918679070 cmd=?): Application command 'updates' not found
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\tree.py", line 1151, in wrapper
+    await self._call(interaction)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\tree.py", line 1283, in _call
+    command, options = self._get_app_command_options(data)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\tree.py", line 1187, in _get_app_command_options
+    raise CommandNotFound(name, parents)
+discord.app_commands.errors.CommandNotFound: Application command 'updates' not found
+[2025-08-15 18:51:18] ERROR boot: App command error (guild=1401010565467476058 user=777039317918679070 cmd=publish): Command 'publish' raised an exception: HTTPException: 400 Bad Request (error code: 40060): Interaction has already been acknowledged.
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\Desktop\Lowlife_Society\GAME\src\bot\updates.py", line 170, in publish
+    except Exception:
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\interactions.py", line 1004, in send_message
+    response = await adapter.create_interaction_response(
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\webhook\async_.py", line 226, in request
+    raise HTTPException(response, data)
+discord.errors.HTTPException: 400 Bad Request (error code: 40060): Interaction has already been acknowledged.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 858, in _do_call
+    return await self._callback(interaction, **params)  # type: ignore
+  File "C:\Users\Havocprime\Desktop\Lowlife_Society\GAME\src\bot\updates.py", line 172, in publish
+    continue
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\interactions.py", line 1004, in send_message
+    response = await adapter.create_interaction_response(
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\webhook\async_.py", line 226, in request
+    raise HTTPException(response, data)
+discord.errors.HTTPException: 400 Bad Request (error code: 40060): Interaction has already been acknowledged.
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\tree.py", line 1310, in _call
+    await command._invoke_with_namespace(interaction, namespace)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 883, in _invoke_with_namespace
+    return await self._do_call(interaction, transformed_values)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 876, in _do_call
+    raise CommandInvokeError(self, e) from e
+discord.app_commands.errors.CommandInvokeError: Command 'publish' raised an exception: HTTPException: 400 Bad Request (error code: 40060): Interaction has already been acknowledged.
+[2025-08-15 22:12:08] INFO boot: Local commands loaded: ['duel', 'inv', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet']
+[2025-08-15 22:12:08] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'inv', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet']
+[2025-08-15 22:12:08] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-16 03:11:02] INFO boot: Local commands loaded: ['duel', 'inv', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet']
+[2025-08-16 03:11:02] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'inv', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet']
+[2025-08-16 03:11:02] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-16 03:11:02] INFO boot: updates watcher: start (version_file=data/version.txt, notes_file=data/notes.md, interval=15s)
+[2025-08-16 04:02:13] INFO boot: Local commands loaded: ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet']
+[2025-08-16 04:02:14] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet']
+[2025-08-16 04:02:14] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-16 04:02:14] INFO boot: updates watcher: start (version_file=data/version.txt, notes_file=data/notes.md, interval=15s)
+[2025-08-16 04:10:49] ERROR boot: Slash command sync error: CommandTree.get_command() got an unexpected keyword argument 'name'
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\Desktop\Lowlife_Society\GAME\src\bot\bot.py", line 78, in on_ready
+    register_inventory_commands(tree, bot)
+  File "C:\Users\Havocprime\Desktop\Lowlife_Society\GAME\src\bot\inventory_cmds.py", line 111, in register_inventory_commands
+    existing = tree.get_command(name=name)
+TypeError: CommandTree.get_command() got an unexpected keyword argument 'name'
+[2025-08-16 04:16:19] INFO boot: Local commands loaded: ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats']
+[2025-08-16 04:16:19] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats']
+[2025-08-16 04:16:19] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-16 04:16:19] INFO boot: updates watcher: start (version_file=data/version.txt, notes_file=data/notes.md, interval=15s)
+[2025-08-16 04:17:19] ERROR boot: App command error (guild=1401010565467476058 user=777039317918679070 cmd=sync): Command 'sync' raised an exception: NotFound: 404 Not Found (error code: 10062): Unknown interaction
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 858, in _do_call
+    return await self._callback(interaction, **params)  # type: ignore
+  File "C:\Users\Havocprime\Desktop\Lowlife_Society\GAME\src\bot\bot.py", line 118, in sync_cmd
+    await inter.response.send_message(
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\interactions.py", line 1004, in send_message
+    response = await adapter.create_interaction_response(
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\webhook\async_.py", line 224, in request
+    raise NotFound(response, data)
+discord.errors.NotFound: 404 Not Found (error code: 10062): Unknown interaction
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\tree.py", line 1310, in _call
+    await command._invoke_with_namespace(interaction, namespace)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 883, in _invoke_with_namespace
+    return await self._do_call(interaction, transformed_values)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 876, in _do_call
+    raise CommandInvokeError(self, e) from e
+discord.app_commands.errors.CommandInvokeError: Command 'sync' raised an exception: NotFound: 404 Not Found (error code: 10062): Unknown interaction
+[2025-08-16 04:26:35] ERROR boot: App command error (guild=1401010565467476058 user=777039317918679070 cmd=genitem): Command 'genitem' raised an exception: KeyError: '1'
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 858, in _do_call
+    return await self._callback(interaction, **params)  # type: ignore
+  File "C:\Users\Havocprime\Desktop\Lowlife_Society\GAME\src\bot\inventory_cmds.py", line 77, in genitem_cmd
+    item = generate_item(def_id, tier=tier)
+  File "C:\Users\Havocprime\Desktop\Lowlife_Society\GAME\src\core\inventory.py", line 103, in generate_item
+    return instantiate_from_def(def_id, tier=tier)
+  File "C:\Users\Havocprime\Desktop\Lowlife_Society\GAME\src\core\items.py", line 173, in instantiate_from_def
+    affix_count = {"common": 0, "uncommon": 1, "rare": 1, "epic": 2}[tier]
+KeyError: '1'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\tree.py", line 1310, in _call
+    await command._invoke_with_namespace(interaction, namespace)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 883, in _invoke_with_namespace
+    return await self._do_call(interaction, transformed_values)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 876, in _do_call
+    raise CommandInvokeError(self, e) from e
+discord.app_commands.errors.CommandInvokeError: Command 'genitem' raised an exception: KeyError: '1'
+[2025-08-16 04:26:52] INFO boot: Local commands loaded: ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats']
+[2025-08-16 04:26:52] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats']
+[2025-08-16 04:26:52] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-16 04:26:52] INFO boot: updates watcher: start (version_file=data/version.txt, notes_file=data/notes.md, interval=15s)
+[2025-08-16 04:31:14] INFO boot: Local commands loaded: ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer']
+[2025-08-16 04:31:15] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer']
+[2025-08-16 04:31:15] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-16 04:31:15] INFO boot: updates watcher: start (version_file=data/version.txt, notes_file=data/notes.md, interval=15s)
+[2025-08-16 05:14:20] INFO boot: Local commands loaded: ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-16 05:14:20] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-16 05:14:20] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-16 05:14:20] INFO boot: updates watcher: start (version_file=data/version.txt, notes_file=data/notes.md, interval=15s)
+[2025-08-16 15:53:53] INFO boot: Local commands loaded: ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-16 15:53:53] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-16 15:53:53] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-16 15:53:53] INFO boot: updates watcher: start (version_file=data/version.txt, notes_file=data/notes.md, interval=15s)
+[2025-08-16 16:25:33] INFO boot: Local commands loaded: ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-16 16:25:33] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-16 16:25:33] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-16 16:25:33] INFO boot: updates watcher: start (version_file=data/version.txt, notes_file=data/notes.md, interval=15s)
+[2025-08-16 16:29:05] INFO boot: Local commands loaded: ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-16 16:29:05] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-16 16:29:05] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-16 16:29:05] INFO boot: updates watcher: start (version_file=data/version.txt, notes_file=data/notes.md, interval=15s, last_seen=None)
+[2025-08-16 16:29:40] INFO boot: Local commands loaded: ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-16 16:29:40] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-16 16:29:40] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-16 16:29:40] INFO boot: updates watcher: start (version_file=data/version.txt, notes_file=data/notes.md, interval=15s, last_seen=0.2)
+[2025-08-16 16:29:55] INFO boot: Local commands loaded: ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-16 16:30:40] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-16 16:30:40] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-16 16:30:40] INFO boot: updates watcher: start (version_file=data/version.txt, notes_file=data/notes.md, interval=15s, last_seen=0.1)
+[2025-08-16 16:47:12] INFO boot: Local commands loaded: ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-16 16:47:12] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-16 16:47:12] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-16 16:47:12] INFO boot: updates watcher: start (version_file=data/version.txt, notes_file=data/notes.md, interval=15s, last_seen=0.2)
+[2025-08-16 17:48:17] INFO boot: Local commands loaded: ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-16 17:48:17] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-16 17:48:17] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-16 17:48:17] INFO boot: updates watcher: start (version_file=data/version.txt, notes_file=data/notes.md, interval=15s, last_seen=0.1)
+[2025-08-16 18:14:15] INFO boot: Local commands loaded: ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-16 18:14:16] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-16 18:14:16] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-16 18:14:16] INFO boot: updates watcher: start (version_file=data/version.txt, notes_file=data/notes.md, interval=15s, last_seen=0.2)
+[2025-08-16 18:53:42] INFO boot: Local commands loaded: ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-16 18:53:42] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-16 18:53:42] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-16 18:53:42] INFO boot: updates watcher: start (version_file=data/version.txt, notes_file=data/notes.md, interval=15s, last_seen=0.1)
+[2025-08-16 19:51:15] INFO boot: Local commands loaded: ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-16 19:51:15] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-16 19:51:15] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-16 19:51:15] INFO boot: updates watcher: start (version_file=data/version.txt, notes_file=data/notes.md, interval=15s, last_seen=0.2)
+[2025-08-16 19:53:59] ERROR boot: App command error (guild=1401010565467476058 user=777039317918679070 cmd=cmds): Command 'cmds' raised an exception: NotFound: 404 Not Found (error code: 10062): Unknown interaction
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 858, in _do_call
+    return await self._callback(interaction, **params)  # type: ignore
+  File "C:\Users\Havocprime\Desktop\Lowlife_Society\GAME\src\bot\bot.py", line 137, in list_cmds
+    await inter.response.send_message("📜 " + ", ".join(names), ephemeral=True)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\interactions.py", line 1004, in send_message
+    response = await adapter.create_interaction_response(
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\webhook\async_.py", line 224, in request
+    raise NotFound(response, data)
+discord.errors.NotFound: 404 Not Found (error code: 10062): Unknown interaction
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\tree.py", line 1310, in _call
+    await command._invoke_with_namespace(interaction, namespace)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 883, in _invoke_with_namespace
+    return await self._do_call(interaction, transformed_values)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 876, in _do_call
+    raise CommandInvokeError(self, e) from e
+discord.app_commands.errors.CommandInvokeError: Command 'cmds' raised an exception: NotFound: 404 Not Found (error code: 10062): Unknown interaction
+[2025-08-16 19:54:09] ERROR boot: App command error (guild=1401010565467476058 user=777039317918679070 cmd=sync): Command 'sync' raised an exception: NotFound: 404 Not Found (error code: 10062): Unknown interaction
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 858, in _do_call
+    return await self._callback(interaction, **params)  # type: ignore
+  File "C:\Users\Havocprime\Desktop\Lowlife_Society\GAME\src\bot\bot.py", line 116, in sync_cmd
+    await inter.response.defer(ephemeral=True)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\interactions.py", line 844, in defer
+    response = await adapter.create_interaction_response(
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\webhook\async_.py", line 224, in request
+    raise NotFound(response, data)
+discord.errors.NotFound: 404 Not Found (error code: 10062): Unknown interaction
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\tree.py", line 1310, in _call
+    await command._invoke_with_namespace(interaction, namespace)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 883, in _invoke_with_namespace
+    return await self._do_call(interaction, transformed_values)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 876, in _do_call
+    raise CommandInvokeError(self, e) from e
+discord.app_commands.errors.CommandInvokeError: Command 'sync' raised an exception: NotFound: 404 Not Found (error code: 10062): Unknown interaction
+[2025-08-16 19:54:26] ERROR boot: App command error (guild=1401010565467476058 user=777039317918679070 cmd=setweapon): Command 'setweapon' raised an exception: HTTPException: 400 Bad Request (error code: 40060): Interaction has already been acknowledged.
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 858, in _do_call
+    return await self._callback(interaction, **params)  # type: ignore
+  File "C:\Users\Havocprime\Desktop\Lowlife_Society\GAME\src\bot\inventory_cmds.py", line 177, in setweapon_cmd
+    await interaction.response.send_message("Use `primary` or `secondary`.", ephemeral=True); return
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\interactions.py", line 1004, in send_message
+    response = await adapter.create_interaction_response(
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\webhook\async_.py", line 226, in request
+    raise HTTPException(response, data)
+discord.errors.HTTPException: 400 Bad Request (error code: 40060): Interaction has already been acknowledged.
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\tree.py", line 1310, in _call
+    await command._invoke_with_namespace(interaction, namespace)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 883, in _invoke_with_namespace
+    return await self._do_call(interaction, transformed_values)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 876, in _do_call
+    raise CommandInvokeError(self, e) from e
+discord.app_commands.errors.CommandInvokeError: Command 'setweapon' raised an exception: HTTPException: 400 Bad Request (error code: 40060): Interaction has already been acknowledged.
+[2025-08-16 20:25:49] INFO boot: Local commands loaded: ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-16 20:25:49] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-16 20:25:49] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-16 20:25:49] INFO boot: updates watcher: start (version_file=data/version.txt, notes_file=data/notes.md, interval=15s, last_seen=0.1)
+[2025-08-16 20:49:13] INFO boot: Local commands loaded: ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-16 20:49:52] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-16 20:49:52] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-16 20:49:52] INFO boot: updates watcher: start (version_file=data/version.txt, notes_file=data/notes.md, interval=15s, last_seen=0.2)
+[2025-08-16 20:50:14] INFO boot: Local commands loaded: ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-16 20:50:15] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-16 20:50:15] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-16 20:50:15] INFO boot: updates watcher: start (version_file=data/version.txt, notes_file=data/notes.md, interval=15s, last_seen=0.1)
+[2025-08-16 21:16:48] INFO boot: Local commands loaded: ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-16 21:16:48] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-16 21:16:48] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-16 21:16:48] INFO boot: updates watcher: start (version_file=data/version.txt, notes_file=data/notes.md, interval=15s, last_seen=0.2)
+[2025-08-16 21:47:53] INFO boot: Local commands loaded: ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-16 21:47:53] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-16 21:47:53] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-16 21:47:53] INFO boot: updates watcher: start (version_file=data/version.txt, notes_file=data/notes.md, interval=15s, last_seen=0.1)
+[2025-08-16 23:02:16] INFO boot: Local commands loaded: ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-16 23:02:17] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-16 23:02:17] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-16 23:02:17] INFO boot: updates watcher: start (version_file=data/version.txt, notes_file=data/notes.md, interval=15s, last_seen=0.2)
+[2025-08-17 10:34:37] INFO boot: Local commands loaded: ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-17 10:34:37] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-17 10:34:37] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-17 10:34:37] INFO boot: updates watcher: start (version_file=data/version.txt, notes_file=data/notes.md, interval=15s, last_seen=0.1)
+[2025-08-17 10:44:29] INFO boot: Local commands loaded: ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-17 10:44:29] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-17 10:44:29] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-17 10:44:29] INFO boot: updates watcher: start (version_file=data/version.txt, notes_file=data/notes.md, interval=15s, last_seen=0.2)
+[2025-08-17 10:50:32] INFO boot: Local commands loaded: ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-17 10:50:32] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-17 10:50:32] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-17 10:50:32] INFO boot: updates watcher: start (version_file=data/version.txt, notes_file=data/notes.md, interval=15s, last_seen=0.1)
+[2025-08-17 11:12:06] INFO boot: Local commands loaded: ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-17 11:12:06] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-17 11:12:06] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-17 11:12:06] INFO boot: updates watcher: start (version_file=data/version.txt, notes_file=data/notes.md, interval=15s, last_seen=0.2)
+[2025-08-17 11:20:52] INFO boot: Local commands loaded: ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-17 11:20:53] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-17 11:20:53] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-17 11:20:53] INFO boot: updates watcher: start (version_file=data/version.txt, notes_file=data/notes.md, interval=15s, last_seen=0.1)
+[2025-08-17 11:40:08] INFO boot: Local commands loaded: ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-17 11:40:08] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-17 11:40:08] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-17 11:40:08] INFO boot: updates watcher: start (version_file=data/version.txt, notes_file=data/notes.md, interval=15s, last_seen=0.2)
+[2025-08-17 12:39:18] INFO boot: Local commands loaded: ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-17 12:39:18] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-17 12:39:18] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-17 12:39:18] INFO boot: updates watcher: start (version_file=data/version.txt, notes_file=data/notes.md, interval=15s, last_seen=0.1)
+[2025-08-17 12:57:04] INFO boot: Local commands loaded: ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-17 12:57:04] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-17 12:57:04] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-17 12:57:04] INFO boot: updates watcher: start (version_file=data/version.txt, notes_file=data/notes.md, interval=15s, last_seen=0.2)
+[2025-08-17 13:07:28] INFO boot: Local commands loaded: ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-17 13:07:28] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-17 13:07:28] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-17 13:07:28] INFO boot: updates watcher: start (version_file=data/version.txt, notes_file=data/notes.md, interval=15s, last_seen=0.1)
+[2025-08-17 14:42:42] INFO boot: Local commands loaded: ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-17 14:42:42] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-17 14:42:42] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-17 15:46:37] INFO boot: Local commands loaded: ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-17 15:46:37] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-17 15:46:37] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-17 16:02:32] INFO boot: Local commands loaded: ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-17 16:02:32] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-17 16:02:32] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-17 16:45:12] INFO boot: Local commands loaded: ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-17 16:45:12] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-17 16:45:12] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-17 17:01:27] INFO boot: Local commands loaded: ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-17 17:01:27] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-17 17:01:27] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-17 17:08:04] INFO boot: Local commands loaded: ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-17 17:08:05] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-17 17:08:05] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-17 17:19:53] INFO boot: Local commands loaded: ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-17 17:19:53] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-17 17:19:53] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-17 17:29:25] INFO boot: Local commands loaded: ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-17 17:29:25] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-17 17:29:25] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-17 17:47:54] INFO boot: Local commands loaded: ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-17 17:47:54] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-17 17:47:54] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-17 17:55:44] INFO boot: Local commands loaded: ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-17 17:55:44] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-17 17:55:44] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-17 18:11:43] INFO boot: Local commands loaded: ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-17 18:11:43] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'updates', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-17 18:11:43] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-17 18:15:38] INFO boot: Local commands loaded: ['duel', 'updates', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-17 18:15:38] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'updates', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-17 18:15:38] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-17 18:31:53] INFO boot: Local commands loaded: ['duel', 'updates', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-17 18:31:54] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'updates', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-17 18:31:54] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-17 19:05:36] INFO boot: Local commands loaded: ['duel', 'updates', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-17 19:05:36] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'updates', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-17 19:05:36] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-18 02:14:35] INFO boot: Local commands loaded: ['duel', 'updates', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-18 02:14:35] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'updates', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-18 02:14:35] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-18 02:24:54] INFO boot: Local commands loaded: ['duel', 'updates', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-18 02:24:54] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'updates', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-18 02:24:54] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-18 02:26:52] INFO boot: Local commands loaded: ['duel', 'updates', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-18 02:26:52] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'updates', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-18 02:26:52] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-18 02:31:32] INFO boot: Local commands loaded: ['duel', 'updates', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-18 02:31:32] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'updates', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-18 02:31:32] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-18 02:35:03] INFO boot: Local commands loaded: ['duel', 'updates', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-18 02:35:03] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'updates', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-18 02:35:03] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-18 02:36:02] INFO boot: Local commands loaded: ['duel', 'updates', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-18 02:36:02] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'updates', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-18 02:36:02] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-18 02:49:31] INFO boot: Local commands loaded: ['duel', 'updates', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-18 02:49:32] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'updates', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-18 02:49:32] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-18 02:50:56] INFO boot: Local commands loaded: ['duel', 'updates', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-18 02:50:56] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'updates', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-18 02:50:56] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-18 02:52:23] INFO boot: Local commands loaded: ['duel', 'updates', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-18 02:52:23] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'updates', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-18 02:52:23] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-18 11:32:17] INFO boot: Local commands loaded: ['duel', 'updates', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-18 11:32:18] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'updates', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-18 11:32:18] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-18 11:33:25] INFO boot: Local commands loaded: ['duel', 'updates', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-18 11:33:25] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'updates', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-18 11:33:25] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-18 11:34:40] INFO boot: Local commands loaded: ['duel', 'updates', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-18 11:34:40] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'updates', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-18 11:34:40] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-18 12:53:06] INFO boot: Local commands loaded: ['duel', 'updates', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-18 12:53:07] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'updates', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-18 12:53:07] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-18 13:23:37] INFO boot: Local commands loaded: ['duel', 'updates', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-18 13:23:38] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'updates', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-18 13:23:38] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-18 13:23:43] ERROR boot: App command error (guild=1401010565467476058 user=777039317918679070 cmd=ai): Command 'ai' raised an exception: NameError: name '_maybe_offer_finisher' is not defined
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 858, in _do_call
+    return await self._callback(interaction, **params)  # type: ignore
+  File "C:\Users\Havocprime\Desktop\Lowlife_Society\GAME\src\bot\duel.py", line 637, in duel_ai
+    await _maybe_ai_take_turn(inter, state)
+  File "C:\Users\Havocprime\Desktop\Lowlife_Society\GAME\src\bot\duel.py", line 472, in _maybe_ai_take_turn
+    fin_view = await _maybe_offer_finisher(inter, state)
+NameError: name '_maybe_offer_finisher' is not defined
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\tree.py", line 1310, in _call
+    await command._invoke_with_namespace(interaction, namespace)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 883, in _invoke_with_namespace
+    return await self._do_call(interaction, transformed_values)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 876, in _do_call
+    raise CommandInvokeError(self, e) from e
+discord.app_commands.errors.CommandInvokeError: Command 'ai' raised an exception: NameError: name '_maybe_offer_finisher' is not defined
+[2025-08-18 13:44:00] INFO boot: Local commands loaded: ['duel', 'updates', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-18 13:44:00] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'updates', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-18 13:44:00] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-18 13:47:34] INFO boot: Local commands loaded: ['duel', 'updates', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-18 13:48:21] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'updates', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-18 13:48:21] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-18 13:57:04] INFO boot: Local commands loaded: ['duel', 'updates', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-18 13:57:04] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'updates', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-18 13:57:04] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-18 13:59:12] INFO boot: Local commands loaded: ['duel', 'updates', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-18 13:59:13] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'updates', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-18 13:59:13] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-18 13:59:53] INFO boot: Local commands loaded: ['duel', 'updates', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-18 13:59:54] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'updates', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-18 13:59:54] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-18 14:47:33] INFO boot: Local commands loaded: ['duel', 'updates', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-18 14:47:33] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'updates', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-18 14:47:33] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-18 14:50:41] ERROR boot: App command error (guild=1401010565467476058 user=777039317918679070 cmd=?): The signature for command 'duel' is different from the one provided by Discord. This can happen because either your code is out of date or you have not synced the commands with Discord, causing the mismatch in data. It is recommended to sync the command tree to fix this issue.
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\tree.py", line 1151, in wrapper
+    await self._call(interaction)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\tree.py", line 1283, in _call
+    command, options = self._get_app_command_options(data)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\tree.py", line 1215, in _get_app_command_options
+    raise CommandSignatureMismatch(command)
+discord.app_commands.errors.CommandSignatureMismatch: The signature for command 'duel' is different from the one provided by Discord. This can happen because either your code is out of date or you have not synced the commands with Discord, causing the mismatch in data. It is recommended to sync the command tree to fix this issue.
+[2025-08-18 16:09:52] INFO boot: Local commands loaded: ['duel', 'updates', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-18 16:09:52] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'updates', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-18 16:09:52] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-18 16:18:00] INFO boot: Local commands loaded: ['duel', 'updates', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-18 16:18:00] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'updates', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-18 16:18:00] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-18 16:58:45] INFO boot: Local commands loaded: ['duel', 'updates', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-18 16:58:45] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'updates', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-18 16:58:45] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-18 16:59:12] ERROR boot: App command error (guild=1401010565467476058 user=777039317918679070 cmd=post): Command 'post' raised an exception: NotFound: 404 Not Found (error code: 10062): Unknown interaction
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 858, in _do_call
+    return await self._callback(interaction, **params)  # type: ignore
+  File "C:\Users\Havocprime\Desktop\Lowlife_Society\GAME\src\bot\updates.py", line 31, in updates_post
+    await inter.response.send_message("Posted.", ephemeral=True)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\interactions.py", line 1004, in send_message
+    response = await adapter.create_interaction_response(
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\webhook\async_.py", line 224, in request
+    raise NotFound(response, data)
+discord.errors.NotFound: 404 Not Found (error code: 10062): Unknown interaction
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\tree.py", line 1310, in _call
+    await command._invoke_with_namespace(interaction, namespace)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 883, in _invoke_with_namespace
+    return await self._do_call(interaction, transformed_values)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 876, in _do_call
+    raise CommandInvokeError(self, e) from e
+discord.app_commands.errors.CommandInvokeError: Command 'post' raised an exception: NotFound: 404 Not Found (error code: 10062): Unknown interaction
+[2025-08-18 16:59:12] ERROR boot: App command error (guild=1401010565467476058 user=777039317918679070 cmd=post): Command 'post' raised an exception: NotFound: 404 Not Found (error code: 10062): Unknown interaction
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 858, in _do_call
+    return await self._callback(interaction, **params)  # type: ignore
+  File "C:\Users\Havocprime\Desktop\Lowlife_Society\GAME\src\bot\updates.py", line 31, in updates_post
+    await inter.response.send_message("Posted.", ephemeral=True)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\interactions.py", line 1004, in send_message
+    response = await adapter.create_interaction_response(
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\webhook\async_.py", line 224, in request
+    raise NotFound(response, data)
+discord.errors.NotFound: 404 Not Found (error code: 10062): Unknown interaction
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\tree.py", line 1310, in _call
+    await command._invoke_with_namespace(interaction, namespace)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 883, in _invoke_with_namespace
+    return await self._do_call(interaction, transformed_values)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 876, in _do_call
+    raise CommandInvokeError(self, e) from e
+discord.app_commands.errors.CommandInvokeError: Command 'post' raised an exception: NotFound: 404 Not Found (error code: 10062): Unknown interaction
+[2025-08-18 17:12:04] INFO boot: Local commands loaded: ['duel', 'updates', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-18 17:12:04] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'updates', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-18 17:12:04] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-18 17:15:56] INFO boot: Local commands loaded: ['duel', 'updates', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-18 17:15:57] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'updates', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-18 17:15:57] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-18 17:37:28] INFO boot: Local commands loaded: ['duel', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-18 17:37:28] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-18 17:37:28] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-18 17:47:01] INFO boot: Local commands loaded: ['duel', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-18 17:47:01] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-18 17:47:01] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-18 17:50:09] INFO boot: Local commands loaded: ['duel', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-18 17:50:09] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-18 17:50:09] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-18 18:02:40] INFO boot: Local commands loaded: ['duel', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-18 18:02:40] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-18 18:02:40] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-18 18:06:38] INFO boot: Local commands loaded: ['duel', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-18 18:07:23] INFO boot: Local commands loaded: ['duel', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-18 18:07:23] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-18 18:07:23] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-18 18:10:49] INFO boot: Local commands loaded: ['duel', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-18 18:10:50] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-18 18:10:50] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-18 18:26:55] INFO boot: Local commands loaded: ['duel', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'updates_test', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-18 18:26:56] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'updates_test', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-18 18:26:56] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-18 18:33:41] INFO boot: Local commands loaded: ['duel', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'updates_test', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-18 18:33:41] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'updates_test', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-18 18:33:41] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-18 21:22:13] INFO boot: Local commands loaded: ['duel', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'updates_test', 'updates_set_here', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-18 21:22:13] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'updates_test', 'updates_set_here', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-18 21:22:13] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-18 21:24:24] ERROR boot: App command error (guild=1401010565467476058 user=777039317918679070 cmd=updates_test): Command 'updates_test' raised an exception: PermissionError: [Errno 13] Permission denied: 'C:\\Users\\Havocprime\\Desktop\\Lowlife_Society\\GAME\\tools'
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 857, in _do_call
+    return await self._callback(self.binding, interaction, **params)  # type: ignore
+  File "C:\Users\Havocprime\Desktop\Lowlife_Society\GAME\src\bot\updates.py", line 237, in updates_test
+    media = _extract_media(body, path)
+  File "C:\Users\Havocprime\Desktop\Lowlife_Society\GAME\src\bot\updates.py", line 184, in _extract_media
+    files.append(discord.File(str(seal_file), filename="seal.png"))
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\file.py", line 97, in __init__
+    self.fp = open(fp, 'rb')
+PermissionError: [Errno 13] Permission denied: 'C:\\Users\\Havocprime\\Desktop\\Lowlife_Society\\GAME\\tools'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\tree.py", line 1310, in _call
+    await command._invoke_with_namespace(interaction, namespace)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 883, in _invoke_with_namespace
+    return await self._do_call(interaction, transformed_values)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 876, in _do_call
+    raise CommandInvokeError(self, e) from e
+discord.app_commands.errors.CommandInvokeError: Command 'updates_test' raised an exception: PermissionError: [Errno 13] Permission denied: 'C:\\Users\\Havocprime\\Desktop\\Lowlife_Society\\GAME\\tools'
+[2025-08-18 21:26:28] INFO boot: Local commands loaded: ['duel', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'updates_test', 'updates_set_here', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-18 21:26:28] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'updates_test', 'updates_set_here', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-18 21:26:28] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-18 21:26:34] ERROR boot: App command error (guild=1401010565467476058 user=777039317918679070 cmd=updates_test): Command 'updates_test' raised an exception: PermissionError: [Errno 13] Permission denied: 'C:\\Users\\Havocprime\\Desktop\\Lowlife_Society\\GAME\\tools'
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 857, in _do_call
+    return await self._callback(self.binding, interaction, **params)  # type: ignore
+  File "C:\Users\Havocprime\Desktop\Lowlife_Society\GAME\src\bot\updates.py", line 237, in updates_test
+    media = _extract_media(body, path)
+  File "C:\Users\Havocprime\Desktop\Lowlife_Society\GAME\src\bot\updates.py", line 184, in _extract_media
+    files.append(discord.File(str(seal_file), filename="seal.png"))
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\file.py", line 97, in __init__
+    self.fp = open(fp, 'rb')
+PermissionError: [Errno 13] Permission denied: 'C:\\Users\\Havocprime\\Desktop\\Lowlife_Society\\GAME\\tools'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\tree.py", line 1310, in _call
+    await command._invoke_with_namespace(interaction, namespace)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 883, in _invoke_with_namespace
+    return await self._do_call(interaction, transformed_values)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 876, in _do_call
+    raise CommandInvokeError(self, e) from e
+discord.app_commands.errors.CommandInvokeError: Command 'updates_test' raised an exception: PermissionError: [Errno 13] Permission denied: 'C:\\Users\\Havocprime\\Desktop\\Lowlife_Society\\GAME\\tools'
+[2025-08-18 21:35:46] INFO boot: Local commands loaded: ['duel', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'updates_test', 'updates_set_here', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-18 21:35:46] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'updates_test', 'updates_set_here', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-18 21:35:46] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-18 21:51:56] INFO boot: Local commands loaded: ['duel', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'updates_test', 'updates_set_here', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-18 21:51:56] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'updates_test', 'updates_set_here', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-18 21:51:56] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-19 14:16:49] INFO boot: Local commands loaded: ['duel', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'updates_test', 'updates_set_here', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-19 14:16:50] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'updates_test', 'updates_set_here', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-19 14:16:50] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-19 14:20:26] INFO boot: Local commands loaded: ['duel', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'updates_test', 'updates_set_here', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-19 14:20:26] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'updates_test', 'updates_set_here', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-19 14:20:26] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-19 14:21:15] ERROR boot: App command error (guild=1401010565467476058 user=777039317918679070 cmd=duel): The signature for command 'duel' is different from the one provided by Discord. This can happen because either your code is out of date or you have not synced the commands with Discord, causing the mismatch in data. It is recommended to sync the command tree to fix this issue.
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\tree.py", line 1310, in _call
+    await command._invoke_with_namespace(interaction, namespace)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 882, in _invoke_with_namespace
+    transformed_values = await self._transform_arguments(interaction, namespace)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 846, in _transform_arguments
+    raise CommandSignatureMismatch(self) from None
+discord.app_commands.errors.CommandSignatureMismatch: The signature for command 'duel' is different from the one provided by Discord. This can happen because either your code is out of date or you have not synced the commands with Discord, causing the mismatch in data. It is recommended to sync the command tree to fix this issue.
+[2025-08-19 14:21:31] INFO boot: Local commands loaded: ['duel', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'updates_test', 'updates_set_here', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-19 14:21:31] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'updates_test', 'updates_set_here', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-19 14:21:31] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-19 14:22:20] ERROR boot: App command error (guild=1401010565467476058 user=777039317918679070 cmd=duel): The signature for command 'duel' is different from the one provided by Discord. This can happen because either your code is out of date or you have not synced the commands with Discord, causing the mismatch in data. It is recommended to sync the command tree to fix this issue.
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\tree.py", line 1310, in _call
+    await command._invoke_with_namespace(interaction, namespace)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 882, in _invoke_with_namespace
+    transformed_values = await self._transform_arguments(interaction, namespace)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 846, in _transform_arguments
+    raise CommandSignatureMismatch(self) from None
+discord.app_commands.errors.CommandSignatureMismatch: The signature for command 'duel' is different from the one provided by Discord. This can happen because either your code is out of date or you have not synced the commands with Discord, causing the mismatch in data. It is recommended to sync the command tree to fix this issue.
+[2025-08-19 14:22:41] ERROR boot: App command error (guild=1401010565467476058 user=777039317918679070 cmd=duel): The signature for command 'duel' is different from the one provided by Discord. This can happen because either your code is out of date or you have not synced the commands with Discord, causing the mismatch in data. It is recommended to sync the command tree to fix this issue.
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\tree.py", line 1310, in _call
+    await command._invoke_with_namespace(interaction, namespace)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 882, in _invoke_with_namespace
+    transformed_values = await self._transform_arguments(interaction, namespace)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 846, in _transform_arguments
+    raise CommandSignatureMismatch(self) from None
+discord.app_commands.errors.CommandSignatureMismatch: The signature for command 'duel' is different from the one provided by Discord. This can happen because either your code is out of date or you have not synced the commands with Discord, causing the mismatch in data. It is recommended to sync the command tree to fix this issue.
+[2025-08-19 14:29:29] INFO boot: Local commands loaded: ['duel', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'updates_test', 'updates_set_here', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-19 14:29:29] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'updates_test', 'updates_set_here', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-19 14:29:29] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-19 14:29:52] ERROR boot: App command error (guild=1401010565467476058 user=777039317918679070 cmd=duel): Command 'duel' raised an exception: TypeError: get_combatkit() missing 1 required positional argument: 'user_id'
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 858, in _do_call
+    return await self._callback(interaction, **params)  # type: ignore
+  File "C:\Users\Havocprime\Desktop\Lowlife_Society\GAME\src\bot\duel\__init__.py", line 116, in duel_cmd
+    weight=float(get_combatkit(interaction.user.id).get("weight", 15.0)),
+TypeError: get_combatkit() missing 1 required positional argument: 'user_id'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\tree.py", line 1310, in _call
+    await command._invoke_with_namespace(interaction, namespace)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 883, in _invoke_with_namespace
+    return await self._do_call(interaction, transformed_values)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 872, in _do_call
+    raise CommandInvokeError(self, e) from e
+discord.app_commands.errors.CommandInvokeError: Command 'duel' raised an exception: TypeError: get_combatkit() missing 1 required positional argument: 'user_id'
+[2025-08-19 14:30:01] ERROR boot: App command error (guild=1401010565467476058 user=777039317918679070 cmd=duel): Command 'duel' raised an exception: TypeError: get_combatkit() missing 1 required positional argument: 'user_id'
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 858, in _do_call
+    return await self._callback(interaction, **params)  # type: ignore
+  File "C:\Users\Havocprime\Desktop\Lowlife_Society\GAME\src\bot\duel\__init__.py", line 116, in duel_cmd
+    weight=float(get_combatkit(interaction.user.id).get("weight", 15.0)),
+TypeError: get_combatkit() missing 1 required positional argument: 'user_id'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\tree.py", line 1310, in _call
+    await command._invoke_with_namespace(interaction, namespace)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 883, in _invoke_with_namespace
+    return await self._do_call(interaction, transformed_values)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 872, in _do_call
+    raise CommandInvokeError(self, e) from e
+discord.app_commands.errors.CommandInvokeError: Command 'duel' raised an exception: TypeError: get_combatkit() missing 1 required positional argument: 'user_id'
+[2025-08-19 14:32:44] INFO boot: Local commands loaded: ['duel', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'updates_test', 'updates_set_here', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-19 14:32:44] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'updates_test', 'updates_set_here', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-19 14:32:44] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-19 14:33:02] ERROR boot: App command error (guild=1401010565467476058 user=777039317918679070 cmd=duel): Command 'duel' raised an exception: TypeError: DuelMainView.__init__() takes 3 positional arguments but 4 were given
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 858, in _do_call
+    return await self._callback(interaction, **params)  # type: ignore
+  File "C:\Users\Havocprime\Desktop\Lowlife_Society\GAME\src\bot\duel\__init__.py", line 176, in duel_cmd
+    view=_ConcreteDuelView(ds, ds.turn_of, switch_turn),  # type: ignore[arg-type]
+TypeError: DuelMainView.__init__() takes 3 positional arguments but 4 were given
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\tree.py", line 1310, in _call
+    await command._invoke_with_namespace(interaction, namespace)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 883, in _invoke_with_namespace
+    return await self._do_call(interaction, transformed_values)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 872, in _do_call
+    raise CommandInvokeError(self, e) from e
+discord.app_commands.errors.CommandInvokeError: Command 'duel' raised an exception: TypeError: DuelMainView.__init__() takes 3 positional arguments but 4 were given
+[2025-08-19 14:35:03] INFO boot: Local commands loaded: ['duel', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'updates_test', 'updates_set_here', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-19 14:35:04] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'updates_test', 'updates_set_here', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-19 14:35:04] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-19 14:42:21] INFO boot: Local commands loaded: ['duel', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'updates_test', 'updates_set_here', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-19 14:42:21] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'updates_test', 'updates_set_here', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-19 14:42:21] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-19 14:44:39] INFO boot: Local commands loaded: ['duel', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'updates_test', 'updates_set_here', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-19 14:44:39] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'updates_test', 'updates_set_here', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-19 14:44:39] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-19 14:49:09] INFO boot: Local commands loaded: ['duel', 'duel_end', 'duel_reset', 'duel_status', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'updates_test', 'updates_set_here', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-19 14:49:09] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'duel_end', 'duel_reset', 'duel_status', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'updates_test', 'updates_set_here', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-19 14:49:09] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-19 14:50:46] ERROR boot: App command error (guild=1401010565467476058 user=777039317918679070 cmd=duel): Command 'duel' raised an exception: AttributeError: 'DuelState' object has no attribute 'choking'
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 858, in _do_call
+    return await self._callback(interaction, **params)  # type: ignore
+  File "C:\Users\Havocprime\Desktop\Lowlife_Society\GAME\src\bot\duel\__init__.py", line 186, in duel_cmd
+    view = make_view(ds, interaction.client, actor.id)
+  File "C:\Users\Havocprime\Desktop\Lowlife_Society\GAME\src\bot\duel\views.py", line 74, in make_view
+    if state.choking:
+AttributeError: 'DuelState' object has no attribute 'choking'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\tree.py", line 1310, in _call
+    await command._invoke_with_namespace(interaction, namespace)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 883, in _invoke_with_namespace
+    return await self._do_call(interaction, transformed_values)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 876, in _do_call
+    raise CommandInvokeError(self, e) from e
+discord.app_commands.errors.CommandInvokeError: Command 'duel' raised an exception: AttributeError: 'DuelState' object has no attribute 'choking'
+[2025-08-19 14:55:33] INFO boot: Local commands loaded: ['duel', 'duel_end', 'duel_reset', 'duel_status', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'updates_test', 'updates_set_here', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-19 14:55:33] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'duel_end', 'duel_reset', 'duel_status', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'updates_test', 'updates_set_here', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-19 14:55:33] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-19 14:56:19] ERROR boot: App command error (guild=1401010565467476058 user=777039317918679070 cmd=duel): Command 'duel' raised an exception: AttributeError: 'DuelState' object has no attribute 'a'
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 858, in _do_call
+    return await self._callback(interaction, **params)  # type: ignore
+  File "C:\Users\Havocprime\Desktop\Lowlife_Society\GAME\src\bot\duel\__init__.py", line 177, in duel_cmd
+    embed=player_hud_embed(ds, actor),
+  File "C:\Users\Havocprime\Desktop\Lowlife_Society\GAME\src\bot\duel\ui.py", line 161, in player_hud_embed
+    a = state.a
+AttributeError: 'DuelState' object has no attribute 'a'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\tree.py", line 1310, in _call
+    await command._invoke_with_namespace(interaction, namespace)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 883, in _invoke_with_namespace
+    return await self._do_call(interaction, transformed_values)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 876, in _do_call
+    raise CommandInvokeError(self, e) from e
+discord.app_commands.errors.CommandInvokeError: Command 'duel' raised an exception: AttributeError: 'DuelState' object has no attribute 'a'
+[2025-08-19 15:04:46] INFO boot: Local commands loaded: ['duel', 'duel_end', 'duel_reset', 'duel_status', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'updates_test', 'updates_set_here', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-19 15:04:47] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'duel_end', 'duel_reset', 'duel_status', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'updates_test', 'updates_set_here', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-19 15:04:47] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-19 15:14:58] INFO boot: Local commands loaded: ['duel', 'duel_end', 'duel_reset', 'duel_status', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'updates_test', 'updates_set_here', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-19 15:14:59] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'duel_end', 'duel_reset', 'duel_status', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'updates_test', 'updates_set_here', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-19 15:14:59] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-19 15:20:53] INFO boot: Local commands loaded: ['duel', 'duel_end', 'duel_reset', 'duel_status', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'updates_test', 'updates_set_here', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-19 15:20:53] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'duel_end', 'duel_reset', 'duel_status', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'updates_test', 'updates_set_here', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-19 15:20:53] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-19 15:25:51] INFO boot: Local commands loaded: ['duel', 'duel_end', 'duel_reset', 'duel_status', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'updates_test', 'updates_set_here', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-19 15:25:51] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'duel_end', 'duel_reset', 'duel_status', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'updates_test', 'updates_set_here', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-19 15:25:51] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-19 15:36:44] INFO boot: Local commands loaded: ['duel', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'updates_test', 'updates_set_here', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-19 15:36:44] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'updates_test', 'updates_set_here', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-19 15:36:44] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-19 15:36:54] ERROR boot: App command error (guild=1401010565467476058 user=777039317918679070 cmd=sync): Command 'sync' raised an exception: NotFound: 404 Not Found (error code: 10062): Unknown interaction
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 858, in _do_call
+    return await self._callback(interaction, **params)  # type: ignore
+  File "C:\Users\Havocprime\Desktop\Lowlife_Society\GAME\src\bot\bot.py", line 123, in sync_cmd
+    await inter.response.defer(ephemeral=True)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\interactions.py", line 844, in defer
+    response = await adapter.create_interaction_response(
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\webhook\async_.py", line 224, in request
+    raise NotFound(response, data)
+discord.errors.NotFound: 404 Not Found (error code: 10062): Unknown interaction
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\tree.py", line 1310, in _call
+    await command._invoke_with_namespace(interaction, namespace)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 883, in _invoke_with_namespace
+    return await self._do_call(interaction, transformed_values)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 876, in _do_call
+    raise CommandInvokeError(self, e) from e
+discord.app_commands.errors.CommandInvokeError: Command 'sync' raised an exception: NotFound: 404 Not Found (error code: 10062): Unknown interaction
+[2025-08-19 15:37:43] ERROR boot: App command error (guild=1401010565467476058 user=777039317918679070 cmd=sync): Command 'sync' raised an exception: NotFound: 404 Not Found (error code: 10062): Unknown interaction
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 858, in _do_call
+    return await self._callback(interaction, **params)  # type: ignore
+  File "C:\Users\Havocprime\Desktop\Lowlife_Society\GAME\src\bot\bot.py", line 123, in sync_cmd
+    await inter.response.defer(ephemeral=True)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\interactions.py", line 844, in defer
+    response = await adapter.create_interaction_response(
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\webhook\async_.py", line 224, in request
+    raise NotFound(response, data)
+discord.errors.NotFound: 404 Not Found (error code: 10062): Unknown interaction
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\tree.py", line 1310, in _call
+    await command._invoke_with_namespace(interaction, namespace)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 883, in _invoke_with_namespace
+    return await self._do_call(interaction, transformed_values)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 876, in _do_call
+    raise CommandInvokeError(self, e) from e
+discord.app_commands.errors.CommandInvokeError: Command 'sync' raised an exception: NotFound: 404 Not Found (error code: 10062): Unknown interaction
+[2025-08-19 15:37:54] ERROR boot: App command error (guild=1401010565467476058 user=777039317918679070 cmd=?): Application command 'ai' not found
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\tree.py", line 1151, in wrapper
+    await self._call(interaction)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\tree.py", line 1283, in _call
+    command, options = self._get_app_command_options(data)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\tree.py", line 1202, in _get_app_command_options
+    raise CommandNotFound(name, parents)
+discord.app_commands.errors.CommandNotFound: Application command 'ai' not found
+[2025-08-19 15:47:03] INFO boot: Local commands loaded: ['duel', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'updates_test', 'updates_set_here', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-19 15:47:04] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'updates_test', 'updates_set_here', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-19 15:47:04] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-19 15:51:28] INFO boot: Local commands loaded: ['duel', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'updates_test', 'updates_set_here', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-19 15:51:28] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'updates_test', 'updates_set_here', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-19 15:51:28] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-19 15:53:53] INFO boot: Local commands loaded: ['duel', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'updates_test', 'updates_set_here', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-19 15:53:53] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'updates_test', 'updates_set_here', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-19 15:53:53] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-19 15:56:24] INFO boot: Local commands loaded: ['duel', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'updates_test', 'updates_set_here', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-19 15:56:24] INFO boot: Synced commands to guild 1401010565467476058 -> ['duel', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'updates_test', 'updates_set_here', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-19 15:56:24] INFO boot: Lowlife bot online as Lowlife#4716
+[2025-08-19 16:14:59] INFO boot: Logged in as Lowlife#4716 (ID: 1405395393365409894)
+[2025-08-19 16:15:18] INFO boot: Logged in as Lowlife#4716 (ID: 1405395393365409894)
+[2025-08-19 16:15:24] ERROR boot: App command error (guild=1401010565467476058 user=777039317918679070 cmd=sync): Command 'sync' raised an exception: NotFound: 404 Not Found (error code: 10062): Unknown interaction
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 858, in _do_call
+    return await self._callback(interaction, **params)  # type: ignore
+  File "C:\Users\Havocprime\Desktop\Lowlife_Society\GAME\src\bot\bot.py", line 123, in sync_cmd
+    try:
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\interactions.py", line 844, in defer
+    response = await adapter.create_interaction_response(
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\webhook\async_.py", line 224, in request
+    raise NotFound(response, data)
+discord.errors.NotFound: 404 Not Found (error code: 10062): Unknown interaction
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\tree.py", line 1310, in _call
+    await command._invoke_with_namespace(interaction, namespace)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 883, in _invoke_with_namespace
+    return await self._do_call(interaction, transformed_values)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 876, in _do_call
+    raise CommandInvokeError(self, e) from e
+discord.app_commands.errors.CommandInvokeError: Command 'sync' raised an exception: NotFound: 404 Not Found (error code: 10062): Unknown interaction
+[2025-08-19 16:16:00] INFO boot: Logged in as Lowlife#4716 (ID: 1405395393365409894)
+[2025-08-19 16:26:29] INFO boot: Logged in as Lowlife#4716 (ID: 1405395393365409894)
+[2025-08-19 16:28:10] INFO boot: Logged in as Lowlife#4716 (ID: 1405395393365409894)
+[2025-08-19 16:30:12] INFO boot: Logged in as Lowlife#4716 (ID: 1405395393365409894)
+[2025-08-19 16:34:25] INFO boot: Logged in as Lowlife#4716 (ID: 1405395393365409894)
+[2025-08-19 16:56:49] INFO boot: Logged in as Lowlife#4716 (ID: 1405395393365409894)
+[2025-08-19 16:58:52] ERROR boot: App command error (guild=1401010565467476058 user=777039317918679070 cmd=sync): Command 'sync' raised an exception: NotFound: 404 Not Found (error code: 10062): Unknown interaction
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 858, in _do_call
+    return await self._callback(interaction, **params)  # type: ignore
+  File "C:\Users\Havocprime\Desktop\Lowlife_Society\GAME\src\bot\bot.py", line 138, in sync_cmd
+    await inter.response.defer(ephemeral=True)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\interactions.py", line 844, in defer
+    response = await adapter.create_interaction_response(
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\webhook\async_.py", line 224, in request
+    raise NotFound(response, data)
+discord.errors.NotFound: 404 Not Found (error code: 10062): Unknown interaction
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\tree.py", line 1310, in _call
+    await command._invoke_with_namespace(interaction, namespace)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 883, in _invoke_with_namespace
+    return await self._do_call(interaction, transformed_values)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 876, in _do_call
+    raise CommandInvokeError(self, e) from e
+discord.app_commands.errors.CommandInvokeError: Command 'sync' raised an exception: NotFound: 404 Not Found (error code: 10062): Unknown interaction
+[2025-08-19 17:02:23] ERROR boot: App command error (guild=1401010565467476058 user=777039317918679070 cmd=sync): Command 'sync' raised an exception: NotFound: 404 Not Found (error code: 10062): Unknown interaction
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 858, in _do_call
+    return await self._callback(interaction, **params)  # type: ignore
+  File "C:\Users\Havocprime\Desktop\Lowlife_Society\GAME\src\bot\bot.py", line 138, in sync_cmd
+    await inter.response.defer(ephemeral=True)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\interactions.py", line 844, in defer
+    response = await adapter.create_interaction_response(
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\webhook\async_.py", line 224, in request
+    raise NotFound(response, data)
+discord.errors.NotFound: 404 Not Found (error code: 10062): Unknown interaction
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\tree.py", line 1310, in _call
+    await command._invoke_with_namespace(interaction, namespace)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 883, in _invoke_with_namespace
+    return await self._do_call(interaction, transformed_values)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 876, in _do_call
+    raise CommandInvokeError(self, e) from e
+discord.app_commands.errors.CommandInvokeError: Command 'sync' raised an exception: NotFound: 404 Not Found (error code: 10062): Unknown interaction
+[2025-08-19 17:12:48] [WARNING] discord.client: PyNaCl is not installed, voice will NOT be supported
+[2025-08-19 17:12:48] [   INFO] updates: [updates] Cog registration scheduled via setup_hook.
+[2025-08-19 17:12:48] [WARNING] discord.ext.commands.bot: Privileged message content intent is missing, commands may not work as expected.
+[2025-08-19 17:12:48] [   INFO] discord.client: logging in using static token
+[2025-08-19 17:12:49] [   INFO] updates: [updates] Watcher scheduled (poll=5s).
+[2025-08-19 17:12:49] [   INFO] updates: [updates] setup_hook complete (cog + watcher).
+[2025-08-19 17:12:49] [   INFO] updates: [updates] Using CHANGELOG from env: C:\Users\Havocprime\Desktop\Lowlife_Society\GAME\tools\CHANGELOG.md
+[2025-08-19 17:12:49] [   INFO] discord.gateway: Shard ID None has connected to Gateway (Session ID: b80c3497742073b37e96fa9cc47ff38b).
+[2025-08-19 17:12:51] [   INFO] inv_cmds: Inventory slash commands registered: ['duel', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'updates_test', 'updates_set_here', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-19 17:12:51] [   INFO] boot: Synced commands to guild 1401010565467476058 -> ['duel', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'updates_test', 'updates_set_here', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-19 17:12:51] [   INFO] updates: [updates] maybe_start_updates_watcher: no-op (use UPDATES_WATCHER=1).
+[2025-08-19 17:12:51] [   INFO] boot: Logged in as Lowlife#4716 (ID: 1405395393365409894)
+[2025-08-19 17:12:51] [   INFO] boot: Guilds: 1 | Commands: 22
+[2025-08-19 17:12:51] [   INFO] boot: Active tileset: custom_default
+[2025-08-19 17:13:17] ERROR boot: App command error (guild=1401010565467476058 user=777039317918679070 cmd=sync): Command 'sync' raised an exception: NotFound: 404 Not Found (error code: 10062): Unknown interaction
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 858, in _do_call
+    return await self._callback(interaction, **params)  # type: ignore
+  File "C:\Users\Havocprime\Desktop\Lowlife_Society\GAME\src\bot\bot.py", line 136, in sync_cmd
+    try:
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\interactions.py", line 844, in defer
+    response = await adapter.create_interaction_response(
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\webhook\async_.py", line 224, in request
+    raise NotFound(response, data)
+discord.errors.NotFound: 404 Not Found (error code: 10062): Unknown interaction
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\tree.py", line 1310, in _call
+    await command._invoke_with_namespace(interaction, namespace)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 883, in _invoke_with_namespace
+    return await self._do_call(interaction, transformed_values)
+  File "C:\Users\Havocprime\AppData\Local\Programs\Python\Python310\lib\site-packages\discord\app_commands\commands.py", line 876, in _do_call
+    raise CommandInvokeError(self, e) from e
+discord.app_commands.errors.CommandInvokeError: Command 'sync' raised an exception: NotFound: 404 Not Found (error code: 10062): Unknown interaction
+[2025-08-19 17:40:47] [WARNING] discord.client: PyNaCl is not installed, voice will NOT be supported
+[2025-08-19 17:40:47] [   INFO] updates: [updates] Cog registration scheduled via setup_hook.
+[2025-08-19 17:40:47] [WARNING] discord.ext.commands.bot: Privileged message content intent is missing, commands may not work as expected.
+[2025-08-19 17:40:47] [   INFO] discord.client: logging in using static token
+[2025-08-19 17:40:47] [   INFO] updates: [updates] Watcher scheduled (poll=5s).
+[2025-08-19 17:40:47] [   INFO] updates: [updates] setup_hook complete (cog + watcher).
+[2025-08-19 17:40:47] [   INFO] updates: [updates] Using CHANGELOG from env: C:\Users\Havocprime\Desktop\Lowlife_Society\GAME\tools\CHANGELOG.md
+[2025-08-19 17:40:48] [   INFO] discord.gateway: Shard ID None has connected to Gateway (Session ID: 13d80f5059c7d7357399b5d7c2d71b5b).
+[2025-08-19 17:40:50] [   INFO] inv_cmds: Inventory slash commands registered: ['duel', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'updates_test', 'updates_set_here', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-19 17:40:50] [   INFO] boot: Synced commands to guild 1401010565467476058 -> ['duel', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'updates_test', 'updates_set_here', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-19 17:40:50] [   INFO] updates: [updates] maybe_start_updates_watcher: no-op (use UPDATES_WATCHER=1).
+[2025-08-19 17:40:50] [   INFO] boot: Logged in as Lowlife#4716 (ID: 1405395393365409894)
+[2025-08-19 17:40:50] [   INFO] boot: Guilds: 1 | Commands: 22
+[2025-08-19 17:40:50] [   INFO] boot: Active tileset: custom_default
+[2025-08-19 17:54:42] [   INFO] discord.gateway: Shard ID None has successfully RESUMED session 13d80f5059c7d7357399b5d7c2d71b5b.
+[2025-08-19 18:21:40] [WARNING] discord.client: PyNaCl is not installed, voice will NOT be supported
+[2025-08-19 18:21:40] [   INFO] updates: [updates] Cog registration scheduled via setup_hook.
+[2025-08-19 18:21:40] [WARNING] discord.ext.commands.bot: Privileged message content intent is missing, commands may not work as expected.
+[2025-08-19 18:21:40] [   INFO] discord.client: logging in using static token
+[2025-08-19 18:21:40] [   INFO] updates: [updates] Watcher scheduled (poll=5s).
+[2025-08-19 18:21:40] [   INFO] updates: [updates] setup_hook complete (cog + watcher).
+[2025-08-19 18:21:40] [   INFO] updates: [updates] Using CHANGELOG from env: C:\Users\Havocprime\Desktop\Lowlife_Society\GAME\tools\CHANGELOG.md
+[2025-08-19 18:21:41] [   INFO] discord.gateway: Shard ID None has connected to Gateway (Session ID: 61e7d9f6f20ac06ac39fd095e6491e0f).
+[2025-08-19 18:21:43] [   INFO] inv_cmds: Inventory slash commands registered: ['duel', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'updates_test', 'updates_set_here', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-19 18:21:43] [   INFO] boot: Synced commands to guild 1401010565467476058 -> ['duel', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'updates_test', 'updates_set_here', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-19 18:21:43] [   INFO] updates: [updates] maybe_start_updates_watcher: no-op (use UPDATES_WATCHER=1).
+[2025-08-19 18:21:43] [   INFO] boot: Logged in as Lowlife#4716 (ID: 1405395393365409894)
+[2025-08-19 18:21:43] [   INFO] boot: Guilds: 1 | Commands: 22
+[2025-08-19 18:21:43] [   INFO] boot: Active tileset: custom_default
+[2025-08-19 18:28:34] [WARNING] discord.client: PyNaCl is not installed, voice will NOT be supported
+[2025-08-19 18:28:34] [   INFO] updates: [updates] Cog registration scheduled via setup_hook.
+[2025-08-19 18:28:34] [WARNING] discord.ext.commands.bot: Privileged message content intent is missing, commands may not work as expected.
+[2025-08-19 18:28:34] [   INFO] discord.client: logging in using static token
+[2025-08-19 18:28:34] [   INFO] updates: [updates] Watcher scheduled (poll=5s).
+[2025-08-19 18:28:34] [   INFO] updates: [updates] setup_hook complete (cog + watcher).
+[2025-08-19 18:28:34] [   INFO] updates: [updates] Using CHANGELOG from env: C:\Users\Havocprime\Desktop\Lowlife_Society\GAME\tools\CHANGELOG.md
+[2025-08-19 18:28:34] [   INFO] discord.gateway: Shard ID None has connected to Gateway (Session ID: 5fe8c47d8a2bb553aa558a6a002a8032).
+[2025-08-19 18:28:36] [   INFO] inv_cmds: Inventory slash commands registered: ['duel', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'updates_test', 'updates_set_here', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-19 18:28:37] [   INFO] boot: Synced commands to guild 1401010565467476058 -> ['duel', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'updates_test', 'updates_set_here', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-19 18:28:37] [   INFO] updates: [updates] maybe_start_updates_watcher: no-op (use UPDATES_WATCHER=1).
+[2025-08-19 18:28:37] [   INFO] boot: Logged in as Lowlife#4716 (ID: 1405395393365409894)
+[2025-08-19 18:28:37] [   INFO] boot: Guilds: 1 | Commands: 22
+[2025-08-19 18:28:37] [   INFO] boot: Active tileset: custom_default
+[2025-08-19 18:30:25] [WARNING] discord.client: PyNaCl is not installed, voice will NOT be supported
+[2025-08-19 18:30:25] [   INFO] updates: [updates] Cog registration scheduled via setup_hook.
+[2025-08-19 18:30:25] [WARNING] discord.ext.commands.bot: Privileged message content intent is missing, commands may not work as expected.
+[2025-08-19 18:30:25] [   INFO] discord.client: logging in using static token
+[2025-08-19 18:30:27] [   INFO] updates: [updates] Watcher scheduled (poll=5s).
+[2025-08-19 18:30:27] [   INFO] updates: [updates] setup_hook complete (cog + watcher).
+[2025-08-19 18:30:27] [   INFO] updates: [updates] Using CHANGELOG from env: C:\Users\Havocprime\Desktop\Lowlife_Society\GAME\tools\CHANGELOG.md
+[2025-08-19 18:30:27] [   INFO] discord.gateway: Shard ID None has connected to Gateway (Session ID: 6235d0ed79fbe0b2d37f8a3915a207bb).
+[2025-08-19 18:30:29] [   INFO] inv_cmds: Inventory slash commands registered: ['duel', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'updates_test', 'updates_set_here', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-19 18:30:29] [   INFO] boot: Synced commands to guild 1401010565467476058 -> ['duel', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'updates_test', 'updates_set_here', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-19 18:30:29] [   INFO] updates: [updates] maybe_start_updates_watcher: no-op (use UPDATES_WATCHER=1).
+[2025-08-19 18:30:29] [   INFO] boot: Logged in as Lowlife#4716 (ID: 1405395393365409894)
+[2025-08-19 18:30:29] [   INFO] boot: Guilds: 1 | Commands: 22
+[2025-08-19 18:30:29] [   INFO] boot: Active tileset: custom_default
+[2025-08-19 18:49:29] [WARNING] discord.client: PyNaCl is not installed, voice will NOT be supported
+[2025-08-19 18:49:29] [   INFO] updates: [updates] Cog registration scheduled via setup_hook.
+[2025-08-19 18:49:29] [WARNING] discord.ext.commands.bot: Privileged message content intent is missing, commands may not work as expected.
+[2025-08-19 18:49:29] [   INFO] discord.client: logging in using static token
+[2025-08-19 18:49:29] [   INFO] updates: [updates] Watcher scheduled (poll=5s).
+[2025-08-19 18:49:29] [   INFO] updates: [updates] setup_hook complete (cog + watcher).
+[2025-08-19 18:49:29] [   INFO] updates: [updates] Using CHANGELOG from env: C:\Users\Havocprime\Desktop\Lowlife_Society\GAME\tools\CHANGELOG.md
+[2025-08-19 18:49:29] [   INFO] discord.gateway: Shard ID None has connected to Gateway (Session ID: 27760bb824b8945eab0003f1b7df0147).
+[2025-08-19 18:49:31] [   INFO] inv_cmds: Inventory slash commands registered: ['duel', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'updates_test', 'updates_set_here', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-19 18:49:32] [   INFO] boot: Synced commands to guild 1401010565467476058 -> ['duel', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'updates_test', 'updates_set_here', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-19 18:49:32] [   INFO] updates: [updates] maybe_start_updates_watcher: no-op (use UPDATES_WATCHER=1).
+[2025-08-19 18:49:32] [   INFO] boot: Logged in as Lowlife#4716 (ID: 1405395393365409894)
+[2025-08-19 18:49:32] [   INFO] boot: Guilds: 1 | Commands: 22
+[2025-08-19 18:49:32] [   INFO] boot: Active tileset: custom_default
+[2025-08-19 18:50:38] [WARNING] discord.client: PyNaCl is not installed, voice will NOT be supported
+[2025-08-19 18:50:38] [   INFO] updates: [updates] Cog registration scheduled via setup_hook.
+[2025-08-19 18:50:38] [WARNING] discord.ext.commands.bot: Privileged message content intent is missing, commands may not work as expected.
+[2025-08-19 18:50:38] [   INFO] discord.client: logging in using static token
+[2025-08-19 18:50:39] [   INFO] updates: [updates] Watcher scheduled (poll=5s).
+[2025-08-19 18:50:39] [   INFO] updates: [updates] setup_hook complete (cog + watcher).
+[2025-08-19 18:50:39] [   INFO] updates: [updates] Using CHANGELOG from env: C:\Users\Havocprime\Desktop\Lowlife_Society\GAME\tools\CHANGELOG.md
+[2025-08-19 18:50:39] [   INFO] discord.gateway: Shard ID None has connected to Gateway (Session ID: 02981f434e87541d37dddeb14afdab19).
+[2025-08-19 18:50:41] [   INFO] inv_cmds: Inventory slash commands registered: ['duel', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'updates_test', 'updates_set_here', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-19 18:50:41] [   INFO] boot: Synced commands to guild 1401010565467476058 -> ['duel', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'updates_test', 'updates_set_here', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-19 18:50:41] [   INFO] updates: [updates] maybe_start_updates_watcher: no-op (use UPDATES_WATCHER=1).
+[2025-08-19 18:50:41] [   INFO] boot: Logged in as Lowlife#4716 (ID: 1405395393365409894)
+[2025-08-19 18:50:41] [   INFO] boot: Guilds: 1 | Commands: 22
+[2025-08-19 18:50:41] [   INFO] boot: Active tileset: custom_default
+[2025-08-19 18:51:11] [WARNING] discord.client: PyNaCl is not installed, voice will NOT be supported
+[2025-08-19 18:51:11] [   INFO] updates: [updates] Cog registration scheduled via setup_hook.
+[2025-08-19 18:51:11] [WARNING] discord.ext.commands.bot: Privileged message content intent is missing, commands may not work as expected.
+[2025-08-19 18:51:11] [   INFO] discord.client: logging in using static token
+[2025-08-19 18:51:11] [   INFO] updates: [updates] Watcher scheduled (poll=5s).
+[2025-08-19 18:51:11] [   INFO] updates: [updates] setup_hook complete (cog + watcher).
+[2025-08-19 18:51:11] [   INFO] updates: [updates] Using CHANGELOG from env: C:\Users\Havocprime\Desktop\Lowlife_Society\GAME\tools\CHANGELOG.md
+[2025-08-19 18:51:12] [   INFO] discord.gateway: Shard ID None has connected to Gateway (Session ID: 0a3aa0ebf8a92d4aa01f81d949bf0c31).
+[2025-08-19 18:51:14] [   INFO] inv_cmds: Inventory slash commands registered: ['duel', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'updates_test', 'updates_set_here', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-19 18:51:14] [   INFO] boot: Synced commands to guild 1401010565467476058 -> ['duel', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'updates_test', 'updates_set_here', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-19 18:51:14] [   INFO] updates: [updates] maybe_start_updates_watcher: no-op (use UPDATES_WATCHER=1).
+[2025-08-19 18:51:14] [   INFO] boot: Logged in as Lowlife#4716 (ID: 1405395393365409894)
+[2025-08-19 18:51:14] [   INFO] boot: Guilds: 1 | Commands: 22
+[2025-08-19 18:51:14] [   INFO] boot: Active tileset: custom_default
+[2025-08-19 18:52:58] [WARNING] discord.client: PyNaCl is not installed, voice will NOT be supported
+[2025-08-19 18:52:58] [   INFO] updates: [updates] Cog registration scheduled via setup_hook.
+[2025-08-19 18:52:58] [WARNING] discord.ext.commands.bot: Privileged message content intent is missing, commands may not work as expected.
+[2025-08-19 18:52:58] [   INFO] discord.client: logging in using static token
+[2025-08-19 18:52:58] [   INFO] updates: [updates] Watcher scheduled (poll=5s).
+[2025-08-19 18:52:58] [   INFO] updates: [updates] setup_hook complete (cog + watcher).
+[2025-08-19 18:52:58] [   INFO] updates: [updates] Using CHANGELOG from env: C:\Users\Havocprime\Desktop\Lowlife_Society\GAME\tools\CHANGELOG.md
+[2025-08-19 18:52:58] [   INFO] discord.gateway: Shard ID None has connected to Gateway (Session ID: 48ce3d773886b6ecb77c7c62816eaed9).
+[2025-08-19 18:53:00] [   INFO] inv_cmds: Inventory slash commands registered: ['duel', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'updates_test', 'updates_set_here', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-19 18:53:01] [   INFO] boot: Synced commands to guild 1401010565467476058 -> ['duel', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'updates_test', 'updates_set_here', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-19 18:53:01] [   INFO] updates: [updates] maybe_start_updates_watcher: no-op (use UPDATES_WATCHER=1).
+[2025-08-19 18:53:01] [   INFO] boot: Logged in as Lowlife#4716 (ID: 1405395393365409894)
+[2025-08-19 18:53:01] [   INFO] boot: Guilds: 1 | Commands: 22
+[2025-08-19 18:53:01] [   INFO] boot: Active tileset: custom_default
+[2025-08-19 18:54:07] [WARNING] discord.client: PyNaCl is not installed, voice will NOT be supported
+[2025-08-19 18:54:07] [   INFO] updates: [updates] Cog registration scheduled via setup_hook.
+[2025-08-19 18:54:07] [WARNING] discord.ext.commands.bot: Privileged message content intent is missing, commands may not work as expected.
+[2025-08-19 18:54:07] [   INFO] discord.client: logging in using static token
+[2025-08-19 18:54:08] [   INFO] updates: [updates] Watcher scheduled (poll=5s).
+[2025-08-19 18:54:08] [   INFO] updates: [updates] setup_hook complete (cog + watcher).
+[2025-08-19 18:54:08] [   INFO] updates: [updates] Using CHANGELOG from env: C:\Users\Havocprime\Desktop\Lowlife_Society\GAME\tools\CHANGELOG.md
+[2025-08-19 18:54:08] [   INFO] discord.gateway: Shard ID None has connected to Gateway (Session ID: 7e1597c2903360857fafb2082036ca31).
+[2025-08-19 18:54:10] [   INFO] inv_cmds: Inventory slash commands registered: ['duel', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'updates_test', 'updates_set_here', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-19 18:54:10] [   INFO] boot: Synced commands to guild 1401010565467476058 -> ['duel', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'updates_test', 'updates_set_here', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-19 18:54:10] [   INFO] updates: [updates] maybe_start_updates_watcher: no-op (use UPDATES_WATCHER=1).
+[2025-08-19 18:54:10] [   INFO] boot: Logged in as Lowlife#4716 (ID: 1405395393365409894)
+[2025-08-19 18:54:10] [   INFO] boot: Guilds: 1 | Commands: 22
+[2025-08-19 18:54:10] [   INFO] boot: Active tileset: custom_default
+[2025-08-19 18:55:04] [WARNING] discord.client: PyNaCl is not installed, voice will NOT be supported
+[2025-08-19 18:55:04] [   INFO] updates: [updates] Cog registration scheduled via setup_hook.
+[2025-08-19 18:55:04] [WARNING] discord.ext.commands.bot: Privileged message content intent is missing, commands may not work as expected.
+[2025-08-19 18:55:04] [   INFO] discord.client: logging in using static token
+[2025-08-19 18:55:04] [   INFO] updates: [updates] Watcher scheduled (poll=5s).
+[2025-08-19 18:55:04] [   INFO] updates: [updates] setup_hook complete (cog + watcher).
+[2025-08-19 18:55:04] [   INFO] updates: [updates] Using CHANGELOG from env: C:\Users\Havocprime\Desktop\Lowlife_Society\GAME\tools\CHANGELOG.md
+[2025-08-19 18:55:05] [   INFO] discord.gateway: Shard ID None has connected to Gateway (Session ID: c6b32ed1f77a1a71c12a7f0d1840cd21).
+[2025-08-19 18:55:07] [   INFO] inv_cmds: Inventory slash commands registered: ['duel', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'updates_test', 'updates_set_here', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-19 18:55:07] [   INFO] boot: Synced commands to guild 1401010565467476058 -> ['duel', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'updates_test', 'updates_set_here', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-19 18:55:07] [   INFO] updates: [updates] maybe_start_updates_watcher: no-op (use UPDATES_WATCHER=1).
+[2025-08-19 18:55:07] [   INFO] boot: Logged in as Lowlife#4716 (ID: 1405395393365409894)
+[2025-08-19 18:55:07] [   INFO] boot: Guilds: 1 | Commands: 22
+[2025-08-19 18:55:07] [   INFO] boot: Active tileset: custom_default
+[2025-08-19 18:55:22] [WARNING] discord.client: PyNaCl is not installed, voice will NOT be supported
+[2025-08-19 18:55:22] [   INFO] updates: [updates] Cog registration scheduled via setup_hook.
+[2025-08-19 18:55:22] [WARNING] discord.ext.commands.bot: Privileged message content intent is missing, commands may not work as expected.
+[2025-08-19 18:55:22] [   INFO] discord.client: logging in using static token
+[2025-08-19 18:55:22] [   INFO] updates: [updates] Watcher scheduled (poll=5s).
+[2025-08-19 18:55:22] [   INFO] updates: [updates] setup_hook complete (cog + watcher).
+[2025-08-19 18:55:22] [   INFO] updates: [updates] Using CHANGELOG from env: C:\Users\Havocprime\Desktop\Lowlife_Society\GAME\tools\CHANGELOG.md
+[2025-08-19 18:55:22] [   INFO] discord.gateway: Shard ID None has connected to Gateway (Session ID: 568afb4f4f960efe9140a43bb998c651).
+[2025-08-19 18:55:25] [   INFO] inv_cmds: Inventory slash commands registered: ['duel', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'updates_test', 'updates_set_here', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-19 18:55:36] [WARNING] discord.client: PyNaCl is not installed, voice will NOT be supported
+[2025-08-19 18:55:36] [   INFO] updates: [updates] Cog registration scheduled via setup_hook.
+[2025-08-19 18:55:36] [WARNING] discord.ext.commands.bot: Privileged message content intent is missing, commands may not work as expected.
+[2025-08-19 18:55:36] [   INFO] discord.client: logging in using static token
+[2025-08-19 18:55:37] [   INFO] updates: [updates] Watcher scheduled (poll=5s).
+[2025-08-19 18:55:37] [   INFO] updates: [updates] setup_hook complete (cog + watcher).
+[2025-08-19 18:55:37] [   INFO] updates: [updates] Using CHANGELOG from env: C:\Users\Havocprime\Desktop\Lowlife_Society\GAME\tools\CHANGELOG.md
+[2025-08-19 18:55:38] [   INFO] discord.gateway: Shard ID None has connected to Gateway (Session ID: 2427d56a5149c32157d871dbd9a15560).
+[2025-08-19 18:55:40] [   INFO] inv_cmds: Inventory slash commands registered: ['duel', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'updates_test', 'updates_set_here', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-19 18:56:01] [WARNING] discord.client: PyNaCl is not installed, voice will NOT be supported
+[2025-08-19 18:56:01] [   INFO] updates: [updates] Cog registration scheduled via setup_hook.
+[2025-08-19 18:56:01] [WARNING] discord.ext.commands.bot: Privileged message content intent is missing, commands may not work as expected.
+[2025-08-19 18:56:01] [   INFO] discord.client: logging in using static token
+[2025-08-19 18:56:02] [   INFO] updates: [updates] Watcher scheduled (poll=5s).
+[2025-08-19 18:56:02] [   INFO] updates: [updates] setup_hook complete (cog + watcher).
+[2025-08-19 18:56:02] [   INFO] updates: [updates] Using CHANGELOG from env: C:\Users\Havocprime\Desktop\Lowlife_Society\GAME\tools\CHANGELOG.md
+[2025-08-19 18:56:02] [   INFO] discord.gateway: Shard ID None has connected to Gateway (Session ID: 91495d6dbaacc523d8e3fa956950c0a6).
+[2025-08-19 18:56:04] [   INFO] inv_cmds: Inventory slash commands registered: ['duel', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'updates_test', 'updates_set_here', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-19 18:56:05] [WARNING] discord.http: We are being rate limited. PUT https://discord.com/api/v10/applications/1405395393365409894/guilds/1401010565467476058/commands responded with 429. Retrying in 2.16 seconds.
+[2025-08-19 18:57:07] [   INFO] boot: Synced commands to guild 1401010565467476058 -> ['duel', 'combat_embed_template', 'sync', 'cmds', 'debug_state', 'ping', 'mock_round', 'updates', 'updates_test', 'updates_set_here', 'create', 'sheet', 'inventory', 'giveitem', 'genitem', 'equip', 'unequip', 'mystats', 'useitem', 'transfer', 'loadout', 'setweapon']
+[2025-08-19 18:57:07] [   INFO] updates: [updates] maybe_start_updates_watcher: no-op (use UPDATES_WATCHER=1).
+[2025-08-19 18:57:07] [   INFO] boot: Logged in as Lowlife#4716 (ID: 1405395393365409894)
+[2025-08-19 18:57:07] [   INFO] boot: Guilds: 1 | Commands: 22
+[2025-08-19 18:57:07] [   INFO] boot: Active tileset: custom_default

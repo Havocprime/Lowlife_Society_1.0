@@ -1,0 +1,91 @@
+
+version: 1
+ranges:
+  Close:
+    meters: [0, 1]
+    melee_allowed: true
+    accuracy_mod:
+      pistols: 0
+      smg: -5
+      shotgun: +5
+      rifle: -15
+      sniper: -30
+  Near:
+    meters: [2, 5]
+    melee_allowed: true
+    accuracy_mod: { pistols: +10, smg: +10, shotgun: +10, rifle: 0, sniper: -20 }
+  Mid:
+    meters: [6, 15]
+    melee_allowed: false
+    accuracy_mod: { pistols: -10, smg: +5, shotgun: -10, rifle: +10, sniper: 0 }
+  Far:
+    meters: [16, 30]
+    melee_allowed: false
+    accuracy_mod: { pistols: -25, smg: -10, shotgun: -25, rifle: +10, sniper: +20 }
+  OutOfRange:
+    meters: [31, 999]
+    melee_allowed: false
+    accuracy_mod: { pistols: -999, smg: -999, shotgun: -999, rifle: -15, sniper: +10 }
+
+movement:
+  advance:
+    delta_ranges: -1
+    base_dc: 0
+  retreat:
+    delta_ranges: +1
+    base_dc: 0
+  sprint:
+    delta_ranges: -2
+    base_dc: 50
+  modifiers:
+    suppression: +20
+    overweight: +10
+
+accuracy_formula: "base + skill_ranged + DEX*0.5 + WITS*0.3 + weapon.acc + range_mod - target.cover - suppression - movement_penalty"
+melee_accuracy_formula: "base + skill_melee + STR*0.5 + AGI*0.3 + weapon.acc + range_mod - target.block - target.dodge"
+
+damage_formula: "weapon.dmg * crit_multiplier - target.armor + status_bonus"
+crit_rule:
+  base_chance: 5
+  dex_bonus_per_point: 0.5
+  range_bonus:
+    Close: 5
+    Near: 2
+    Mid: 0
+    Far: 0
+    OutOfRange: -5
+
+status_effects:
+  bleed: { base_duration: 3, per_turn_damage: 2, stack: true }
+  stun: { base_duration: 1, skip_actions: 1, stack: false }
+  suppression: { base_duration: 1, accuracy_penalty: 10, move_dc_increase: 20 }
+  adrenaline: { base_duration: 1, speed_bonus: 1, trigger_on_damage_gt: 20 }
+  grapple: { base_duration: 1, lock_range: Close }
+
+actions:
+  melee: { requires_range: [Close, Near] }
+  ranged: { requires_range: [Close, Near, Mid, Far, OutOfRange] }
+  advance: { change_range: -1 }
+  retreat: { change_range: +1 }
+  sprint: { change_range: -2 }
+  block: { tag: defense }
+  dodge: { tag: defense }
+  use_item: { tag: utility }
+  disengage:
+    dc:
+      Close: 70
+      Near: 60
+      Mid: 40
+      Far: 20
+    on_fail: "opportunity_fire"
+  suppress: { apply_status: suppression }
+  grapple: { requires_range: [Close], apply_status: grapple }
+
+ai_defender:
+  heal_threshold_pct: 30
+  priorities:
+    - "if hp_pct < heal_threshold_pct and has_medkit: use_item"
+    - "if enemy_weapon in [sniper] and range in [Far, OutOfRange]: advance"
+    - "if enemy_weapon in [melee] and range in [Close, Near]: retreat"
+    - "if in_effective_range: attack"
+    - "else: move_toward_effective_range"
