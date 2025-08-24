@@ -1,17 +1,11 @@
-
-
-# =================================
-# FILE: GAME/data/rules.yml
-# =================================
 # Minimal tuning table (expand later)
 range_labels:
-CLOSE: "Close"
-NEAR: "Near"
-MID: "Mid"
-FAR: "Far"
-OOR: "Out-of-Range"
-
+  CLOSE: "Close"
+  NEAR: "Near"
+  MID: "Mid"
+  FAR: "Far"
+  OOR: "Out-of-Range"
 
 movement_costs:
-advance: 1
-retreat: 1
+  advance: 1
+  retreat: 1
