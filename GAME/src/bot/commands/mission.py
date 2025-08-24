@@ -34,4 +34,4 @@ async def mission(ctx):
     )
     await ctx.send(embed=embed)
 
-bot.run("MTQwNTM5NTM5MzM2NTQwOTg5NA.GJciov.GEZXvXR2dj3_q3K6JX4PwZL0dwxz7Go_Rndok8")
+bot.run("")
