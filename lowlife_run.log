@@ -1,0 +1,469 @@
+﻿**********************
+Windows PowerShell transcript start
+Start time: 20250821020048
+Username: DESKTOP-D59BN3Q\Havocprime
+RunAs User: DESKTOP-D59BN3Q\Havocprime
+Configuration Name: 
+Machine: DESKTOP-D59BN3Q (Microsoft Windows NT 10.0.19045.0)
+Host Application: C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -Command if((Get-ExecutionPolicy ) -ne 'AllSigned') { Set-ExecutionPolicy -Scope Process Bypass }; & 'C:\Users\Havocprime\Desktop\Lowlife_Testbed\Lowlife_Society_GITHUB_EDITION\run_lowlife.ps1'
+Process ID: 79016
+PSVersion: 5.1.19041.6216
+PSEdition: Desktop
+PSCompatibleVersions: 1.0, 2.0, 3.0, 4.0, 5.0, 5.1.19041.6216
+BuildVersion: 10.0.19041.6216
+CLRVersion: 4.0.30319.42000
+WSManStackVersion: 3.0
+PSRemotingProtocolVersion: 2.3
+SerializationVersion: 1.1.0.1
+**********************
+[LOWLIFE] Repo root: C:\Users\Havocprime\Desktop\Lowlife_Testbed\Lowlife_Society_GITHUB_EDITION
+[LOWLIFE] Ensuring dependencies ...
+Requirement already satisfied: pip in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_github_edition\.venv\l
+ib\site-packages (25.2)
+Requirement already satisfied: discord.py==2.4.0 in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_github_e
+dition\.venv\lib\site-packages (2.4.0)
+Requirement already satisfied: python-dotenv in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_github_editi
+on\.venv\lib\site-packages (1.1.1)
+Requirement already satisfied: pydantic in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_github_edition\.v
+env\lib\site-packages (2.11.7)
+Requirement already satisfied: PyYAML in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_github_edition\.ven
+v\lib\site-packages (6.0.2)
+Requirement already satisfied: aiohttp<4,>=3.7.4 in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_github_e
+dition\.venv\lib\site-packages (from discord.py==2.4.0) (3.12.15)
+Requirement already satisfied: aiohappyeyeballs>=2.5.0 in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_gi
+thub_edition\.venv\lib\site-packages (from aiohttp<4,>=3.7.4->discord.py==2.4.0) (2.6.1)
+Requirement already satisfied: aiosignal>=1.4.0 in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_github_ed
+ition\.venv\lib\site-packages (from aiohttp<4,>=3.7.4->discord.py==2.4.0) (1.4.0)
+Requirement already satisfied: attrs>=17.3.0 in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_github_editi
+on\.venv\lib\site-packages (from aiohttp<4,>=3.7.4->discord.py==2.4.0) (25.3.0)
+Requirement already satisfied: frozenlist>=1.1.1 in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_github_e
+dition\.venv\lib\site-packages (from aiohttp<4,>=3.7.4->discord.py==2.4.0) (1.7.0)
+Requirement already satisfied: multidict<7.0,>=4.5 in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_github
+_edition\.venv\lib\site-packages (from aiohttp<4,>=3.7.4->discord.py==2.4.0) (6.6.4)
+Requirement already satisfied: propcache>=0.2.0 in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_github_ed
+ition\.venv\lib\site-packages (from aiohttp<4,>=3.7.4->discord.py==2.4.0) (0.3.2)
+Requirement already satisfied: yarl<2.0,>=1.17.0 in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_github_e
+dition\.venv\lib\site-packages (from aiohttp<4,>=3.7.4->discord.py==2.4.0) (1.20.1)
+Requirement already satisfied: idna>=2.0 in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_github_edition\.
+venv\lib\site-packages (from yarl<2.0,>=1.17.0->aiohttp<4,>=3.7.4->discord.py==2.4.0) (3.10)
+Requirement already satisfied: annotated-types>=0.6.0 in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_git
+hub_edition\.venv\lib\site-packages (from pydantic) (0.7.0)
+Requirement already satisfied: pydantic-core==2.33.2 in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_gith
+ub_edition\.venv\lib\site-packages (from pydantic) (2.33.2)
+Requirement already satisfied: typing-extensions>=4.12.2 in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_
+github_edition\.venv\lib\site-packages (from pydantic) (4.14.1)
+Requirement already satisfied: typing-inspection>=0.4.0 in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_g
+ithub_edition\.venv\lib\site-packages (from pydantic) (0.4.1)
+[LOWLIFE] Purging __pycache__ and *.pyc ...
+[LOWLIFE] Scanning for legacy 'DuelState' references ...
+[LOWLIFE] PYTHONPATH=C:\Users\Havocprime\Desktop\Lowlife_Testbed\Lowlife_Society_GITHUB_EDITION\GAME
+[LOWLIFE] Starting bot ...
+2025-08-21 02:00:53,431 WARNING boot: No DISCORD_TOKEN found in environment (.env). Bot will fail to login.
+2025-08-21 02:00:53,431 WARNING discord.client: PyNaCl is not installed, voice will NOT be supported
+2025-08-21 02:00:53,533 WARNING boot: Module src.bot.duel not available (cannot import name 'DuelState' from 'src.core.d
+uel_core' (C:\Users\Havocprime\Desktop\Lowlife_Testbed\Lowlife_Society_GITHUB_EDITION\GAME\src\core\duel_core.py)) — ski
+pping
+2025-08-21 02:00:53,535 WARNING boot: Module src.bot.updates not available (cannot import name 'register_updates' from '
+src.bot.updates' (C:\Users\Havocprime\Desktop\Lowlife_Testbed\Lowlife_Society_GITHUB_EDITION\GAME\src\bot\updates.py)) —
+ skipping
+2025-08-21 02:00:53,539 INFO boot: logging in using static token
+2025-08-21 02:00:53,539 INFO discord.client: logging in using static token
+2025-08-21 02:00:53,699 ERROR boot: Bot crashed: Improper token has been passed.
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\Desktop\Lowlife_Testbed\Lowlife_Society_GITHUB_EDITION\.venv\Lib\site-packages\discord\http.
+py", line 816, in static_login
+    data = await self.request(Route('GET', '/users/@me'))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Havocprime\Desktop\Lowlife_Testbed\Lowlife_Society_GITHUB_EDITION\.venv\Lib\site-packages\discord\http.
+py", line 758, in request
+    raise HTTPException(response, data)
+discord.errors.HTTPException: 401 Unauthorized (error code: 0): 401: Unauthorized
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\Desktop\Lowlife_Testbed\Lowlife_Society_GITHUB_EDITION\GAME\src\bot\bot.py", line 127, in ma
+in
+    await bot.start(TOKEN)
+  File "C:\Users\Havocprime\Desktop\Lowlife_Testbed\Lowlife_Society_GITHUB_EDITION\.venv\Lib\site-packages\discord\clien
+t.py", line 786, in start
+    await self.login(token)
+  File "C:\Users\Havocprime\Desktop\Lowlife_Testbed\Lowlife_Society_GITHUB_EDITION\.venv\Lib\site-packages\discord\clien
+t.py", line 620, in login
+    data = await self.http.static_login(token)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Havocprime\Desktop\Lowlife_Testbed\Lowlife_Society_GITHUB_EDITION\.venv\Lib\site-packages\discord\http.
+py", line 820, in static_login
+    raise LoginFailure('Improper token has been passed.') from exc
+discord.errors.LoginFailure: Improper token has been passed.
+2025-08-21 02:00:53,722 ERROR asyncio: Unclosed connector
+connections: ['deque([(<aiohttp.client_proto.ResponseHandler object at 0x00000226FD72C4D0>, 451811.171)])']
+connector: <aiohttp.connector.TCPConnector object at 0x00000226FBF96270>
+**********************
+Windows PowerShell transcript end
+End time: 20250821020053
+**********************
+**********************
+Windows PowerShell transcript start
+Start time: 20250821035425
+Username: DESKTOP-D59BN3Q\Havocprime
+RunAs User: DESKTOP-D59BN3Q\Havocprime
+Configuration Name: 
+Machine: DESKTOP-D59BN3Q (Microsoft Windows NT 10.0.19045.0)
+Host Application: C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -Command if((Get-ExecutionPolicy ) -ne 'AllSigned') { Set-ExecutionPolicy -Scope Process Bypass }; & 'C:\Users\Havocprime\Desktop\Lowlife_Testbed\Lowlife_Society_GITHUB_EDITION\run_lowlife_plus.ps1'
+Process ID: 101680
+PSVersion: 5.1.19041.6216
+PSEdition: Desktop
+PSCompatibleVersions: 1.0, 2.0, 3.0, 4.0, 5.0, 5.1.19041.6216
+BuildVersion: 10.0.19041.6216
+CLRVersion: 4.0.30319.42000
+WSManStackVersion: 3.0
+PSRemotingProtocolVersion: 2.3
+SerializationVersion: 1.1.0.1
+**********************
+[LOWLIFE] Repo root: C:\Users\Havocprime\Desktop\Lowlife_Testbed\Lowlife_Society_GITHUB_EDITION
+[LOWLIFE] Ensuring dependencies ...
+Requirement already satisfied: pip in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_github_edition\.venv\l
+ib\site-packages (25.2)
+Requirement already satisfied: discord.py==2.4.0 in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_github_e
+dition\.venv\lib\site-packages (2.4.0)
+Requirement already satisfied: python-dotenv in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_github_editi
+on\.venv\lib\site-packages (1.1.1)
+Requirement already satisfied: pydantic in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_github_edition\.v
+env\lib\site-packages (2.11.7)
+Requirement already satisfied: PyYAML in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_github_edition\.ven
+v\lib\site-packages (6.0.2)
+Requirement already satisfied: aiohttp<4,>=3.7.4 in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_github_e
+dition\.venv\lib\site-packages (from discord.py==2.4.0) (3.12.15)
+Requirement already satisfied: aiohappyeyeballs>=2.5.0 in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_gi
+thub_edition\.venv\lib\site-packages (from aiohttp<4,>=3.7.4->discord.py==2.4.0) (2.6.1)
+Requirement already satisfied: aiosignal>=1.4.0 in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_github_ed
+ition\.venv\lib\site-packages (from aiohttp<4,>=3.7.4->discord.py==2.4.0) (1.4.0)
+Requirement already satisfied: attrs>=17.3.0 in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_github_editi
+on\.venv\lib\site-packages (from aiohttp<4,>=3.7.4->discord.py==2.4.0) (25.3.0)
+Requirement already satisfied: frozenlist>=1.1.1 in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_github_e
+dition\.venv\lib\site-packages (from aiohttp<4,>=3.7.4->discord.py==2.4.0) (1.7.0)
+Requirement already satisfied: multidict<7.0,>=4.5 in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_github
+_edition\.venv\lib\site-packages (from aiohttp<4,>=3.7.4->discord.py==2.4.0) (6.6.4)
+Requirement already satisfied: propcache>=0.2.0 in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_github_ed
+ition\.venv\lib\site-packages (from aiohttp<4,>=3.7.4->discord.py==2.4.0) (0.3.2)
+Requirement already satisfied: yarl<2.0,>=1.17.0 in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_github_e
+dition\.venv\lib\site-packages (from aiohttp<4,>=3.7.4->discord.py==2.4.0) (1.20.1)
+Requirement already satisfied: idna>=2.0 in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_github_edition\.
+venv\lib\site-packages (from yarl<2.0,>=1.17.0->aiohttp<4,>=3.7.4->discord.py==2.4.0) (3.10)
+Requirement already satisfied: annotated-types>=0.6.0 in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_git
+hub_edition\.venv\lib\site-packages (from pydantic) (0.7.0)
+Requirement already satisfied: pydantic-core==2.33.2 in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_gith
+ub_edition\.venv\lib\site-packages (from pydantic) (2.33.2)
+Requirement already satisfied: typing-extensions>=4.12.2 in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_
+github_edition\.venv\lib\site-packages (from pydantic) (4.14.1)
+Requirement already satisfied: typing-inspection>=0.4.0 in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_g
+ithub_edition\.venv\lib\site-packages (from pydantic) (0.4.1)
+[LOWLIFE] Purging __pycache__ and *.pyc ...
+[LOWLIFE] Scanning for legacy 'DuelState' references ...
+[LOWLIFE] PYTHONPATH=C:\Users\Havocprime\Desktop\Lowlife_Testbed\Lowlife_Society_GITHUB_EDITION\GAME
+[LOWLIFE] Starting bot ...
+2025-08-21 03:54:29,787 WARNING boot: No DISCORD_TOKEN found in environment (.env). Bot will fail to login.
+2025-08-21 03:54:29,788 WARNING discord.client: PyNaCl is not installed, voice will NOT be supported
+2025-08-21 03:54:29,880 WARNING boot: Module src.bot.duel not available (cannot import name 'DuelState' from 'src.core.d
+uel_core' (C:\Users\Havocprime\Desktop\Lowlife_Testbed\Lowlife_Society_GITHUB_EDITION\GAME\src\core\duel_core.py)) — ski
+pping
+2025-08-21 03:54:29,882 WARNING boot: Module src.bot.updates not available (cannot import name 'register_updates' from '
+src.bot.updates' (C:\Users\Havocprime\Desktop\Lowlife_Testbed\Lowlife_Society_GITHUB_EDITION\GAME\src\bot\updates.py)) —
+ skipping
+2025-08-21 03:54:29,886 INFO boot: logging in using static token
+2025-08-21 03:54:29,886 INFO discord.client: logging in using static token
+2025-08-21 03:54:30,073 ERROR boot: Bot crashed: Improper token has been passed.
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\Desktop\Lowlife_Testbed\Lowlife_Society_GITHUB_EDITION\.venv\Lib\site-packages\discord\http.
+py", line 816, in static_login
+    data = await self.request(Route('GET', '/users/@me'))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Havocprime\Desktop\Lowlife_Testbed\Lowlife_Society_GITHUB_EDITION\.venv\Lib\site-packages\discord\http.
+py", line 758, in request
+    raise HTTPException(response, data)
+discord.errors.HTTPException: 401 Unauthorized (error code: 0): 401: Unauthorized
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\Desktop\Lowlife_Testbed\Lowlife_Society_GITHUB_EDITION\GAME\src\bot\bot.py", line 127, in ma
+in
+    await bot.start(TOKEN)
+  File "C:\Users\Havocprime\Desktop\Lowlife_Testbed\Lowlife_Society_GITHUB_EDITION\.venv\Lib\site-packages\discord\clien
+t.py", line 786, in start
+    await self.login(token)
+  File "C:\Users\Havocprime\Desktop\Lowlife_Testbed\Lowlife_Society_GITHUB_EDITION\.venv\Lib\site-packages\discord\clien
+t.py", line 620, in login
+    data = await self.http.static_login(token)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Havocprime\Desktop\Lowlife_Testbed\Lowlife_Society_GITHUB_EDITION\.venv\Lib\site-packages\discord\http.
+py", line 820, in static_login
+    raise LoginFailure('Improper token has been passed.') from exc
+discord.errors.LoginFailure: Improper token has been passed.
+2025-08-21 03:54:30,093 ERROR asyncio: Unclosed connector
+connections: ['deque([(<aiohttp.client_proto.ResponseHandler object at 0x00000165FAE64470>, 458627.546)])']
+connector: <aiohttp.connector.TCPConnector object at 0x00000165F9623800>
+**********************
+Windows PowerShell transcript end
+End time: 20250821035430
+**********************
+**********************
+Windows PowerShell transcript start
+Start time: 20250821040320
+Username: DESKTOP-D59BN3Q\Havocprime
+RunAs User: DESKTOP-D59BN3Q\Havocprime
+Configuration Name: 
+Machine: DESKTOP-D59BN3Q (Microsoft Windows NT 10.0.19045.0)
+Host Application: C:\WINDOWS\System32\WindowsPowerShell\v1.0\powershell.exe -ExecutionPolicy Bypass -NoExit -File .\run_lowlife_plus.ps1
+Process ID: 43532
+PSVersion: 5.1.19041.6216
+PSEdition: Desktop
+PSCompatibleVersions: 1.0, 2.0, 3.0, 4.0, 5.0, 5.1.19041.6216
+BuildVersion: 10.0.19041.6216
+CLRVersion: 4.0.30319.42000
+WSManStackVersion: 3.0
+PSRemotingProtocolVersion: 2.3
+SerializationVersion: 1.1.0.1
+**********************
+[LOWLIFE] Repo root: C:\Users\Havocprime\Desktop\Lowlife_Testbed\Lowlife_Society_GITHUB_EDITION
+[LOWLIFE] Ensuring dependencies ...
+Requirement already satisfied: pip in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_github_edition\.venv\l
+ib\site-packages (25.2)
+Requirement already satisfied: discord.py==2.4.0 in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_github_e
+dition\.venv\lib\site-packages (2.4.0)
+Requirement already satisfied: python-dotenv in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_github_editi
+on\.venv\lib\site-packages (1.1.1)
+Requirement already satisfied: pydantic in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_github_edition\.v
+env\lib\site-packages (2.11.7)
+Requirement already satisfied: PyYAML in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_github_edition\.ven
+v\lib\site-packages (6.0.2)
+Requirement already satisfied: aiohttp<4,>=3.7.4 in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_github_e
+dition\.venv\lib\site-packages (from discord.py==2.4.0) (3.12.15)
+Requirement already satisfied: aiohappyeyeballs>=2.5.0 in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_gi
+thub_edition\.venv\lib\site-packages (from aiohttp<4,>=3.7.4->discord.py==2.4.0) (2.6.1)
+Requirement already satisfied: aiosignal>=1.4.0 in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_github_ed
+ition\.venv\lib\site-packages (from aiohttp<4,>=3.7.4->discord.py==2.4.0) (1.4.0)
+Requirement already satisfied: attrs>=17.3.0 in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_github_editi
+on\.venv\lib\site-packages (from aiohttp<4,>=3.7.4->discord.py==2.4.0) (25.3.0)
+Requirement already satisfied: frozenlist>=1.1.1 in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_github_e
+dition\.venv\lib\site-packages (from aiohttp<4,>=3.7.4->discord.py==2.4.0) (1.7.0)
+Requirement already satisfied: multidict<7.0,>=4.5 in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_github
+_edition\.venv\lib\site-packages (from aiohttp<4,>=3.7.4->discord.py==2.4.0) (6.6.4)
+Requirement already satisfied: propcache>=0.2.0 in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_github_ed
+ition\.venv\lib\site-packages (from aiohttp<4,>=3.7.4->discord.py==2.4.0) (0.3.2)
+Requirement already satisfied: yarl<2.0,>=1.17.0 in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_github_e
+dition\.venv\lib\site-packages (from aiohttp<4,>=3.7.4->discord.py==2.4.0) (1.20.1)
+Requirement already satisfied: idna>=2.0 in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_github_edition\.
+venv\lib\site-packages (from yarl<2.0,>=1.17.0->aiohttp<4,>=3.7.4->discord.py==2.4.0) (3.10)
+Requirement already satisfied: annotated-types>=0.6.0 in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_git
+hub_edition\.venv\lib\site-packages (from pydantic) (0.7.0)
+Requirement already satisfied: pydantic-core==2.33.2 in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_gith
+ub_edition\.venv\lib\site-packages (from pydantic) (2.33.2)
+Requirement already satisfied: typing-extensions>=4.12.2 in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_
+github_edition\.venv\lib\site-packages (from pydantic) (4.14.1)
+Requirement already satisfied: typing-inspection>=0.4.0 in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_g
+ithub_edition\.venv\lib\site-packages (from pydantic) (0.4.1)
+[LOWLIFE] Purging __pycache__ and *.pyc ...
+[LOWLIFE] Scanning for legacy 'DuelState' references ...
+[LOWLIFE] PYTHONPATH=C:\Users\Havocprime\Desktop\Lowlife_Testbed\Lowlife_Society_GITHUB_EDITION\GAME
+[LOWLIFE] Starting bot ...
+2025-08-21 04:03:25,037 WARNING boot: No DISCORD_TOKEN found in environment (.env). Bot will fail to login.
+2025-08-21 04:03:25,038 WARNING discord.client: PyNaCl is not installed, voice will NOT be supported
+2025-08-21 04:03:25,132 WARNING boot: Module src.bot.duel not available (cannot import name 'DuelState' from 'src.core.d
+uel_core' (C:\Users\Havocprime\Desktop\Lowlife_Testbed\Lowlife_Society_GITHUB_EDITION\GAME\src\core\duel_core.py)) — ski
+pping
+2025-08-21 04:03:25,134 WARNING boot: Module src.bot.updates not available (cannot import name 'register_updates' from '
+src.bot.updates' (C:\Users\Havocprime\Desktop\Lowlife_Testbed\Lowlife_Society_GITHUB_EDITION\GAME\src\bot\updates.py)) —
+ skipping
+2025-08-21 04:03:25,139 INFO boot: logging in using static token
+2025-08-21 04:03:25,139 INFO discord.client: logging in using static token
+2025-08-21 04:03:25,310 ERROR boot: Bot crashed: Improper token has been passed.
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\Desktop\Lowlife_Testbed\Lowlife_Society_GITHUB_EDITION\.venv\Lib\site-packages\discord\http.
+py", line 816, in static_login
+    data = await self.request(Route('GET', '/users/@me'))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Havocprime\Desktop\Lowlife_Testbed\Lowlife_Society_GITHUB_EDITION\.venv\Lib\site-packages\discord\http.
+py", line 758, in request
+    raise HTTPException(response, data)
+discord.errors.HTTPException: 401 Unauthorized (error code: 0): 401: Unauthorized
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Havocprime\Desktop\Lowlife_Testbed\Lowlife_Society_GITHUB_EDITION\GAME\src\bot\bot.py", line 127, in ma
+in
+    await bot.start(TOKEN)
+  File "C:\Users\Havocprime\Desktop\Lowlife_Testbed\Lowlife_Society_GITHUB_EDITION\.venv\Lib\site-packages\discord\clien
+t.py", line 786, in start
+    await self.login(token)
+  File "C:\Users\Havocprime\Desktop\Lowlife_Testbed\Lowlife_Society_GITHUB_EDITION\.venv\Lib\site-packages\discord\clien
+t.py", line 620, in login
+    data = await self.http.static_login(token)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Havocprime\Desktop\Lowlife_Testbed\Lowlife_Society_GITHUB_EDITION\.venv\Lib\site-packages\discord\http.
+py", line 820, in static_login
+    raise LoginFailure('Improper token has been passed.') from exc
+discord.errors.LoginFailure: Improper token has been passed.
+2025-08-21 04:03:25,328 ERROR asyncio: Unclosed connector
+connections: ['deque([(<aiohttp.client_proto.ResponseHandler object at 0x000001EB4056C470>, 459162.781)])']
+connector: <aiohttp.connector.TCPConnector object at 0x000001EB3F1603B0>
+**********************
+Windows PowerShell transcript end
+End time: 20250821040325
+**********************
+**********************
+Windows PowerShell transcript start
+Start time: 20250821043705
+Username: DESKTOP-D59BN3Q\Havocprime
+RunAs User: DESKTOP-D59BN3Q\Havocprime
+Configuration Name: 
+Machine: DESKTOP-D59BN3Q (Microsoft Windows NT 10.0.19045.0)
+Host Application: C:\WINDOWS\System32\WindowsPowerShell\v1.0\powershell.exe -ExecutionPolicy Bypass -NoExit -File .\run_lowlife_plus.ps1
+Process ID: 73024
+PSVersion: 5.1.19041.6216
+PSEdition: Desktop
+PSCompatibleVersions: 1.0, 2.0, 3.0, 4.0, 5.0, 5.1.19041.6216
+BuildVersion: 10.0.19041.6216
+CLRVersion: 4.0.30319.42000
+WSManStackVersion: 3.0
+PSRemotingProtocolVersion: 2.3
+SerializationVersion: 1.1.0.1
+**********************
+[LOWLIFE] Repo root: C:\Users\Havocprime\Desktop\Lowlife_Testbed\Lowlife_Society_GITHUB_EDITION
+[LOWLIFE] Ensuring dependencies ...
+Requirement already satisfied: pip in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_github_edition\.venv\l
+ib\site-packages (25.2)
+Requirement already satisfied: discord.py==2.4.0 in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_github_e
+dition\.venv\lib\site-packages (2.4.0)
+Requirement already satisfied: python-dotenv in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_github_editi
+on\.venv\lib\site-packages (1.1.1)
+Requirement already satisfied: pydantic in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_github_edition\.v
+env\lib\site-packages (2.11.7)
+Requirement already satisfied: PyYAML in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_github_edition\.ven
+v\lib\site-packages (6.0.2)
+Requirement already satisfied: aiohttp<4,>=3.7.4 in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_github_e
+dition\.venv\lib\site-packages (from discord.py==2.4.0) (3.12.15)
+Requirement already satisfied: aiohappyeyeballs>=2.5.0 in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_gi
+thub_edition\.venv\lib\site-packages (from aiohttp<4,>=3.7.4->discord.py==2.4.0) (2.6.1)
+Requirement already satisfied: aiosignal>=1.4.0 in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_github_ed
+ition\.venv\lib\site-packages (from aiohttp<4,>=3.7.4->discord.py==2.4.0) (1.4.0)
+Requirement already satisfied: attrs>=17.3.0 in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_github_editi
+on\.venv\lib\site-packages (from aiohttp<4,>=3.7.4->discord.py==2.4.0) (25.3.0)
+Requirement already satisfied: frozenlist>=1.1.1 in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_github_e
+dition\.venv\lib\site-packages (from aiohttp<4,>=3.7.4->discord.py==2.4.0) (1.7.0)
+Requirement already satisfied: multidict<7.0,>=4.5 in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_github
+_edition\.venv\lib\site-packages (from aiohttp<4,>=3.7.4->discord.py==2.4.0) (6.6.4)
+Requirement already satisfied: propcache>=0.2.0 in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_github_ed
+ition\.venv\lib\site-packages (from aiohttp<4,>=3.7.4->discord.py==2.4.0) (0.3.2)
+Requirement already satisfied: yarl<2.0,>=1.17.0 in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_github_e
+dition\.venv\lib\site-packages (from aiohttp<4,>=3.7.4->discord.py==2.4.0) (1.20.1)
+Requirement already satisfied: idna>=2.0 in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_github_edition\.
+venv\lib\site-packages (from yarl<2.0,>=1.17.0->aiohttp<4,>=3.7.4->discord.py==2.4.0) (3.10)
+Requirement already satisfied: annotated-types>=0.6.0 in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_git
+hub_edition\.venv\lib\site-packages (from pydantic) (0.7.0)
+Requirement already satisfied: pydantic-core==2.33.2 in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_gith
+ub_edition\.venv\lib\site-packages (from pydantic) (2.33.2)
+Requirement already satisfied: typing-extensions>=4.12.2 in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_
+github_edition\.venv\lib\site-packages (from pydantic) (4.14.1)
+Requirement already satisfied: typing-inspection>=0.4.0 in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_g
+ithub_edition\.venv\lib\site-packages (from pydantic) (0.4.1)
+[LOWLIFE] Purging __pycache__ and *.pyc ...
+[LOWLIFE] Scanning for legacy 'DuelState' references ...
+[LOWLIFE] PYTHONPATH=C:\Users\Havocprime\Desktop\Lowlife_Testbed\Lowlife_Society_GITHUB_EDITION\GAME
+[LOWLIFE] Starting bot ...
+2025-08-21 04:37:09,359 INFO boot: Loaded .env from: C:\Users\Havocprime\Desktop\Lowlife_Testbed\Lowlife_Society_GITHUB_
+EDITION\GAME\.env
+2025-08-21 04:37:09,360 WARNING boot: No DISCORD_TOKEN found in environment (.env). Bot will fail to login.
+2025-08-21 04:37:09,363 WARNING discord.client: PyNaCl is not installed, voice will NOT be supported
+2025-08-21 04:37:09,462 WARNING boot: Module src.bot.duel not available (cannot import name 'DuelState' from 'src.core.d
+uel_core' (C:\Users\Havocprime\Desktop\Lowlife_Testbed\Lowlife_Society_GITHUB_EDITION\GAME\src\core\duel_core.py)) — ski
+pping
+2025-08-21 04:37:09,464 WARNING boot: Module src.bot.updates not available (cannot import name 'register_updates' from '
+src.bot.updates' (C:\Users\Havocprime\Desktop\Lowlife_Testbed\Lowlife_Society_GITHUB_EDITION\GAME\src\bot\updates.py)) —
+ skipping
+2025-08-21 04:37:09,466 INFO boot: registered players commands
+2025-08-21 04:37:09,467 INFO boot: registered inventory commands
+2025-08-21 04:37:09,469 ERROR boot: Bot crashed: missing/invalid DISCORD_TOKEN.
+**********************
+Windows PowerShell transcript end
+End time: 20250821043709
+**********************
+**********************
+Windows PowerShell transcript start
+Start time: 20250821043943
+Username: DESKTOP-D59BN3Q\Havocprime
+RunAs User: DESKTOP-D59BN3Q\Havocprime
+Configuration Name: 
+Machine: DESKTOP-D59BN3Q (Microsoft Windows NT 10.0.19045.0)
+Host Application: C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -Command if((Get-ExecutionPolicy ) -ne 'AllSigned') { Set-ExecutionPolicy -Scope Process Bypass }; & 'C:\Users\Havocprime\Desktop\Lowlife_Testbed\Lowlife_Society_GITHUB_EDITION\run_lowlife_plus.ps1'
+Process ID: 75528
+PSVersion: 5.1.19041.6216
+PSEdition: Desktop
+PSCompatibleVersions: 1.0, 2.0, 3.0, 4.0, 5.0, 5.1.19041.6216
+BuildVersion: 10.0.19041.6216
+CLRVersion: 4.0.30319.42000
+WSManStackVersion: 3.0
+PSRemotingProtocolVersion: 2.3
+SerializationVersion: 1.1.0.1
+**********************
+[LOWLIFE] Repo root: C:\Users\Havocprime\Desktop\Lowlife_Testbed\Lowlife_Society_GITHUB_EDITION
+[LOWLIFE] Ensuring dependencies ...
+Requirement already satisfied: pip in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_github_edition\.venv\l
+ib\site-packages (25.2)
+Requirement already satisfied: discord.py==2.4.0 in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_github_e
+dition\.venv\lib\site-packages (2.4.0)
+Requirement already satisfied: python-dotenv in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_github_editi
+on\.venv\lib\site-packages (1.1.1)
+Requirement already satisfied: pydantic in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_github_edition\.v
+env\lib\site-packages (2.11.7)
+Requirement already satisfied: PyYAML in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_github_edition\.ven
+v\lib\site-packages (6.0.2)
+Requirement already satisfied: aiohttp<4,>=3.7.4 in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_github_e
+dition\.venv\lib\site-packages (from discord.py==2.4.0) (3.12.15)
+Requirement already satisfied: aiohappyeyeballs>=2.5.0 in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_gi
+thub_edition\.venv\lib\site-packages (from aiohttp<4,>=3.7.4->discord.py==2.4.0) (2.6.1)
+Requirement already satisfied: aiosignal>=1.4.0 in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_github_ed
+ition\.venv\lib\site-packages (from aiohttp<4,>=3.7.4->discord.py==2.4.0) (1.4.0)
+Requirement already satisfied: attrs>=17.3.0 in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_github_editi
+on\.venv\lib\site-packages (from aiohttp<4,>=3.7.4->discord.py==2.4.0) (25.3.0)
+Requirement already satisfied: frozenlist>=1.1.1 in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_github_e
+dition\.venv\lib\site-packages (from aiohttp<4,>=3.7.4->discord.py==2.4.0) (1.7.0)
+Requirement already satisfied: multidict<7.0,>=4.5 in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_github
+_edition\.venv\lib\site-packages (from aiohttp<4,>=3.7.4->discord.py==2.4.0) (6.6.4)
+Requirement already satisfied: propcache>=0.2.0 in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_github_ed
+ition\.venv\lib\site-packages (from aiohttp<4,>=3.7.4->discord.py==2.4.0) (0.3.2)
+Requirement already satisfied: yarl<2.0,>=1.17.0 in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_github_e
+dition\.venv\lib\site-packages (from aiohttp<4,>=3.7.4->discord.py==2.4.0) (1.20.1)
+Requirement already satisfied: idna>=2.0 in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_github_edition\.
+venv\lib\site-packages (from yarl<2.0,>=1.17.0->aiohttp<4,>=3.7.4->discord.py==2.4.0) (3.10)
+Requirement already satisfied: annotated-types>=0.6.0 in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_git
+hub_edition\.venv\lib\site-packages (from pydantic) (0.7.0)
+Requirement already satisfied: pydantic-core==2.33.2 in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_gith
+ub_edition\.venv\lib\site-packages (from pydantic) (2.33.2)
+Requirement already satisfied: typing-extensions>=4.12.2 in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_
+github_edition\.venv\lib\site-packages (from pydantic) (4.14.1)
+Requirement already satisfied: typing-inspection>=0.4.0 in c:\users\havocprime\desktop\lowlife_testbed\lowlife_society_g
+ithub_edition\.venv\lib\site-packages (from pydantic) (0.4.1)
+[LOWLIFE] Purging __pycache__ and *.pyc ...
+[LOWLIFE] Scanning for legacy 'DuelState' references ...
+[LOWLIFE] PYTHONPATH=C:\Users\Havocprime\Desktop\Lowlife_Testbed\Lowlife_Society_GITHUB_EDITION\GAME
+[LOWLIFE] Starting bot ...
+2025-08-21 04:39:47,382 INFO boot: Loaded .env from: C:\Users\Havocprime\Desktop\Lowlife_Testbed\Lowlife_Society_GITHUB_
+EDITION\GAME\.env
+2025-08-21 04:39:47,382 WARNING boot: No DISCORD_TOKEN found in environment (.env). Bot will fail to login.
+2025-08-21 04:39:47,383 WARNING discord.client: PyNaCl is not installed, voice will NOT be supported
+2025-08-21 04:39:47,470 WARNING boot: Module src.bot.duel not available (cannot import name 'DuelState' from 'src.core.d
+uel_core' (C:\Users\Havocprime\Desktop\Lowlife_Testbed\Lowlife_Society_GITHUB_EDITION\GAME\src\core\duel_core.py)) — ski
+pping
+2025-08-21 04:39:47,472 WARNING boot: Module src.bot.updates not available (cannot import name 'register_updates' from '
+src.bot.updates' (C:\Users\Havocprime\Desktop\Lowlife_Testbed\Lowlife_Society_GITHUB_EDITION\GAME\src\bot\updates.py)) —
+ skipping
+2025-08-21 04:39:47,472 INFO boot: registered players commands
+2025-08-21 04:39:47,473 INFO boot: registered inventory commands
+2025-08-21 04:39:47,473 ERROR boot: Bot crashed: missing/invalid DISCORD_TOKEN.
+**********************
+Windows PowerShell transcript end
+End time: 20250821043947
+**********************

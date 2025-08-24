@@ -1,26 +1,21 @@
-
-
-# =================================
-# FILE: GAME/src/core/rules.py
-# =================================
 from __future__ import annotations
+import os, json
 from pathlib import Path
-import yaml
+from typing import Any, Optional
 
+ROOT = Path(os.getenv("DATA_DIR", Path(__file__).resolve().parents[2] / "data"))
+PLAYERS_DIR = ROOT / "players"
+INVENTORY_DIR = ROOT / "inventory"
+for d in (PLAYERS_DIR, INVENTORY_DIR):
+    d.mkdir(parents=True, exist_ok=True)
 
-RULES_PATH = Path("GAME/data/rules.yml")
-_CACHED: dict | None = None
+def _p_user(user_id: int) -> Path:
+    return PLAYERS_DIR / f"{user_id}.json"
 
+def load_player(user_id: int) -> Optional[dict[str, Any]]:
+    p = _p_user(user_id)
+    if not p.exists(): return None
+    return json.loads(p.read_text(encoding="utf-8"))
 
-
-
-def load_rules() -> dict:
-global _CACHED
-if _CACHED is not None:
-return _CACHED
-if RULES_PATH.exists():
-_CACHED = yaml.safe_load(RULES_PATH.read_text(encoding="utf-8")) or {}
-else:
-_CACHED = {}
-return _CACHED
-
+def save_player(user_id: int, data: dict[str, Any]) -> None:
+    _p_user(user_id).write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
