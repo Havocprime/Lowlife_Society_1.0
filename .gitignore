@@ -34,3 +34,7 @@ data/
 
 # Misc
 *.bak
+
+# Python cache
+__pycache__/
+*.pyc
