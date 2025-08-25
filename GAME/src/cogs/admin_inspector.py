@@ -4,6 +4,7 @@ import os, io, json, csv, discord
 from datetime import datetime, timezone
 from discord.ext import commands
 from discord import app_commands
+from pathlib import Path
 from zoneinfo import ZoneInfo
 
 # event log helpers
@@ -49,9 +50,9 @@ def _hex_color(v):
 def _rel_ymdh(a: datetime | None, b: datetime | None = None) -> str:
     if not a: return "—"
     if b is None: b = datetime.now(timezone.utc)
-    from calendar import monthrange
     y = b.year - a.year - ((b.month, b.day, b.hour) < (a.month, a.day, a.hour))
     ay = a.replace(year=a.year + y)
+    from calendar import monthrange
     m = (b.year - ay.year) * 12 + b.month - ay.month - (b.day < ay.day)
     ny = ay.year + (ay.month + m - 1) // 12
     nm = (ay.month + m - 1) % 12 + 1
@@ -82,7 +83,6 @@ except Exception:
     LA_TZ = None
 
 def _fmt_ts_local(ts_in) -> str:
-    """DD/MM/YY H:MM AM/PM (LA tz if available). Accepts isoZ/seconds/ms/datetime."""
     try:
         if isinstance(ts_in, datetime):
             dt = ts_in
@@ -136,24 +136,6 @@ def _snippet(s: str | None, n: int = 120) -> str:
     s = s.replace("\n", " ").strip()
     return (s[:n] + "…") if len(s) > n else s
 
-def _emoji_name(d: dict) -> str:
-    e = d.get("emoji") or {}
-    name = e.get("name")
-    if not name and isinstance(e, str):
-        name = e
-    return str(name or "emoji")
-
-def _role_list(guild: discord.Guild, ids) -> str:
-    if not ids: return "—"
-    out = []
-    for rid in ids:
-        rid = _to_int(rid)
-        if not rid: 
-            out.append(f"`{rid}`"); continue
-        r = guild.get_role(rid)
-        out.append(r.mention if r else f"`{rid}`")
-    return ", ".join(out) if out else "—"
-
 # ---- Cog ----
 class AdminInspector(commands.Cog):
     def __init__(self, bot: commands.Bot):
@@ -171,7 +153,6 @@ class AdminInspector(commands.Cog):
         await interaction.response.defer(ephemeral=True, thinking=True)
         member: discord.Member = user or interaction.user  # type: ignore
 
-        # -------- gather core/derived --------
         created = member.created_at
         joined  = member.joined_at
         avatar_url = member.display_avatar.url if member.display_avatar else None
@@ -198,7 +179,6 @@ class AdminInspector(commands.Cog):
         badges = _flag_names(getattr(member, "public_flags", None))
         accent = getattr(member, "accent_color", None); accent_val = getattr(accent, "value", None)
 
-        # -------- header --------
         header = "\n".join([
             f"{member.mention} --",
             f"ID -- `{member.id}`",
@@ -224,7 +204,7 @@ class AdminInspector(commands.Cog):
         e.add_field(name="Accent", value=f"`{_hex_color(accent_val) or '—'}`", inline=True)
         e.add_field(name="Badges", value=(", ".join(badges) or "—")[:1024], inline=False)
 
-        # -------- Recent actions (comprehensive tag@target) --------
+        # -------- Recent actions --------
         recents = recent_events(member.id, 50)
         if recents:
             lines = []
@@ -234,93 +214,31 @@ class AdminInspector(commands.Cog):
                 except Exception:
                     d = {}
 
-                # Messages
                 if kind == "message":
                     ch = _ch_mention_from_payload(interaction.guild, d)  # type: ignore
                     text = _snippet(_extract_text(d))
                     desc = f"msg@{ch} — “{text or '—'}”"
                 elif kind == "message_edit":
-                    ch = _ch_mention_from_payload(interaction.guild, d)
+                    ch = _ch_mention_from_payload(interaction.guild, d)  # type: ignore
                     after = _snippet(_extract_text(d) or (d.get("after") or {}).get("content") or "")
                     desc = f"edit@{ch} — “{after or '—'}”"
                 elif kind == "message_delete":
-                    ch = _ch_mention_from_payload(interaction.guild, d)
+                    ch = _ch_mention_from_payload(interaction.guild, d)  # type: ignore
                     txt = _snippet(_extract_text(d) or (d.get("before") or {}).get("content") or "")
                     desc = f"del@{ch} — “{txt or 'unknown'}”"
                 elif kind == "message_bulk_delete":
-                    ch = _ch_mention_from_payload(interaction.guild, d)
+                    ch = _ch_mention_from_payload(interaction.guild, d)  # type: ignore
                     cnt = d.get("count", 0)
-                    cached = d.get("cached_with_text", 0)
-                    extra = f", {cached} with text" if cached else ""
-                    desc = f"bulkdel@{ch} — {cnt} msgs{extra}"
-
-                # Reactions
-                elif kind == "reaction_add":
-                    ch = _ch_mention_from_payload(interaction.guild, d)
-                    desc = f"react+@{ch} — { _emoji_name(d) }"
-                elif kind == "reaction_remove":
-                    ch = _ch_mention_from_payload(interaction.guild, d)
-                    desc = f"react-@{ch} — { _emoji_name(d) }"
-
-                # Presence / activity
+                    desc = f"bulkdel@{ch} — {cnt} msgs"
                 elif kind == "presence":
-                    desc = f"presence@self — {d.get('before')} → {d.get('after')}"
-                elif kind == "activity":
-                    b, a = d.get("before"), d.get("after")
-                    desc = f"activity@self — {b or '—'} → {a or '—'}"
-
-                # Voice
+                    desc = f"presence: {d.get('before')} → {d.get('after')}"
+                elif kind == "roles":
+                    added = d.get("added") or []
+                    removed = d.get("removed") or []
+                    desc = f"roles: +{len(added)} / -{len(removed)}"
                 elif kind == "voice_channel":
                     b = d.get("before"); a = d.get("after")
-                    desc = f"voice@self — {b or '—'} → {a or '—'}"
-                elif kind == "voice_mute":
-                    desc = f"voice@mute — self={d.get('self')} server={d.get('server')}"
-                elif kind == "voice_deaf":
-                    desc = f"voice@deaf — self={d.get('self')} server={d.get('server')}"
-                elif kind == "voice_stream":
-                    desc = f"voice@stream — {d.get('streaming')}"
-
-                # Roles / perms
-                elif kind == "roles":
-                    added = _role_list(interaction.guild, d.get("added"))  # type: ignore
-                    removed = _role_list(interaction.guild, d.get("removed"))  # type: ignore
-                    desc = f"roles@self — +{added}  −{removed}"
-                elif kind == "perm_diff":
-                    g = ", ".join(d.get("gained") or []) or "—"
-                    l = ", ".join(d.get("lost") or []) or "—"
-                    desc = f"perms@self — +{g}  −{l}"
-
-                # Moderation / membership
-                elif kind == "timeout":
-                    desc = f"timeout@self — until {d.get('after') or 'cleared'}"
-                elif kind == "boost":
-                    desc = f"boost@self — {'started' if d.get('after') else 'ended'}"
-                elif kind == "member_join":
-                    desc = "member@self — joined"
-                elif kind == "member_leave":
-                    desc = "member@self — left"
-
-                # Invites / channels / pins
-                elif kind == "invite_create":
-                    ch = _ch_mention_from_payload(interaction.guild, d)
-                    desc = f"invite@{ch} — code {d.get('code')}"
-                elif kind == "invite_delete":
-                    desc = f"invite@deleted — code {d.get('code')}"
-                elif kind == "channel_update":
-                    ch = _ch_mention_from_payload(interaction.guild, d)
-                    desc = f"channel@{ch} — updated"
-                elif kind == "pins_update":
-                    ch = _ch_mention_from_payload(interaction.guild, d)
-                    desc = f"pins@{ch} — updated"
-
-                # Channel create/delete (if logged)
-                elif kind == "channel_create":
-                    ch = _ch_mention_from_payload(interaction.guild, d)
-                    desc = f"channel@{ch} — created"
-                elif kind == "channel_delete":
-                    ch = _ch_mention_from_payload(interaction.guild, d)
-                    desc = f"channel@{ch} — deleted"
-
+                    desc = f"voice: {b or '—'} → {a or '—'}"
                 else:
                     desc = kind.replace("_", " ")
 

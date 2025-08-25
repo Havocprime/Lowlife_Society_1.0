@@ -1,0 +1,49 @@
+Lets keep working on the combat system.
+Id like to add some "To do" items for later. We dont need to jump into these right now, but Id like to record them, so we can cross these bridges later.
+
+-GAME
+2v2's, 3v3's, 5v5's, XvX's
+
+- COMBAT
+1. Movement and positioning Actions
+-Slide: Covers distance while remaining [Low], Enters cover or under obstacles, can knock enemies down. Risk: Vulnerable if done in an open space.
+-Shoulder Charge: Bash an enemy while advancing forward dealing x damage. If it connects, stagger target + create opening for grapple/punch.
+-Strafing: Move around an enemy in melee. Improves chance to flank or spot weakness. Combine with positioning mechanics from Grappling.
+2. Tactical / Utility Actions.
+-Supress: Lay down fire inaccurately to keep enemies pinned. Prevents enemies from acting or moving for 1-2 beats.
+Works well with grenades. (2v2s)
+- Feint: Fake an attack or grapple. Baits block/dodge. Follow up hits bypass defense.
+- Quickdraw: Instantly switch to sidearm or "Quick Draw Available" weapons/items. 
+3. Unarmed combat additions.
+-Headbutt: Quick dirty strike. Effect: Short stun. Applies pain. Can break grapples.
+High risk / High reward, can injure you too.
+-Elbow / Knee: CQC Useable during Grapple. Moderate damage. Can chain into choke or throw.
+-Throw: Flip or slam enemy into the ground. Alternative for Push.
+4. Very far future / ligghts / visibility system.
+5. Kick door / breach - very far future, indoor cover / indoors system.
+6.Intimidation as a combat mechanic.
+7. Fake Surrendering.
+8. Taunt
+9. 
+
+"The beat map system"
+Breaking each combat turn into 3 beats.
+Fast actions / 1 beat - Snap shots / movement / quick melee / Advance / attack / aim / melee strike / Feint / Intimidate / Slide / Vault+Jump / Quickdraw
+Mid actions / 2 beats - Aim / Grapple / Tactical Abilities / Steady / Supress / Shoulder Charge / Breach Door
+Full actions / 3 beats - Chokes / Takedowns / Finishers / Fake Surrender / 
+
+3 beat Grapple sub system
+Beat 1 Grapple attempt
+Beat 2 Counter / Position shift
+Beat 3 Choke / Escape / Strike
+
+Strike beats position
+Position beats Escape
+Escape beats strike
+
+ex: Slide into cover / quickdraw / snap headshot %
+tight kinetic cinematic
+
+Then pit 2 players 3 beat actions against eachother, and print out results.
+This way every action in the fight is sequenced with intent / purpose.
+

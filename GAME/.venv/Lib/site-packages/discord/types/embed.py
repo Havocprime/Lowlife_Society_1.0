@@ -38,12 +38,25 @@ class EmbedField(TypedDict):
     inline: NotRequired[bool]
 
 
-class EmbedMedia(TypedDict, total=False):
+class EmbedThumbnail(TypedDict, total=False):
     url: Required[str]
     proxy_url: str
     height: int
     width: int
-    flags: int
+
+
+class EmbedVideo(TypedDict, total=False):
+    url: str
+    proxy_url: str
+    height: int
+    width: int
+
+
+class EmbedImage(TypedDict, total=False):
+    url: Required[str]
+    proxy_url: str
+    height: int
+    width: int
 
 
 class EmbedProvider(TypedDict, total=False):
@@ -58,7 +71,7 @@ class EmbedAuthor(TypedDict, total=False):
     proxy_icon_url: str
 
 
-EmbedType = Literal['rich', 'image', 'video', 'gifv', 'article', 'link', 'poll_result']
+EmbedType = Literal['rich', 'image', 'video', 'gifv', 'article', 'link']
 
 
 class Embed(TypedDict, total=False):
@@ -69,10 +82,9 @@ class Embed(TypedDict, total=False):
     timestamp: str
     color: int
     footer: EmbedFooter
-    image: EmbedMedia
-    thumbnail: EmbedMedia
-    video: EmbedMedia
+    image: EmbedImage
+    thumbnail: EmbedThumbnail
+    video: EmbedVideo
     provider: EmbedProvider
     author: EmbedAuthor
     fields: List[EmbedField]
-    flags: int

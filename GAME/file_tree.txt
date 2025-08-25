@@ -1,0 +1,1 @@
+Get-ChildItem -Recurse -File | ForEach-Object { $_.FullName.Replace($PWD.Path + "\","") } | Out-File file_tree.txt -Encoding utf8

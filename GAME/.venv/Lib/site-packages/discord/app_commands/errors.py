@@ -27,7 +27,7 @@ from __future__ import annotations
 from typing import Any, TYPE_CHECKING, List, Optional, Sequence, Union
 
 from ..enums import AppCommandOptionType, AppCommandType, Locale
-from ..errors import DiscordException, HTTPException, _flatten_error_dict, MissingApplicationID as MissingApplicationID
+from ..errors import DiscordException, HTTPException, _flatten_error_dict
 from ..utils import _human_join
 
 __all__ = (
@@ -58,6 +58,11 @@ if TYPE_CHECKING:
     from .checks import Cooldown
 
     CommandTypes = Union[Command[Any, ..., Any], Group, ContextMenu]
+
+APP_ID_NOT_FOUND = (
+    'Client does not have an application_id set. Either the function was called before on_ready '
+    'was called or application_id was not passed to the Client constructor.'
+)
 
 
 class AppCommandError(DiscordException):
@@ -417,6 +422,19 @@ class CommandSignatureMismatch(AppCommandError):
         super().__init__(msg)
 
 
+class MissingApplicationID(AppCommandError):
+    """An exception raised when the client does not have an application ID set.
+    An application ID is required for syncing application commands.
+
+    This inherits from :exc:`~discord.app_commands.AppCommandError`.
+
+    .. versionadded:: 2.0
+    """
+
+    def __init__(self, message: Optional[str] = None):
+        super().__init__(message or APP_ID_NOT_FOUND)
+
+
 def _get_command_error(
     index: str,
     inner: Any,
@@ -467,10 +485,6 @@ def _get_command_error(
         if key == 'options':
             for index, d in remaining.items():
                 _get_command_error(index, d, children, messages, indent=indent + 2)
-        elif key == '_errors':
-            errors = [x.get('message', '') for x in remaining]
-
-            messages.extend(f'{indentation}  {message}' for message in errors)
         else:
             if isinstance(remaining, dict):
                 try:
@@ -479,9 +493,10 @@ def _get_command_error(
                     errors = _flatten_error_dict(remaining, key=key)
                 else:
                     errors = {key: ' '.join(x.get('message', '') for x in inner_errors)}
+            else:
+                errors = _flatten_error_dict(remaining, key=key)
 
-            if isinstance(errors, dict):
-                messages.extend(f'{indentation}  {k}: {v}' for k, v in errors.items())
+            messages.extend(f'{indentation}  {k}: {v}' for k, v in errors.items())
 
 
 class CommandSyncFailure(AppCommandError, HTTPException):

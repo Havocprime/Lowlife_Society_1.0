@@ -1,5 +1,3 @@
--- src/core/schema.sql
-
 -- players
 CREATE TABLE IF NOT EXISTS players (
   discord_id           TEXT PRIMARY KEY,
@@ -25,20 +23,16 @@ CREATE TABLE IF NOT EXISTS players (
   inviter_id           TEXT,
   invite_channel_id    TEXT,
   risk_score           INTEGER,
-  risk_reasons         TEXT,   -- JSON array
-  first_snapshot_json  TEXT,   -- raw capture (see JSON schema)
+  risk_reasons         TEXT,
+  first_snapshot_json  TEXT,
   created_ts           TEXT DEFAULT (datetime('now'))
 );
-
--- player_roles (current snapshot)
 CREATE TABLE IF NOT EXISTS player_roles (
   discord_id  TEXT,
   role_id     TEXT,
   role_name   TEXT,
   PRIMARY KEY (discord_id, role_id)
 );
-
--- join_events (append-only)
 CREATE TABLE IF NOT EXISTS join_events (
   id                   INTEGER PRIMARY KEY AUTOINCREMENT,
   discord_id           TEXT,
@@ -48,5 +42,5 @@ CREATE TABLE IF NOT EXISTS join_events (
   inviter_id           TEXT,
   pre_roles_json       TEXT,
   post_roles_json      TEXT,
-  snapshot_json        TEXT   -- same schema as first_snapshot_json
+  snapshot_json        TEXT
 );

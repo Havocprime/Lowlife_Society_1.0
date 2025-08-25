@@ -71,7 +71,7 @@ class BucketType(Enum):
         elif self is BucketType.member:
             return ((msg.guild and msg.guild.id), msg.author.id)
         elif self is BucketType.category:
-            return (getattr(msg.channel, 'category', None) or msg.channel).id
+            return (msg.channel.category or msg.channel).id  # type: ignore
         elif self is BucketType.role:
             # we return the channel id of a private-channel as there are only roles in guilds
             # and that yields the same result as for a guild with only the @everyone role
