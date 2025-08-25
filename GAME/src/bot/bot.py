@@ -34,6 +34,8 @@ TRUSTED_ROLE_NAMES = {x.strip().lower() for x in os.getenv("TRUSTED_ROLE_NAMES",
 
 # ✅ import AFTER sys.path is set
 from src.core.audit import ensure_db, audit_event
+from src.core.datacontext import DataContext   # ← add
+from src.bot._wire_data_context import init_data_context  # ← add
 
 # event/db helpers
 from src.core.events import (
@@ -199,6 +201,11 @@ class LowlifeBot(commands.Bot):
         await try_load("src.cogs.admin_notes")
         await try_load("src.cogs.analytics")
         await try_load("src.cogs.audit_log")         # investigatory commands
+
+        # Inject DataContext once during boot
+        init_data_context(self)  # self.data_ctx now available to cogs
+        await self.load_extension("src.bot.example_cog_databackbone")
+        # ... existing sync tree, etc.
 
         # --- explicitly register the /notes group into the same scope we sync ---
         try:
