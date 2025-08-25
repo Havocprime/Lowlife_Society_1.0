@@ -32,6 +32,42 @@ ADMIN_ROLE_ID = int(os.getenv("ADMIN_ROLE_ID", "0") or "0")
 TRUSTED_ROLE_IDS = {int(x) for x in os.getenv("TRUSTED_ROLE_IDS", "").split(",") if x.strip().isdigit()}
 TRUSTED_ROLE_NAMES = {x.strip().lower() for x in os.getenv("TRUSTED_ROLE_NAMES", "").split(",") if x.strip()}
 
+# --- token diagnostics & guard ---
+def _mask(tok: str) -> str:
+    if not tok:
+        return "<empty>"
+    return tok[:6] + "..." + tok[-6:]
+
+def _looks_like_bot_token(tok: str) -> bool:
+    # Bot tokens have 3 dot-separated parts and NEVER start with "mfa."
+    if not tok or tok.startswith("mfa."):
+        return False
+    parts = tok.split(".")
+    return len(parts) == 3 and all(len(p) >= 6 for p in parts)
+
+# Optional: show which .env files were found
+try:
+    from dotenv import find_dotenv
+    print("[env] root .env:", find_dotenv(".env") or "<not found>")
+    print("[env] GAME/.env:", find_dotenv("GAME/.env") or "<not found>")
+except Exception:
+    pass
+
+print("[env] DISCORD_TOKEN len:", len(TOKEN or ""), "mask:", _mask(TOKEN))
+print("[env] parts:", len((TOKEN or "").split(".")), "starts_with_mfa:", TOKEN.startswith("mfa.") if TOKEN else None)
+bad_ctrls = [hex(ord(c)) for c in (TOKEN or "") if ord(c) < 32 or ord(c) == 0xFEFF]
+if bad_ctrls:
+    print("[env] WARNING: control chars in token:", bad_ctrls)
+
+# Hard fail early if it doesn't look right
+if not _looks_like_bot_token(TOKEN):
+    raise RuntimeError(
+        "DISCORD_TOKEN looks invalid. Reset the token in the Dev Portal (Bot tab), "
+        "copy with the copy icon, and paste into GAME/.env as DISCORD_TOKEN=<token> (no quotes). "
+        f"Currently: len={len(TOKEN or '')}, mask={_mask(TOKEN)}"
+    )
+
+
 # ✅ import AFTER sys.path is set
 from src.core.audit import ensure_db, audit_event
 from src.core.datacontext import DataContext   # ← add
@@ -452,6 +488,24 @@ async def main():
     bot = build_bot()
     async with bot:
         await bot.start(TOKEN)
+
+# ---- token sanity guard ----
+def _looks_like_bot_token(tok: str) -> bool:
+    # Bot tokens are usually 3 dot-separated parts, long-ish; never start with "mfa."
+    if not tok or tok.startswith("mfa."):
+        return False
+    parts = tok.split(".")
+    return len(parts) == 3 and all(len(p) >= 6 for p in parts)
+
+if not _looks_like_bot_token(TOKEN):
+    # show masked diagnostics to avoid leaking secrets in logs
+    masked = (TOKEN[:6] + "..." + TOKEN[-6:]) if TOKEN else "<empty>"
+    raise RuntimeError(
+        "DISCORD_TOKEN looks invalid. "
+        f"Loaded {len(TOKEN or '')} chars: {masked}. "
+        "Reset the Bot Token in the Developer Portal (Bot tab) and update GAME/.env."
+    )
+
 
 if __name__ == "__main__":
     asyncio.run(main())

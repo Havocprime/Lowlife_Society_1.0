@@ -27,7 +27,7 @@ class DataBackboneDemo(commands.Cog):
         if not chars:
             await interaction.response.send_message("You have no characters yet.", ephemeral=True)
             return
-        lines = [f"• {c.name} (id={c.id})"]
+        lines = [f"• {c.name} (id={c.id})" for c in chars]
         await interaction.response.send_message("\n".join(lines), ephemeral=True)
 
 

@@ -34,8 +34,7 @@ data/
 
 # Misc
 *.bak
-# env & runtime
-.venv/
-GAME/.venv/
-**/__pycache__/
+
+# Python cache
+__pycache__/
 *.pyc
