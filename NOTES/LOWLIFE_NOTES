@@ -1,0 +1,697 @@
+NOtes:
+
+
+1.Atomic karate collectible card game - 
+High concept : Collectible card game played in Lowlife by fans of Atomic karatePlayers battle using cards representing characters
+moves and moments from the show, its over the top, fast, and feels like an arcade brawler
+Gameplay overview - reduce your opponents focus meter from 10 to 0, by landing "hits" using move cards, the first to land a finishing combo eg hits in a row triggers a KO
+Basic rules - Draw 1 card
+play 1 card face down
+Opponent plays 1 card face down
+Flip
+Clash phase - Cards are resolved based ons peed, higher speed hits first
+if both players play the same card type - special showdown rules - rock paper scissors style
+- Card types, 
+- Move - Attack cards punch / kick / throw - Neon knuckle / Sideslam
+- Block - Counters specific move types - Wrist guard / Leg shield
+- Special - Flashy effects / Wildcards - Atomic elbow / Retro combo
+- Stance - Buffs / stances you maintain until broken - Tiger stance / Comic Fury
+Each card has - Speed 1-10, Type, Effect (combo potential)
+Integration ideas for MMO - 
+Art: Thick outl;ines, ben day dots, halftone shading, think jack kirby meets 90s anime.
+CRT Screen effects, VHS grain, exaggerated text, bam zap overlays.
+Snappy punch sound effects synthwave hits comic book paf and whud.
+Arcades / Taverns - place to play
+Tournaments - Weekly Brackets with rewards
+Card unlocks - Complete sidequests to get new signature moves
+Fandom quests - Meet the cast or collect fan posters or defeat ultra fans
+Cosmetics - win a card match wearing atomic headband = bonus style points
+Why this works - 
+Fits the universe - fictional tv show
+stylized and unique - retro comic + karate  = rare aesthetic
+Easy to scale - expand with new seasons
+low mechanical complexity but fun to play and collect
+
+2. Atomic Karate - Issue #7 "Neon Tiger's Last Stand / Brith place"
+Cover page : Visual A rippled high kicking figure - in a glowing orange jumpsuit frozen midair
+His fist is lit with atomic fire Explosions shapes fill the background with the evil villain Dr.Ultravolt.
+
+"CAN ONE HERO FIGHT FATE ITSELF?!"
+"Featuring the Debut of the Shock Fist Technique"
+
+Bottom corner - Collectors card 7 inside.
+
+Atomic Karate isnt just action - its nostalgia, fueled over the top heroism with martial arts, neon special moves, absurd villains, and bold visuals. The issue would feel like a crossover between 
+Street fighter, TMNT, Silver age marvel, and 80s anime flavor.
+
+Issue 1 - Origin of the tiger.  Takashi Saito - Neon Tiger
+Issue 2 - Shadow fist in the alley. Power / REsponsibility / Black Neon first villain / copycat powered 
+by stolen technology. The battle faces tiger to confront a collateral damage and consequences of using his powers publicly.
+Issue 3 - The flicker - Media / Public Perceptions - 
+Issue 4 - Dr.Ultravolt Unleashed -  Moral Ambiguity 
+Issue 5 - Mask of Glow - Identity / Self
+Issue 6 - Neon Collapse - Trauma and Psychology - Powers fade, Flashbacks, Vulnerable
+Issue 7 - Last Stand - Heros doubt and sacrifice - Activates shock fist during Ultravolt Fight.
+Defined by kinetic art.
+Issue 8 - Echoes of the fallen - Legacy & Redemption - Ultra volt tech releases a ripple effect empowering unstable warriors across the city tiger must protect civilians and guide new heroes without decending into authoritarian control
+ISsue 9 - Divide and Spark - Good vs evil - Societal reflection -
+Citizens split some see tiger as savior some see as threat - propaganda - heroics - lead to protests - 
+
+Hero - neon tiger
+villain org - black radiand division - military torture lab biotech
+villains - signal lords - syndicate of neon augmented martial artists
+- ally .dr kyra vale - rogue medic possible spy traitor
+Rival - The warden - armor wearing deathmatch warlord 
+assassin - mewtrix - light based glitchy assassin
+mentor master kuro flashbacks - taught him restraint killed in backstory
+enemy - colonen voss - tigers ex commander now cybernetic enforcer
+
+what makes it sell?
+hooks that work
+strong character identity - neon tiger = merchandisibable memorable - mythic
+high concept + grounded character, = invincible / the boys / logan
+Retro art style = nostalgia + new
+emotional + violent = appeals to mature readers
+easy to pitch visually - posters trailers etc
+
+Target audience - 17-35
+Fans of adult animation - arcane primal, gritty, manga, berserk, blame, retro comics - cyberpunk
+collectors market - variant covers limited issues - stylized runs
+Publication strategy - start with 10 issue mini series - or 5 issue vol 1 
+publish digital first 
+run kickstarter for phys issues
+build community via discord
+consider collabs with synthwave midnight music artists for promotion
+
+Target opportunites - 
+tigers past squad
+build a mini arc where surviving memobers of his old unit come back either hunting him or joining him
+
+tatoo loore
+each tattoo is tied to a different trial or location in his past could spark flashbacks
+
+tiger as urban legend public perception of him starts growing some worship him some fear him cults may form
+
+Karate gods - what if he eventually uncovers a mythic side to atomic karate, could be fun or philosophical
+
+satirical spin off - atomic karate babies
+an intionally dumb short run spinoff
+as meta commentary
+
+inspirations:
+os classics- judge dredd
+tmnt
+sin city
+the boys
+east of west
+berserk
+blade runner
+punisher
+mad max
+
+
+act 1
+introducei neon tiger pre transformation
+military background strict code life in the city
+shows his skills morality and vulnerabilities
+inciting incident, hes betrayed or captured by pwoerful enemies in the criminal underworld
+the totrutre eand experimentation begin h hodls hiks silence
+issue 3 ends with his first violent breakout tatoos ignite neon tigeter is born
+
+act 2
+neon tigers rampage through captors base
+discorvers new powers but at cost of self harm physchological struggle
+the criminal underworld and corrupt military start hunting him
+introduce supporting characters
+a loyal friend - a shady ally - a femme fatale - a ruthless villain -
+neon tiger wrestles his code vs his brutal new instincts
+possible side tangents - flashbacks to military past explore nature of tattoo powers
+
+
+
+////////////////////////////////////////
+
+3. MMO Discord bot framework and integration
+build the core discord bot to handle command parsing, message listening, and responses (done via Lowlife bot)
+Set up proper permissions and intents to interact with servers channels and users (Done via lowlife bot)
+3.1 Account linking and authentication via discord:
+-Design a system to link discord user i
+ds to ingame player profiles >>>>>
+-This is server and UI all in one
+
+3.2 Account linking and auth via disc
+Handle registration and initial setup via ONBOARDING
+Manage player sessions implicitly through discord user presence
+
+3.3 persistent data storage
+decide where and how to store player data, game state, in ventories, quests, etc.
+- use database or persistent files that the bot can access between restarts
+-crucial to keep progress saved and backed up.
+
+3.4 - Basic world and environ presentation
+- define the world structure
+-zones rooms locations
+-Represent this to the bot and connect it ot the players
+-Use descriptions for immersion
+
+3.5 - Player character system
+- create player profiles with stats inventory and equipment / progress
+-manage character creation via commands
+
+3.6
+-Implement commands for moving between rooms or zones
+- send descriptive text about new location and available actions
+
+3.7 - interaction system
+enable interactions with npcs objects and other players via commands
+include chat or emotes for social engagement
+
+3.8 - combat system
+text based turn based combat mechanics
+commands for attacking defending using skills spells or items
+display results via text 
+
+3.9 - Quest system
+Create quests that the player can accept, complete, and track
+Use text prompts that track progress and update.
+Create global storyline quests for classes.
+Create sub quiestrs for classes.
+
+3.10 - inventory and economy
+manage items, usage, trading,  virtual currency system
+
+3.11 - social and group features
+implement parties - guilds - or clans
+group commands for shared quests combat or chat
+
+3.12 - event and raid systems
+scheduled events or boss fights managed by the bot
+could use discords schedulking or reaction features
+
+3.13 - logging moderation and anti cheat
+log players actions for debugging and fairness
+use discord mod tools to prevent abuse
+
+bonus rich media integration - 
+embeds / text / images / reaction menus
+
+4.1 - setup persisten player data storage
+4.2 - player registration command
+4.3 - design basic world map - 
+4.4 - add movement commands - 
+4.5 - add a look command - 
+4.6 - plan features, after movement and location descriptions are working consider inventory system, pickup, use items, basic combat implementations, quests, social party or guild features, save load improvements, maybe migrate to a database when we outgrow json
+bonus: keep code clean by splitting into module. use classes or data models and world entities if you like oop
+add error handling and input validation
+
+5.1 define the city core identity
+ashport - names
+
+a decaying coastal city ruled by organized crime, rampant corruption, and underground factions. The economy is broken. The police are crooked. And the people live in fear but crime is just another job now.
+
+District breakdowns:
+1. The docks - Seaside, shipping, smuggling, ship graveyard
+Vibe - Rusting cranes, shady deals, loading zones at night
+Role - Entry point for contraband, black market access, gang fights
+Channels - Pier 13, Abandoned dock, gang controlled
+Shipyard - Loading area, npcs move crates, secrets stashed
+Smugglers alley - Shady deals go down here.
+
+2. The slums - Ghetto / Dense housing / crime heavy
+Vibe - Broken buildings, graffiti, drug dens
+Role - spawn point for low level entry players. Gang recruitment and urban warfare
+Channels - The Tenements - Stacked, overcrowded, apartment blocks
+Rats Nest - Drug and weapons market
+Burned out chapel - Old church turned into a hideout
+
+3. Downtown/Citycenter - Skyscrapers, Elites, Corruption
+Vibe - Glitz, neon, filth beneath the surface
+Role - Political power, banks, corporate HQs, undercover jobs
+Channels - 
+City hall - Politicians for hire
+Glass Tower - Megacorp HQ, Security Patrols
+Midnight Lobby - Upscale bar with Whisper deals
+
+4. Industrial Zone - Factories, Warehouses, and Pollution
+Vibe - Steam, Fire, Poison, Air
+Role - missions involving sabotage, kidnapping or theft
+Channels - 
+Refinery - Explosive Materials
+Chemical Plant - Access restricted until later
+Abandoned factory - Gang territory
+
+5. Underground - Sewers, Hidden tunnels, Black markets
+Vibe - Claustrophobic, Dirty, Filled with rats and secrets
+Role - Escape routes,  Rare NPCs, Forbidden knowledge
+Channels - 
+Sewers - Maze of tunnels under the city
+Forgotten market - Ultra rare items / Secret NPCs
+Crypt hall - Old catacombs, scoreboards, rumors of cults
+
+6. Suburbs - Outskirts, Borderlands, Quiet, Tense
+Vibe - Fenced in homes. Quiet streets, hiding from the city
+Role - Side missions, safe houses, secret labs
+Channels - 
+Old Train yard - Abandoned routes for fast travel
+Junkyard - Salvage gear, repair items
+Dead mall - Overrun by gangs, boss zone
+
+Duskwell / The wire / Max payne / sin city / blade runner without as much tech
+
+1. Blackridge Heights - Corporate Veil - Skyscrapers, politics, glass towers, white collar crime, suits that smile as they stab you in the back.
+The Glass Plaza - Open  courtyard of Towering finance HQs.
+Pendleton Tower - Megacorp HQ known for "Security Counseling"
+Devlin Hotel Bar - Rooftop lounge for power deals and quick murders
+Legal Row - Cluster of law firms, most mob-owned
+City Hall - Corrupt to its foundation, under constant protest.
+# Landmark : The Spire : "Tallest building in the city. Rumored to have a blacksite on the 99th floor."
+
+2. # Lowgate - The working class Decay.
+Row housing, dive bars, unpaid bills. Everyone here is on edge.
+
+McCarthy's Bar - Local watering hole, full of regulars and regrets.
+Lowgate Market - Stalls sell everything from food to stolen goods.
+Block 204 - Abandoned building, gang hideout.
+Lowgate Station - Rundown train station, graffiti rotten.
+Midnight Mart - 24/7 store, often gets held up. lots of weird security here.
+# Landmark : The Burning Church : "A husk of a chapel, burned in a riot 10 years ago, still standing."
+
+3. # The Drown - Flooded docks / Shipping yards
+Salt air and Diesel. Smuggler's Paradise. 
+Where bodies float and containers go missing.
+
+Dock 13 - Known smuggler entry point
+Sunken Fishery - Ruined building, half sunken, (think deep blue sea) now reformed into a drug lab location.
+Drybone Warehouse - Empty, mostly.
+Port Authority - Corrupt, understaffed, Bribable.
+Trawlers Rest - Ship turned into a floating bar.
+# Landmark : Widows Peak : "Rusted dock crane where bodies can be found hanging on occaision.
+
+4. # Ashcourt - Ghetto alleyways / Urban Blight
+The city forgot this place. Now the gangs run it.
+
+Dead End - Drug hotspot smells like piss and regret.
+Crackjaw corner - Gang war ruined this place, still here.
+Ashcourt Tower - High rise, mostly abandoned, used for fights and rituals.
+Mama-K's Soup - Free meals, mafia funded.
+The yard - Scrapyard arena where debts are paid in blood.
+# Landmark : The Broken Angel : "Graffiti covered statue, believed to 'protect the locals'."
+
+5. # Cinder Row - Nightlife, Vice, Neon, and Gloom.
+Sex, drugs, and jazz fueled insomnia. Everythingh as a price.
+
+Red Veil club - Strip club / Private vip dungeon
+dantes cigar lounge - mafia hangout smooth jazz sharper deals
+nightcap motel - hourly rates, bring your own regrets
+dreamweavers arcade - kids come for games, leave with addictions
+silver snake tattoo - illegal body modifications, on request.
+# Landmark : "The Spine" : Cracked digital billboard showing ads from the 90's
+
+6. # Grave end - Outskirts, Industrial Wastes
+Factories, Waste plants, cult hideouts - even the cops dont come here.
+
+Charcoal plant - Abandoned factory rumored organ harvesting
+railbridge 7 - old bridge, people fall, or get pushed.
+slag hill - toxic dump turned hideout 
+# Landmark : "Fateful 8" : A statue cast in pure slag of 8 iron workers, from the great failure of '83. Cast in slag- eternally.
+
+
+blackgate/ashmoor/new delirium/the tracks /pipeworks
+
+Ashen Row / Working class slum - crumbling buildings, broken lives, street level crime
+Block c - projects, graff covered apartments
+the park - full of needles junkies and meds.
+Mikes auto - run by an ex-con chop shop
+burn out bar - someone torched it, noone talks
+
+Ironclad Industrial - Warehouse / manufacturing district
+slagworks 47 - factory where workers vanish
+union hall - corrupt union bosses control the streets
+demolition yard - mob uses it for "accidents"
+post office depot - maul fraud central
+
+The marrow - Underground crime market 
+Subterranean tunnels and shadow bazaars. If its illegal. Its here.
+Bone market - Organs / weapons / identities.
+Old subway tunnels - Hideouts and escape routes
+Spiders Nest - Famed info brokers den, built up over the years.
+Cargo hatch 6 - Smuggling enterance
+
+Redlight Row - Vice and pleasure
+Neon lights flicker over crime and exploitation.
+
+Velvet Vice - strip club
+lucky rat - casino
+midnight hotel - hotel motel murder blackmail
+backroom bliss- drugs sex regrets
+
+# The gutters - Slum central, Rats, Needles, and Screams
+Where buildings lean like drunks, sirens never stop, and hopes been overdosed.
+Crackjaw Court - Half the buildings condemned, the other half should be.
+Needle Nest - Junkie Alley turned Warzone
+Burnout Block - Someone torched it. Nobody talks.
+Ratway 31 - Underground Tunnels, crawling with Couriers and Corpses.
+
+# Slag Town - Industrial Hell. Rust, Fire, and Bodies.
+Metal screams louder than the workers. Unions are gangs. And gangs run everything.
+Ironbite Foundry - Bodies melt just fine in molten steel.
+Smog Lot - Used to be a factory, now its overrunn gang garage.
+Knuckle-Pit - Bare knuckle fights, bets, beatdowns.
+Bonecrusher Yard - Scrapyard run by ex enforcers with short fuses.
+
+# Deadlight Docks - Smuggling capital 
+Every crates a crime, nobody checks IDs, and the sea doesnt talk.
+Dock 17 - Shady meetups, missing shipments
+The husk - Sunken freighter turned gang HQ
+The Gutters - Black market seafood with Blackmarket Deals
+Inkpier - Owned by the cartel
+
+# Houndsmouth - Street war, gangs, guns, turf
+Graffiti covers everything. Bullets fly daily. Kids grow up carrying.
+[Artwall]
+-Deadmans strip - 
+Skinners Spot - Abandoned store / HQ
+Juice corner - Slinging dope disguised as smoothies
+
+# Red Veil - Vice District, Flesh, Fantasy, Fear
+Where neon lights flicker over exploitation. Pleasure, and trauma share a bed.
+Pink room - Strip club with backroom snuff shows
+Snake eyes - Lounge / Casino Rigged tighter than a coffin lid.
+Velvet Coffin - Hourly motel, No questions.
+Numb - Bar / Bartender serves drinks and secrets.
+
+# Carcass Row - Decayed District, Abandoned, Forgotten, Haunted
+Ubran rot. Squatters. Cults. Weird shit happens here. The city forgot it existed.
+Sinkhole - Caved in sinkhole now home to something else.
+Hollow Chapel - Where gangs pray to something, who knows what.
+Gut house - Ex butcher shop, now a charnel den for sickos.
+SLeepy Jacks - Crackhouse, full of missing person s posters
+
+# Silvercross Heights - High society, Clean smiles, Filthy secrets
+They wear suits, not colors, but their knives seem to be sharper.
+Valentine hall - City Countil. Theater of Corruption.
+Glasspire - Lounge, elite cocktail bar. Bribery on tap.
+Claremont Tower - Ceo offices where poverty is a profit model.
+Cathedral of mercy - Charity Front for laundering millions
+
+# The Veins - Underground, Transit, Black markets, Secret paths
+Sewers, Subways, bunkers, the underworlds most literal underworld.
+Deadtrack Line 9 - Abandoned subway now a drug route
+Vendors pit - Open air, black market under the city
+Needlepass - Assassin coridor, no cameras.
+Spider Hatch - Nexus for info lies and betrayals
+
+# Ashwall Penitentiary - City cized prison
+Intake bay - Guards dont care
+Block-D - Run by gang more organized than the city
+Messdeck 12 - Dont eat the stew, it bites back
+The Dryhole - Solitary
+
+# The Dead Zone - Cursed suburbs, burned, bombed, buried
+Uninhabitable, or so they say. Some dissapear out here and dont stay gone.
+Redgrass Lot - Chemical fire ruined it, and somethings growing here now.
+Blister row - Block hit with firebombs ten years ago, still smolders occasionally.
+Radio Silence - Ghost signal station, plays on its own at 3am.
+Juice farm - Old juice plant, now a gang run meth lab cult site
+
+# ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+# Factions
+- Ash / Slag town / The gutters / Blue collar mafia born from their fists.
+- Widows hand / Silken assassins / info brokers / rumored to have their HQ in the veins.
+- Gutter saints / Street vigilantes - Worse than the gangs they protect against.
+- The Gloam - Cartel / Control the red veil / deadlight docks / flesh / drugs / and freight.
+- Ivory Crown - Corpo Elite Syndicates. They dont get blood on their hands. Just pay others to do it.
+
+// Economy // Contracts // Heat // Crime rolls //
+
+Government Structure - 
+Key institutions - 
+
+# City Council / Mayoral Authority - 
+# The Ruling elite, They shake hands in public and will stab you in the back in private.
+# Location - Valentine Hall - Silvercross Heights.
+Political Campaigns / Bribery / Sabotage / Secret Bills that legalize crime under new names / Player missions.
+
+# Courthouse / Judicial System
+# Justice is for Sale, and it don't come cheap.
+# Location - Crown hall - Silvercross Heights
+Crown Hall, an old gothic courtroom where judges wear silk robes and wires. Court records go missing often. Especially when money changes hands.
+Corrupt judges / trial outcomes / Players can Self Represent / Lawyers / Major Trial Arcs / Fake Witnesses / jury tampering
+
+# Police Department (CPD) 
+# They protect and serve... Whoevers paying.
+# Location - CPD Central Precinct - Houndsmouth.
+Concrete fortress with high walls, riot vans, unmarked basements for interrogations.
+Substations: Pigpen-One - The Gutters Substation
+Precinct 19: Slag town - Full of 'ex gang members' turned cops.
+Uses: Shakedowns / Frame jobs / Crooked Deals / Player Infiltration / bribing / Hunting / Corrupt Police State
+
+# C.I.B. - Crown Investigation Bureau
+# Feds with no leash. They investigate Everyone. Especially their rivals.
+# Location - The Bastion - Silvercross Heights.
+Sleek tower with mirrored glass and bulletproof everything. Home to agents. Analysts. And Ghosts.
+Uses: Espionage, Black bag ops.  Secret files. Surveillance Footage. Blackmail.
+Player Missions
+
+# Fire / Rescue
+Officially Save Lives. Unofficially. Clean up crime scenes before the press gets there.
+Firehouse 9 - Slag Town
+Half firehouse, half insurance scam machine. The crew drinks during calls, bodies found in fires tend to dissapear.
+Crime cover ups / Arson investigations or setups / fire chief is on cartel payroll
+
+# General hospital / Emergency services
+# Need care? bring cash.
+# Saint Grimhollow General - The Gutters
+Filthy flickering lights, overwhelmed staff, backroom surgeons, do unlicensed removals, bullets, ids, trackers, kidneys.
+Uses: Blackmarket organ harvesting. Doctors stitching up gang members off the books.
+Player recovery location
+
+# Public records Office
+# Births deaths, land deals, lost identities.
+# Annex 5 - Carcass Row
+Technically abandoned. Actually staffed by two underpaid clerks who know too much. And take the bribes.
+Falsifying documents / Secret property purchases / covering or uncovering secret identities.
+
+# Public housing administration
+# Housing for the needy. Run by the greedy.
+# Block Authority HQ - Ashwall Slums
+Half the units have no heat, or cooling. The other half accidentally rented to gang families who pay with favors. Not rent.
+Eviction Threats as Leverage / Rent Fraud / illegal Tenants / underground fight rings in parking lots
+
+# Crown Correction Bureau
+# Prisons arent Punishment! They're business.
+# Ashwall Penitentiary - Ashwall
+Already established, but now ties directly into government run prison industrial complex
+Government profiting off prison labor
+Ghost prisoners, locked up for favors
+Bribing guards, smuggling contraband.
+
+# Public Education / Indoctrination
+# Schools that teach who to stay quiet. Stay broke. And stay in line.
+# Northcross High - The Gutters
+Metal detectors. Gang recruitment at lunch. Civic duty courses sponsored by arms manufacturers.
+Gang turf wars / Player characters / Gov outreach programs that spy on parents
+
+# Sanitation
+# Trash removal. Corpse Disposal. Same difference.
+# Waste Sector 3 - Slag Town
+Garbage trucks used to move more than trash "off the books" workers handle.. sensitive removals.
+Disposal of Evidence / Surveillance / Fake Routes / Crime scenes 
+
+# Power / infrastructure
+# City's Wired like a corpse with jumper cables.
+# Crowsgrid Control station - Carcass Row
+Hackers. Arsonists. And Criminals target this place to cause chaos.
+Shut down districts / Fake outages for heists / Implant surveillance systems in the grid.
+
+# Deep state / Shadow Gov.
+The Cradle.
+
+# //////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+1. World Structure -
+1. # The Gutters.
+# This place is an infected wound. Poverty. Rot. Desperation so thick its humid.
+Crackjaw Court / Needle Nest / Saint Grimhollow Hospital / Northcross High / Block Authority HQ
+
+2. # Slag Town.
+# Factory Fumes, screaming steel, and bodies in the furnaces.
+Ironbite foundry / Knuckle Pit / Firehouse 9 / Waste Sector 9 
+
+3. # Deadlight Docks.
+# Smuggling empire in full swing. Container ships hide more than cargo.
+Dock 17 / The Husk / Customs House 
+
+4. # Houndsmouth.
+# Gang wars, tagged streets, open shootouts. The cops stapped coming here a long time ago.
+The wall / Deadmans Strip / CPD Central (Corrupted)
+
+5. # Red Veil
+# Neon Sex Pits, and death wishes. The pleasure district with zero limits.
+Pink room / Snake eyes / Velvet Coffin
+
+6. # Silvercross Heights
+# Polished Chrome, silk ties, and corruption deeper than the stock market.
+Valentine hall / Glasspire Lounge / Crowncourt Hall / The Bastion
+
+7. # Carcass Row
+# Where buildings died and cults moved in. Forgotten by everyone, but the worst.
+Hollow Chapel / Vendors Pit / Crowsgrid Control / Annex 5 
+
+8. # Ashwall Penitentiary 
+# Ashwall Prison industrial Machine, Gangs, Guards, Gladiator Matches.
+Block D / Wardens Cage / Dryhole
+
+9. # The Veins. 
+# Old subway lines turned smuggling tunnels, hideouts, cult shrines.
+Needlepass / Spider Hatch / Deadtrack 9
+
+10. # The Dead Zone
+# Unmapped. unchecked. Rumors of monsters. Rogue Cults. And experiments gone wrong.
+Redgrass Lot / Radio Silence / Blister Row
+
+# ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+2. Key NPCs - 
+
+# Deputy Warden Sal' "Two Step" Carrick
+Half prison boss. Half pit fight bookie. Profits off of every prisoner death.
+"Every mans got a price, and a blood type."
+
+# Juna Veil - Info Broker | Spider Hatch
+Has everything on everyone. Speaks in riddles.
+Sells truth without receipts. She'll sell your secrets back to you.
+
+# Chief Nolan Griggs - CPD
+Looks like a dad, acts like a cartel enforcer.
+Owns Houndsmouth. Smiles during beatings.
+
+# Madame Kora Black - Red Veil
+Runs the pink room, and three snuff streams.
+Keeps politicians on leashes.
+Treats trauma like a business opportunity.
+
+# Mayor Avery Dent 
+The City's Smiling face. Publicly Clean- Privately more twisted than a garrote.
+"I serve the people. With seasoning!"
+
+# Lil' Stabs - Freelance Dealer
+13 years old. Smarter than you. Knows whos moving what, and where to find it.
+Wears a gas mask and carries a butterfly knife the size of your forearm.
+"You want boom, stab, sniff? or Forget?"
+
+# Jett Novar - Investigative Journalist (Silvercross)
+Has three burner phones, two lawsuits, and one liver.
+Runs an underground Newsletter "The dirty Lens"
+Getting too close to discovering "Project Harrow"
+
+# Mr. E - Pirate DJ / Cult Leader (Dead Zone)
+Broadcasts from inside Redgrass Lot
+Claims the city is alive and watching.
+Followers speak in code and carve symbols into the walls. Learn their secrets.
+
+# Dr. Marella Quill - Trauma Surgeon (St. Grimhollow)
+Fixes wounds off-books for gangsters, rebels, and ghosts.
+Might be slowly poisoning patients for fun.
+Has a scalpel engraved with "Do No Harm. (Unless Paid)."
+
+# Reign Wexley - Fixer for the Rich (Glasspire Lounge)
+Contracts Assassins - Money launderers - and art thieves.
+Smells like a brand campaign. Soul of a snake.
+Keeps dirt on everyone. Especially you.
+
+# Brother Kretch - Hollow Chapel Preacher (Carcass Row)
+Sermons are just threats with incense.
+Runs a cult obsessed with body modification.
+Believes "The perfect vessel" is nearly complete.
+
+# Mace "Deadlock" Harlan - Ex con, Muscle for hire.
+Spent 14 years in Ashwall. Says he was wrongly imprisoned. Nobody believes him.
+Will kill for money or answers. You choose which.
+Drinks turpentine "For the kick".
+
+# Desiree Drown - Red Veil Queenpin
+Controls 80% of the city's Sex trade, and 100% of its snuffstream distribution.
+Looks like an actress. Talks like a warlord.
+"People pay more for pain than pleasure, I just deliver both."
+
+
+
+# ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+3. Quests / Missions - 
+
+# Sink the Shipment
+Location : Deadlight Docks
+Hook : A rival gangs bringing in an arms shipment. You're hired to intercept. Quiet or loud.
+Twist : The crates are full of caged people, not weapons- What now?
+
+# Watchdog
+Location : CPD Central
+Hook : Plant a surveillance bug in the captains office for the widows hand.
+Catch : Two patrols, one snitch, and a janitor with PTSD.
+
+# Mercy Killing
+Location - St. Grimhollow Hospital
+Hook - A VIP Got infected by a bioweapon. Theyre quarantined, you're paid to finish the job.
+Moral play - Turns out theyre a kid. Real young too. You killin or smugglin now?
+
+# Court of Shadows
+Location - Crowncourt Hall
+Hook - Frame a judge who planted evidence and a scandalous video.
+Reward - New contact in the judicial Branch.
+
+# The Light Beneath
+Location - The Veins
+Hook - A cult in the underground is gathering old city tech. It works to owell.
+Goal - Find their source. Sabotage it. Or Steal it.
+Horror - The tech is alive.
+
+# Last Meal
+Hook - A dinner invitation arrives, fancy, gold trimmed, no sender
+Location - Snake eyes lounge
+Mission - Turns out its a contract gig. Youre the assassin. But you werent told who to kill and the wrong guest has guards.
+
+# Smile for the feed
+Hook - An anonymous image appears in your dms. Its you. Asleep.
+Location - The bastion - Underground Studio
+Mission - Find whos filming you, and why your footage is being used in deepfake blackmail schemes.
+
+# Sewer King 
+Hook - A giant blood covered rat corpse is foudn nailed to the enterance of Needlepass.
+Location - The veins
+Mission - Investigate rumors of a new faction forming below ground, and their rat masked leader whos been claimed to be eating people.
+
+# A candle for mercy
+hook - every hospital patient youve ever helped just died in the same hour. same nosebleed.
+location - st. grimhollow / hollow chapel
+mission - trace the source of spiritual contagion tied to an old operating table now used as an altar.
+
+# infestation protocol
+
+
+# ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+4. Urban Legends / Unsolved Mysteries - 
+
+# Maintenance Tunnels - They Whisper
+Old maintenance Tunnels under the Veins
+If you walk them alone, you hear people's voices.
+Rumor says the ones who respond never died.
+
+# The Gray Man
+A suited figure seen at every major disaster in town.
+Fire riot bombing. Surveillance catches his face multiple places at once.
+
+# Project Harrow
+A CIB Blacksite. Hidden inside the Ashwall Pen.
+Secret genetic experiments. Failed ones now. Roam the lower levels- Warden denies it.
+Inmates have seen things with too many limbs.
+
+# Dead Channel 93.4 FM
+Static Station. plays numbers. plays names. names of people who dissapear the next day. nobody broadcasts. yet it still plays.
+
