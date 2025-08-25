@@ -1,29 +1,23 @@
 import json, sqlite3
 from pathlib import Path
-
 DB_PATH = Path("data/lowlife.db")
 SCHEMA_PATH = Path(__file__).with_name("schema.sql")
 DB_PATH.parent.mkdir(parents=True, exist_ok=True)
-
 def conn():
     c = sqlite3.connect(DB_PATH)
     c.row_factory = sqlite3.Row
     return c
-
 def init():
     schema = SCHEMA_PATH.read_text(encoding="utf-8")
     with conn() as db:
         db.executescript(schema)
-
 def upsert_player(snapshot: dict):
     user = snapshot.get("user", {})
     member = snapshot.get("member", {})
     derived = snapshot.get("derived", {})
     ctx = snapshot.get("join_context", {})
-
     roles = member.get("roles", [])
     top_role = roles[-1] if roles else {"id": None, "name": None}
-
     with conn() as db:
         db.execute("""
         INSERT INTO players (discord_id,name,global_name,nickname,is_bot,is_system,created_at_utc,joined_at_utc,
@@ -51,7 +45,6 @@ def upsert_player(snapshot: dict):
             int(derived.get("risk_score", 0)), json.dumps(derived.get("risk_reasons", [])),
             json.dumps(snapshot)
         ))
-
         db.execute("DELETE FROM player_roles WHERE discord_id=?", (user.get("id"),))
         for r in roles:
             db.execute("INSERT OR IGNORE INTO player_roles (discord_id,role_id,role_name) VALUES (?,?,?)",

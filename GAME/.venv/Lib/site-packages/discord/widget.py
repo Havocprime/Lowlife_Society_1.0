@@ -184,7 +184,7 @@ class WidgetMember(BaseUser):
         self.suppress: Optional[bool] = data.get('suppress', False)
 
         try:
-            game = data['game']  # pyright: ignore[reportTypedDictNotRequiredAccess]
+            game = data['game']
         except KeyError:
             activity = None
         else:
