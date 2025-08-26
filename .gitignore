@@ -58,3 +58,7 @@ backups/
 .DS_Store
 Thumbs.db
 .vscode/
+*.lnk
+# env
+# artifacts
+var/
