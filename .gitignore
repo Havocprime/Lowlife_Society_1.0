@@ -38,3 +38,23 @@ data/
 # Python cache
 __pycache__/
 *.pyc
+
+# env & runtime
+.env
+GAME/.env
+.venv/
+__pycache__/
+*.pyc
+
+# sqlite
+data/*.db
+data/*.db-*
+backups/
+
+# logs
+*.log
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.vscode/
