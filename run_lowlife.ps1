@@ -48,10 +48,15 @@ Write-Host "[LOWLIFE] Scanning for legacy 'DuelState' references ..."
 $hits = Select-String -Path "GAME\src\**\*.py" -Pattern "DuelState" -List -ErrorAction SilentlyContinue
 if ($hits) { $hits | ForEach-Object { Write-Host "  [WARN] $($_.Path)" } }
 
+python -m src.db.migrate
+
+
 # run
 $env:PYTHONPATH = (Get-Location).Path + "\GAME"
 Write-Host "[LOWLIFE] PYTHONPATH=$($env:PYTHONPATH)"
 Write-Host "[LOWLIFE] Starting bot ..."
+
+
 
 try {
   python -m src.bot.bot

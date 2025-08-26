@@ -1,4 +1,10 @@
 @echo off
 setlocal
-cd /d "%~dp0"
-powershell -NoProfile -ExecutionPolicy Bypass -File ".\run_bot.ps1"
+set PYTHONPATH=%~dp0GAME
+
+REM migrate
+python -m src.db.migrate
+if errorlevel 1 goto :eof
+
+REM start bot
+python -m src.bot.bot

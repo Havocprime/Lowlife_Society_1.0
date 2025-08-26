@@ -22,14 +22,11 @@ for p in (GAME_DIR, SRC_DIR, REPO_DIR):
     if sp not in sys.path:
         sys.path.insert(0, sp)
 
-load_dotenv(REPO_DIR / ".env")
-load_dotenv(GAME_DIR / ".env", override=True)
+# --- settings ---
+from src.core.settings import SETTINGS
+TOKEN    = SETTINGS.discord_token
+GUILD_ID = SETTINGS.guild_id
 
-TOKEN    = os.getenv("DISCORD_TOKEN", "").strip()
-GUILD_ID = int(os.getenv("DISCORD_GUILD_ID", "0") or "0")
-ADMIN_ROLE_ID = int(os.getenv("ADMIN_ROLE_ID", "0") or "0")
-TRUSTED_ROLE_IDS = {int(x) for x in os.getenv("TRUSTED_ROLE_IDS", "").split(",") if x.strip().isdigit()}
-TRUSTED_ROLE_NAMES = {x.strip().lower() for x in os.getenv("TRUSTED_ROLE_NAMES", "").split(",") if x.strip()}
 
 # ✅ import AFTER sys.path is set
 from src.core.audit import ensure_db, audit_event
@@ -177,6 +174,12 @@ class LowlifeBot(commands.Bot):
             log.info("audit DB ready")
         except Exception:
             log.exception("audit DB init failed")
+
+        async def setup_hook(self):
+            # ... your other loads ...
+            await self.load_extension("src.cogs.events")
+            await self.load_extension("src.features.character_sheet.commands")
+
 
         async def try_load(mod: str):
             try:
