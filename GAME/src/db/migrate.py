@@ -5,7 +5,9 @@ from src.core.settings import SETTINGS
 
 MIGRATIONS = [
     ("0001_init", "schema.sql"),
+    ("0002_txn_idem_unique", "0002_txn_idem_unique.sql"),
 ]
+
 
 def _apply(conn: sqlite3.Connection, name: str, sql_path: Path):
     with open(sql_path, "r", encoding="utf-8") as f:

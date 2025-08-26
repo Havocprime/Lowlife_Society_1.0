@@ -179,6 +179,13 @@ class LowlifeBot(commands.Bot):
             # ... your other loads ...
             await self.load_extension("src.cogs.events")
             await self.load_extension("src.features.character_sheet.commands")
+            await self.load_extension("src.admin.sync")
+            await self.load_extension("src.admin.export")
+            await self.load_extension("src.admin.audit")
+
+
+            
+
 
 
         async def try_load(mod: str):

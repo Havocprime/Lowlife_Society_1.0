@@ -212,22 +212,22 @@ class LowlifeBot(commands.Bot):
             log.warning("could not import/register notes group: %s", e)
 
         # --- /sync (admin-only) ---
-        @app_commands.command(name="sync", description="Admin: resync slash commands here")
-        @audit_event(action_type="admin.sync")
-        async def sync_cmd(interaction: discord.Interaction):
-            if not (
-                isinstance(interaction.user, discord.Member)
-                and interaction.user.guild_permissions.administrator
-            ):
-                await interaction.response.send_message("Nope.", ephemeral=True)
-                return
-            await interaction.response.defer(ephemeral=True, thinking=True)
-            if interaction.guild:
-                cmds = await interaction.client.tree.sync(guild=interaction.guild)  # type: ignore
-                await interaction.followup.send(f"Synced {len(cmds)} commands to this guild.", ephemeral=True)
-            else:
-                cmds = await interaction.client.tree.sync()
-                await interaction.followup.send(f"Synced {len(cmds)} commands globally.", ephemeral=True)
+        # @app_commands.command(name="sync", description="Admin: resync slash commands here")
+        # @audit_event(action_type="admin.sync")
+        # async def sync_cmd(interaction: discord.Interaction):
+        #    if not (
+        #        isinstance(interaction.user, discord.Member)
+        #        and interaction.user.guild_permissions.administrator
+        #    ):
+        #        await interaction.response.send_message("Nope.", ephemeral=True)
+        #        return
+        #    await interaction.response.defer(ephemeral=True, thinking=True)
+        #    if interaction.guild:
+        #        cmds = await interaction.client.tree.sync(guild=interaction.guild)  # type: ignore
+        #        await interaction.followup.send(f"Synced {len(cmds)} commands to this guild.", ephemeral=True)
+        #    else:
+        #        cmds = await interaction.client.tree.sync()
+        #        await interaction.followup.send(f"Synced {len(cmds)} commands globally.", ephemeral=True)
 
         # --- /inspect_full (admin-only, expanded) ---
         @app_commands.command(
