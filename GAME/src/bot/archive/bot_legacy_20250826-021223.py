@@ -1,6 +1,6 @@
-from __future__ import annotations
+from __future__ import annotations 
 
-import os, sys, asyncio, logging, io, csv, json, importlib
+import os, sys, asyncio, logging, io, csv, json
 from pathlib import Path
 from datetime import datetime, timezone
 
@@ -10,20 +10,21 @@ from discord import app_commands
 from dotenv import load_dotenv
 from zoneinfo import ZoneInfo
 
+# ---------------- build marker -------------
 BUILD_TAG = "bot.py:v4-inspect_full-and-cmd-origin-log"
 
 # ---------- paths & env ----------
 THIS_FILE = Path(__file__).resolve()
-SRC_DIR   = THIS_FILE.parents[1]   # .../GAME/src
-GAME_DIR  = THIS_FILE.parents[2]   # .../GAME
-REPO_DIR  = THIS_FILE.parents[3]   # repo root
-for p in (GAME_DIR, SRC_DIR, REPO_DIR):
-    sp = str(p)
-    if sp not in sys.path:
-        sys.path.insert(0, sp)
+GAMEROOT  = THIS_FILE.parents[2]      # ...\GAME\src
+SUPERROOT = THIS_FILE.parents[3]      # repo root
 
-load_dotenv(REPO_DIR / ".env")
-load_dotenv(GAME_DIR / ".env", override=True)
+for p in (SUPERROOT, GAMEROOT):
+    if str(p) not in sys.path:
+        sys.path.insert(0, str(p))
+
+# load .env from both locations; GAME overrides root
+load_dotenv(SUPERROOT / ".env")
+load_dotenv(GAMEROOT / ".env", override=True)
 
 TOKEN    = os.getenv("DISCORD_TOKEN", "").strip()
 GUILD_ID = int(os.getenv("DISCORD_GUILD_ID", "0") or "0")
@@ -33,25 +34,22 @@ TRUSTED_ROLE_NAMES = {x.strip().lower() for x in os.getenv("TRUSTED_ROLE_NAMES",
 
 # ✅ import AFTER sys.path is set
 from src.core.audit import ensure_db, audit_event
+
+# event/db helpers
 from src.core.events import (
     recent_events, last_event_time, DB_PATH,
     message_count, list_admin_notes
 )
 
-COGS = [
-    "src.cogs.activity_logger",
-    "src.cogs.admin_inspector",
-    "src.cogs.admin_notes",
-    "src.cogs.analytics",
-    "src.cogs.audit_log",
-    "src.cogs.invite_tracker",
-    "src.cogs.member_intake",
-]
-
-logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
+# ---------- logging ----------
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s %(name)s: %(message)s"
+)
 log = logging.getLogger("boot")
 log.info("Starting %s", BUILD_TAG)
 
+# ---------- helpers ----------
 DANGEROUS_PERMS = {
     "administrator","manage_guild","manage_channels","manage_roles","manage_webhooks",
     "kick_members","ban_members","mention_everyone","manage_messages","manage_threads",
@@ -59,12 +57,16 @@ DANGEROUS_PERMS = {
 }
 
 def _hex_color(v):
-    try: return f"#{int(v):06X}"
-    except Exception: return None
+    try:
+        return f"#{int(v):06X}"
+    except Exception:
+        return None
 
 def _rel_ymdh(a: datetime | None, b: datetime | None = None) -> str:
-    if not a: return "—"
-    if b is None: b = datetime.now(timezone.utc)
+    if not a:
+        return "—"
+    if b is None:
+        b = datetime.now(timezone.utc)
     from calendar import monthrange
     y = b.year - a.year - ((b.month, b.day, b.hour) < (a.month, a.day, a.hour))
     ay = a.replace(year=a.year + y)
@@ -83,62 +85,66 @@ def _rel_ymdh(a: datetime | None, b: datetime | None = None) -> str:
     parts.append(f"{h}_hours")
     return "_".join(parts) + " ago"
 
+LA_TZ = None
 try:
     LA_TZ = ZoneInfo("America/Los_Angeles")
 except Exception:
     LA_TZ = None
 
 def _fmt_ts_local(ts_in) -> str:
-    """DD/MM/YYYY H:MM AM/PM in LA time if available; accepts iso 'Z', seconds, ms, datetime."""
+    """DD/MM/YY H:MM AM/PM in LA time if available; accepts iso 'Z', seconds, ms, datetime."""
     try:
+        dt: datetime
         if isinstance(ts_in, datetime):
             dt = ts_in
         elif isinstance(ts_in, (int, float)) or (isinstance(ts_in, str) and ts_in.isdigit()):
             val = float(ts_in)
-            if val > 1e12: val /= 1000.0
+            if val > 1e12:
+                val /= 1000.0
             dt = datetime.fromtimestamp(val, tz=timezone.utc)
         elif isinstance(ts_in, str):
             s = ts_in.strip()
-            if s.endswith("Z"): s = s[:-1] + "+00:00"
+            if s.endswith("Z"):
+                s = s[:-1] + "+00:00"
             dt = datetime.fromisoformat(s)
-            if dt.tzinfo is None: dt = dt.replace(tzinfo=timezone.utc)
+            if dt.tzinfo is None:
+                dt = dt.replace(tzinfo=timezone.utc)
         else:
             return str(ts_in)
-        if LA_TZ: dt = dt.astimezone(LA_TZ)
+
+        if LA_TZ:
+            dt = dt.astimezone(LA_TZ)
         hour = dt.hour
         ampm = "AM" if hour < 12 else "PM"
         h12  = hour % 12 or 12
         return f"{dt.day}/{dt.month}/{dt.year % 100:02d} {h12}:{dt.minute:02d} {ampm}"
-
     except Exception:
         return str(ts_in)
 
 def _is_trusted(member: discord.Member) -> bool:
-    if member.guild_permissions.administrator: return True
-    if ADMIN_ROLE_ID and any(r.id == ADMIN_ROLE_ID for r in member.roles): return True
-    if TRUSTED_ROLE_IDS and any(r.id in TRUSTED_ROLE_IDS for r in member.roles): return True
-    if TRUSTED_ROLE_NAMES and any(r.name.lower() in TRUSTED_ROLE_NAMES for r in member.roles): return True
+    if member.guild_permissions.administrator:
+        return True
+    if ADMIN_ROLE_ID and any(r.id == ADMIN_ROLE_ID for r in member.roles):
+        return True
+    if TRUSTED_ROLE_IDS and any(r.id in TRUSTED_ROLE_IDS for r in member.roles):
+        return True
+    if TRUSTED_ROLE_NAMES and any(r.name.lower() in TRUSTED_ROLE_NAMES for r in member.roles):
+        return True
     return False
 
 def _snippet(s: str | None, n: int = 120) -> str:
-    if not s: return ""
+    if not s:
+        return ""
     s = s.replace("\n", " ").strip()
     return (s[:n] + "…") if len(s) > n else s
 
 def _to_int(x):
-    try: return int(x)
-    except Exception: return None
+    try:
+        return int(x)
+    except Exception:
+        return None
 
 def _ch_mention_from_payload(guild: discord.Guild, d: dict) -> str:
-    cid = d.get("channel_id") or d.get("channel") or d.get("cid")
-    if isinstance(cid, dict): cid = cid.get("id")
-    cid = _to_int(cid)
-    if not cid: return "—"
-    ch = guild.get_channel(cid)
-    return ch.mention if ch else f"<#{cid}>"
-
-def _ch_label_from_payload(guild: discord.Guild, d: dict) -> str:
-    """Return '#channelname' if found, otherwise <#id> or '—'."""
     cid = d.get("channel_id") or d.get("channel") or d.get("cid")
     if isinstance(cid, dict):
         cid = cid.get("id")
@@ -146,102 +152,88 @@ def _ch_label_from_payload(guild: discord.Guild, d: dict) -> str:
     if not cid:
         return "—"
     ch = guild.get_channel(cid)
-    return f"#{ch.name}" if ch else f"<#{cid}>"
+    return ch.mention if ch else f"<#{cid}>"
 
 def _extract_text(d: dict) -> str:
     for k in ("content", "message", "msg", "text", "body"):
         v = d.get(k)
-        if isinstance(v, str) and v: return v
+        if isinstance(v, str) and v:
+            return v
         if isinstance(v, dict):
             c = v.get("content")
-            if isinstance(c, str) and c: return c
+            if isinstance(c, str) and c:
+                return c
     return ""
 
 def _role_mentions(guild: discord.Guild, ids: list[str] | list[int] | None) -> str:
-    if not ids: return "—"
+    if not ids:
+        return "—"
     out = []
     for rid in ids:
         rid_i = _to_int(rid)
         if rid_i is None:
-            out.append(f"`{rid}`"); continue
+            out.append(f"`{rid}`")
+            continue
         r = guild.get_role(rid_i)
         out.append(r.mention if r else f"`{rid_i}`")
     return ", ".join(out) if out else "—"
 
+# ---------- bot ----------
 class LowlifeBot(commands.Bot):
     async def setup_hook(self):
-        # Ensure audit DB/schema
-        try:
-            res = ensure_db()
-            if asyncio.iscoroutine(res): await res
-            log.info("audit DB ready")
-        except Exception:
-            log.exception("audit DB init failed")
+        # Ensure audit DB/schema exists before anything logs
+        await ensure_db()
 
         async def try_load(mod: str):
             try:
                 await self.load_extension(mod)
                 log.info("loaded extension: %s", mod)
             except Exception:
-                log.exception("failed to load %s", mod)
+                log.exception("failed to load %s", mod)  # full traceback
 
-        for mod in COGS:
-            await try_load(mod)
+        # your cogs
+        await try_load("src.cogs.invite_tracker")
+        await try_load("src.cogs.member_intake")
+        await try_load("src.cogs.admin_inspector")   # likely owns the old /inspect
+        await try_load("src.cogs.activity_logger")
+        await try_load("src.cogs.admin_notes")
+        await try_load("src.cogs.analytics")
+        await try_load("src.cogs.audit_log")         # investigatory commands
 
-        # --- register notes group into the active scope (robust) ---
+        # --- explicitly register the /notes group into the same scope we sync ---
         try:
-            mod = importlib.import_module("src.cogs.admin_notes")
-            notes_group = getattr(mod, "notes", None)
-            if notes_group:
-                exists = self.tree.get_command("notes")  # type: ignore
-                if exists is None:
-                    try:
-                        if GUILD_ID:
-                            self.tree.add_command(notes_group, guild=discord.Object(id=GUILD_ID))
-                        else:
-                            self.tree.add_command(notes_group)
-                        log.info("registered notes group")
-                    except Exception as e:
-                        if "already registered" in str(e).lower():
-                            log.info("notes group already present; skipping (add_command duplicate)")
-                        else:
-                            raise
-                else:
-                    log.info("notes group already present; skipping (found in tree)")
+            from src.cogs.admin_notes import notes as _notes_group  # type: ignore
+            if GUILD_ID:
+                self.tree.add_command(_notes_group, guild=discord.Object(id=GUILD_ID))
+            else:
+                self.tree.add_command(_notes_group)
+            log.info("registered notes group from src.cogs.admin_notes")
         except Exception as e:
-            log.warning("could not register notes group: %s", e)
+            log.warning("could not import/register notes group: %s", e)
 
-        # --- /sync (admin) — tries guild, then global, and reports both ---
-        @app_commands.command(
-            name="sync",
-            description="Admin: resync slash commands (tries guild, then global)"
-        )
+        # --- /sync (admin-only) ---
+        @app_commands.command(name="sync", description="Admin: resync slash commands here")
         @audit_event(action_type="admin.sync")
         async def sync_cmd(interaction: discord.Interaction):
-            if not (isinstance(interaction.user, discord.Member) and interaction.user.guild_permissions.administrator):
+            if not (
+                isinstance(interaction.user, discord.Member)
+                and interaction.user.guild_permissions.administrator
+            ):
                 await interaction.response.send_message("Nope.", ephemeral=True)
                 return
-
             await interaction.response.defer(ephemeral=True, thinking=True)
-            parts = []
-
             if interaction.guild:
-                try:
-                    cmds = await interaction.client.tree.sync(guild=interaction.guild)  # type: ignore
-                    parts.append(f"Guild: {len(cmds)}")
-                except Exception as e:
-                    parts.append(f"Guild sync failed: {type(e).__name__}")
+                cmds = await interaction.client.tree.sync(guild=interaction.guild)  # type: ignore
+                await interaction.followup.send(f"Synced {len(cmds)} commands to this guild.", ephemeral=True)
+            else:
+                cmds = await interaction.client.tree.sync()
+                await interaction.followup.send(f"Synced {len(cmds)} commands globally.", ephemeral=True)
 
-            try:
-                gcmds = await interaction.client.tree.sync()
-                parts.append(f"Global: {len(gcmds)}")
-            except Exception as e:
-                parts.append(f"Global sync failed: {type(e).__name__}")
-
-            await interaction.followup.send("Synced — " + " • ".join(parts), ephemeral=True)
-
-        # --- /inspect_full (admin) ---
-        @app_commands.command(name="inspect_full", description="Admin: full profile with derived stats and recent actions")
+        # --- /inspect_full (admin-only, expanded) ---
+        @app_commands.command(
+            name="inspect_full",
+            description="Admin: full profile with derived stats and recent actions (new formatting)"
+        )
         @app_commands.describe(user="Target member (defaults to you)")
         @audit_event(
             action_type="admin.inspect",
@@ -249,14 +241,20 @@ class LowlifeBot(commands.Bot):
             extra=lambda interaction, user=None: {"scope": "full_profile"}
         )
         async def inspect_full(interaction: discord.Interaction, user: discord.Member | None = None):
-            if not (isinstance(interaction.user, discord.Member) and interaction.user.guild_permissions.administrator):
-                await interaction.response.send_message("Nope.", ephemeral=True); return
+            if not (
+                isinstance(interaction.user, discord.Member)
+                and interaction.user.guild_permissions.administrator
+            ):
+                await interaction.response.send_message("Nope.", ephemeral=True)
+                return
+
             await interaction.response.defer(ephemeral=True, thinking=True)
 
             member: discord.Member = user or interaction.user  # type: ignore
             created = member.created_at
             joined  = member.joined_at
 
+            # images
             avatar_url = member.display_avatar.url if member.display_avatar else None
             banner_url = None
             try:
@@ -266,14 +264,17 @@ class LowlifeBot(commands.Bot):
             except Exception:
                 pass
 
+            # roles & perms
             roles_sorted = [r for r in sorted(member.roles, key=lambda r: r.position) if r.name != "@everyone"]
             top3 = [r.name for r in roles_sorted[-3:]] if roles_sorted else []
             risky = []
             for name, allowed in member.guild_permissions:
                 if allowed and name in DANGEROUS_PERMS:
                     risky.append(name)
-                if len(risky) >= 5: break
+                if len(risky) >= 5:
+                    break
 
+            # presence / devices / activities
             status = str(getattr(member, "status", "offline"))
             dev = {
                 "desktop": str(getattr(member, "desktop_status", "offline")),
@@ -283,8 +284,10 @@ class LowlifeBot(commands.Bot):
             activities = []
             try:
                 for a in getattr(member, "activities", []) or []:
-                    if getattr(a, "name", None): activities.append(getattr(a, "name"))
-                    elif getattr(a, "state", None): activities.append(a.state)
+                    if getattr(a, "name", None):
+                        activities.append(getattr(a, "name"))
+                    elif getattr(a, "state", None):
+                        activities.append(a.state)
             except Exception:
                 pass
 
@@ -302,9 +305,11 @@ class LowlifeBot(commands.Bot):
                 pass
             accent = getattr(member, "accent_color", None); accent_val = getattr(accent, "value", None)
 
+            # message counts from our logs
             msg7  = message_count(member.id, 7, interaction.guild.id)   # type: ignore
             msg30 = message_count(member.id, 30, interaction.guild.id)  # type: ignore
 
+            # admin notes preview
             notes = list_admin_notes(interaction.guild.id, member.id, 2)  # type: ignore
             notes_lines = [f"`{ts}` — <@{aid}> — {note}" for (_nid, ts, aid, note) in notes] if notes else []
 
@@ -346,127 +351,82 @@ class LowlifeBot(commands.Bot):
             e.add_field(name="Msg Counts", value=f"7d: `{msg7}` • 30d: `{msg30}`", inline=True)
             e.add_field(name="Log DB", value=f"`{str(DB_PATH)}`", inline=True)
 
-            # --- recent actions: explicit formatting here (always show the section) ---
-            # Try to call recent_events with guild first (some versions require it)
-            try:
-                recents = recent_events(member.id, 50, interaction.guild.id)  # type: ignore[attr-defined]
-            except TypeError:
-                recents = recent_events(member.id, 50)
+            if notes_lines:
+                e.add_field(name=f"Admin Notes — latest {len(notes_lines)}", value="\n".join(notes_lines), inline=False)
 
-            def _recent_line(ts, kind, data):
-                ch  = _ch_label_from_payload(interaction.guild, data) if interaction.guild else "—"  # type: ignore
-                txt = _snippet(_extract_text(data))
-
-                if kind == "message":
-                    prefix = "Msg"
-                    body   = txt or "—"
-                elif kind == "message_edit":
-                    prefix = "Edit"
-                    body   = txt or (data.get("after") or {}).get("content") or "—"
-                elif kind == "message_delete":
-                    prefix = "Del"
-                    body   = txt or (data.get("before") or {}).get("content") or "unknown"
-                elif kind == "message_bulk_delete":
-                    prefix = f"BulkDel x{data.get('count', 0)}"
-                    cached = data.get("cached_with_text", 0)
-                    body   = f"{cached} with text" if cached else ""
-                else:
-                    prefix = kind.replace("_", " ").title()
-                    body   = txt or ""
-
-                return f"{_fmt_ts_local(ts)}  {prefix}@{ch} - {body or '—'}"
+            # ---- recent actions: explicit formatting here ----
+            recents = recent_events(member.id, 50)
 
             pretty = []
-            for row in recents[:20]:  # cap at 20 lines
-                # tolerate (ts, kind, payload) OR (id, ts, kind, payload)
-                if len(row) >= 4:
-                    _, ts, kind, payload = row[0], row[1], row[2], row[3]
-                elif len(row) >= 3:
-                    ts, kind, payload = row[0], row[1], row[2]
-                else:
-                    ts, kind, payload = row[0], (row[1] if len(row) > 1 else "event"), (row[2] if len(row) > 2 else "{}")
-
+            for ts, kind, payload in recents[:10]:
                 try:
-                    data = json.loads(payload or "{}") if isinstance(payload, (str, bytes)) else (payload or {})
+                    data = json.loads(payload or "{}")
                 except Exception:
                     data = {}
 
-                # Trim every individual line a bit so the field fits 1024 chars
-                line = _recent_line(ts, kind, data)
-                if len(line) > 120:
-                    line = line[:117] + "…"
-                pretty.append(line)
+                if kind == "message":
+                    ch = _ch_mention_from_payload(interaction.guild, data)  # type: ignore
+                    text = _snippet(_extract_text(data))
+                    desc = f"message in {ch} — “{text or '—'}”"
+                elif kind == "message_edit":
+                    ch = _ch_mention_from_payload(interaction.guild, data)  # type: ignore
+                    after = _snippet(_extract_text(data) or (data.get("after") or {}).get("content") or "")
+                    desc = f"edited message in {ch} — “{after or '—'}”"
+                elif kind == "message_delete":
+                    ch = _ch_mention_from_payload(interaction.guild, data)  # type: ignore
+                    txt = _snippet(_extract_text(data) or (data.get("before") or {}).get("content") or "")
+                    desc = f"deleted message in {ch} — “{txt or 'unknown'}”"
+                elif kind == "message_bulk_delete":
+                    ch = _ch_mention_from_payload(interaction.guild, data)  # type: ignore
+                    cnt = data.get("count", 0)
+                    cached = data.get("cached_with_text", 0)
+                    extra = f" ({cached} with text)" if cached else ""
+                    desc = f"bulk delete in {ch} — {cnt} messages{extra}"
+                else:
+                    # Compact fallback for non-message events
+                    desc = kind.replace("_", " ")
 
-            # Always show the section (even if empty)
-            out = "\n".join(pretty) if pretty else "None recorded yet — start chatting to populate this!"
-            # Ensure Discord field limit (1024 chars)
-            while len(out) > 1024 and len(pretty) > 1:
-                pretty.pop()                # drop the oldest line in our slice
-                out = "\n".join(pretty)
+                pretty.append(f"{_fmt_ts_local(ts)} — {desc}")
 
-            e.add_field(name="Recent Actions", value=out, inline=False)
-
-
+            if pretty:
+                e.add_field(name="Recent Actions", value="\n".join(pretty), inline=False)
 
             e.set_footer(text=f"{BUILD_TAG} — Use /note_list to view all, /note_add to add, /note_delete to remove")
 
-            out = io.StringIO(); w = csv.writer(out)
+            # CSV attachment
+            out = io.StringIO()
+            w = csv.writer(out)
             w.writerow(["ts_utc","kind","payload"])
             for ts, kind, payload in recents:
                 w.writerow([ts, kind, payload])
-            file = discord.File(io.BytesIO(out.getvalue().encode("utf-8")), filename=f"recent_actions_{member.id}.csv")
+            file = discord.File(io.BytesIO(out.getvalue().encode("utf-8")),
+                                filename=f"recent_actions_{member.id}.csv")
+
             await interaction.followup.send(embed=e, file=file, ephemeral=True)
 
-        # ----- register & SYNC with fallback -----
-        async def register_and_sync():
-            # Always add GLOBAL commands locally so dispatch never fails
-            for fn, label in ((sync_cmd, "sync"), (inspect_full, "inspect_full")):
-                try:
-                    self.tree.add_command(fn)
-                except Exception as e:
-                    if "already registered" in str(e).lower():
-                        pass
-                    else:
-                        log.warning("add_command(global,%s) failed: %s", label, e)
+        # ----- register commands and sync now -----
+        if GUILD_ID:
+            guild = discord.Object(id=GUILD_ID)
+            self.tree.add_command(sync_cmd, guild=guild)
+            self.tree.add_command(inspect_full, guild=guild)  # << our new name
+            self.tree.copy_global_to(guild=guild)
+            cmds = await self.tree.sync(guild=guild)
+            log.info("slash commands guild-synced: %d cmds to %s", len(cmds), GUILD_ID)
+        else:
+            self.tree.add_command(sync_cmd)
+            self.tree.add_command(inspect_full)  # << our new name
+            cmds = await self.tree.sync()
+            log.info("slash commands globally synced: %d cmds", len(cmds))
 
-            guild_added = False
-            if GUILD_ID:
-                guild = discord.Object(id=GUILD_ID)
-                for fn, label in ((sync_cmd, "sync"), (inspect_full, "inspect_full")):
-                    try:
-                        self.tree.add_command(fn, guild=guild)
-                        guild_added = True
-                    except Exception as e:
-                        if "already registered" in str(e).lower():
-                            guild_added = True
-                        else:
-                            log.warning("add_command(guild,%s) failed: %s", label, e)
-
-            # Try to sync both scopes; report counts
-            g_count = "n/a"
-            try:
-                gcmds = await self.tree.sync()
-                g_count = str(len(gcmds))
-            except Exception as e:
-                log.warning("Global sync failed: %s", e)
-
-            if GUILD_ID and guild_added:
-                try:
-                    gcmds = await self.tree.sync(guild=discord.Object(id=GUILD_ID))
-                    log.info("startup sync — Guild: %d • Global: %s", len(gcmds if 'gcmds' in locals() else []), g_count)
-                    log.info("slash commands guild-synced: %d cmds to %s", len(gcmds), GUILD_ID)
-                except Exception as e:
-                    log.warning("Guild sync failed for %s (%s).", GUILD_ID, e)
-                    log.info("startup sync — Guild: failed • Global: %s", g_count)
-            else:
-                log.info("startup sync — Guild: skipped • Global: %s", g_count)
-
-        await register_and_sync()
-
-        # Inventory
+        # --- print who owns each command (module) to spot conflicts ---
         for cmd in self.tree.walk_commands():
-            mod = getattr(cmd.callback, "__module__", "?")
+            try:
+                mod = getattr(cmd.callback, "__module__", "?")
+            except Exception:
+                mod = "?"
             log.info("slash cmd: /%s from %s", cmd.qualified_name, mod)
+
+        log.info("tree.walk_commands(): %s", [c.qualified_name for c in self.tree.walk_commands()])
 
     async def on_ready(self):
         log.info("Logged in as %s (%s) — %s", self.user, getattr(self.user, "id", "?"), BUILD_TAG)
