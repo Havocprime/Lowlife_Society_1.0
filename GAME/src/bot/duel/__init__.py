@@ -7,4 +7,5 @@ Thin wrapper that exposes the legacy duel command group so bot.py can
 """
 
 from .legacy_port import register_duel  # re-export
+
 __all__ = ["register_duel"]

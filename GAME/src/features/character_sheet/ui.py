@@ -1,6 +1,9 @@
 from __future__ import annotations
+
 import discord
+
 from src.db import dal
+
 
 def character_embed(player_row, character_row) -> discord.Embed:
     e = discord.Embed(title="LOWLIFE — Character Sheet", color=discord.Color.gold())
@@ -11,7 +14,7 @@ def character_embed(player_row, character_row) -> discord.Embed:
         e.add_field(
             name="Character",
             value=f"**{character_row['codename']}**  •  Faction: {character_row['faction'] or '-'}",
-            inline=False
+            inline=False,
         )
         # vitals
         prof = _get_profile(character_row["id"])
@@ -27,7 +30,10 @@ def character_embed(player_row, character_row) -> discord.Embed:
         # inventory preview
         inv = dal.list_inventory(character_row["id"])[:5]
         if inv:
-            lines = [f"• **{r['name']}** x{r['qty']} _(R:{r['rarity'] or '-'}, {r['class'] or '-'})_" for r in inv]
+            lines = [
+                f"• **{r['name']}** x{r['qty']} _(R:{r['rarity'] or '-'}, {r['class'] or '-'})_"
+                for r in inv
+            ]
             e.add_field(name="Inventory (Top 5)", value="\n".join(lines), inline=False)
         else:
             e.add_field(name="Inventory", value="_empty_", inline=False)

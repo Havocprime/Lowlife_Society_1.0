@@ -2,29 +2,48 @@
 from __future__ import annotations
 
 import math
+
 from .state import (
-    DuelState, FighterState, RangeGate, RANGE_NAMES,
-    MOVE_COST, COVER_NONE, COVER_PARTIAL, COVER_FULL,
-    DODGE_BASE, DODGE_STAM_SCALER, DODGE_WEIGHT_SCALER,
-    STAMINA_MIN_FOR_SPRINT, STAMINA_REGEN_PER_TURN,
-    CONCEALMENT_TICK, COVER_TO_HIT_MOD, clamp
+    CONCEALMENT_TICK,
+    COVER_FULL,
+    COVER_NONE,
+    COVER_PARTIAL,
+    COVER_TO_HIT_MOD,
+    DODGE_BASE,
+    DODGE_STAM_SCALER,
+    DODGE_WEIGHT_SCALER,
+    MOVE_COST,
+    RANGE_NAMES,
+    STAMINA_MIN_FOR_SPRINT,
+    STAMINA_REGEN_PER_TURN,
+    DuelState,
+    FighterState,
+    RangeGate,
+    clamp,
 )
+
 
 def gate_step(g: RangeGate, delta: int) -> RangeGate:
     return RangeGate(clamp(g + delta, RangeGate.CLOSE, RangeGate.OUT))
 
+
 def readable_state(ds: DuelState) -> str:
     def cov(c):
-        return {COVER_NONE:"—", COVER_PARTIAL:"▦", COVER_FULL:"▩"}.get(c, "—")
-    return (f"**Range:** {RANGE_NAMES[ds.current_range]}  |  "
-            f"**{ds.p1.display}** STAM {ds.p1.stamina} Cover {cov(ds.p1.cover)} "
-            f"vs **{ds.p2.display}** STAM {ds.p2.stamina} Cover {cov(ds.p2.cover)}")
+        return {COVER_NONE: "—", COVER_PARTIAL: "▦", COVER_FULL: "▩"}.get(c, "—")
+
+    return (
+        f"**Range:** {RANGE_NAMES[ds.current_range]}  |  "
+        f"**{ds.p1.display}** STAM {ds.p1.stamina} Cover {cov(ds.p1.cover)} "
+        f"vs **{ds.p2.display}** STAM {ds.p2.stamina} Cover {cov(ds.p2.cover)}"
+    )
+
 
 def to_hit(base: float, cover: int, stamina: int) -> float:
     # stamina gives slight accuracy boost if high, penalty if low
     stam_adj = (stamina - 50) / 100.0 * 0.08
     val = base + COVER_TO_HIT_MOD[cover] + stam_adj
     return clamp(val, 0.05, 0.95)
+
 
 def dodge_chance(fs: FighterState) -> float:
     # Weight: -0.15 at +30 weight roughly; Stamina: + up to 25% of base
@@ -33,15 +52,18 @@ def dodge_chance(fs: FighterState) -> float:
     val = DODGE_BASE + w_adj + s_adj
     return clamp(val, 0.02, 0.5)
 
+
 def end_turn_recover(fs: FighterState):
     fs.stamina = clamp(fs.stamina + STAMINA_REGEN_PER_TURN, 0, 100)
     # Defensive intents expire if not consumed by end of opponent's turn
     fs.status_block = False
     fs.status_dodge = False
 
+
 # ----------------------- Actions: Movement & Cover -----------------------
 
-def act_advance(ds: DuelState, idx: int, sprint: bool=False) -> str:
+
+def act_advance(ds: DuelState, idx: int, sprint: bool = False) -> str:
     f = ds.fighter(idx)
     steps = 2 if sprint and f.stamina >= STAMINA_MIN_FOR_SPRINT and f.weight <= 25 else 1
     cost = MOVE_COST["SPRINT_ADV"] if steps == 2 else MOVE_COST["ADVANCE"]
@@ -50,7 +72,8 @@ def act_advance(ds: DuelState, idx: int, sprint: bool=False) -> str:
     ds.current_range = gate_step(ds.current_range, -steps)
     return f"{f.display} **advances** ({RANGE_NAMES[before]} → {RANGE_NAMES[ds.current_range]})."
 
-def act_retreat(ds: DuelState, idx: int, sprint: bool=False) -> str:
+
+def act_retreat(ds: DuelState, idx: int, sprint: bool = False) -> str:
     f = ds.fighter(idx)
     steps = 2 if sprint and f.stamina >= STAMINA_MIN_FOR_SPRINT and f.weight <= 25 else 1
     cost = MOVE_COST["SPRINT_RET"] if steps == 2 else MOVE_COST["RETREAT"]
@@ -59,19 +82,22 @@ def act_retreat(ds: DuelState, idx: int, sprint: bool=False) -> str:
     ds.current_range = gate_step(ds.current_range, +steps)
     return f"{f.display} **retreats** ({RANGE_NAMES[before]} → {RANGE_NAMES[ds.current_range]})."
 
+
 def act_take_cover(ds: DuelState, idx: int, level: int) -> str:
     f = ds.fighter(idx)
     level = clamp(level, COVER_NONE, COVER_FULL)
     prev = f.cover
     f.cover = level
     # concealment rises slightly in cover
-    f.concealment = clamp(f.concealment + CONCEALMENT_TICK//2, 0, 100)
+    f.concealment = clamp(f.concealment + CONCEALMENT_TICK // 2, 0, 100)
     return f"{f.display} moves into **{'FULL' if level==2 else 'PARTIAL'} cover**."
+
 
 def act_leave_cover(ds: DuelState, idx: int) -> str:
     f = ds.fighter(idx)
     f.cover = COVER_NONE
     return f"{f.display} **leaves cover**."
+
 
 # --- Back-compat: init_battlefield ------------------------------------------
 def init_battlefield(state, *, segments: int = 20) -> None:
@@ -131,6 +157,7 @@ def compose_distance_rows(state) -> list[str]:
     except Exception:
         return []
 
+
 # --- Back-compat: cover + path helpers used by legacy views -------------------
 def update_cover_flags(state) -> None:
     """
@@ -183,7 +210,7 @@ def compose_distance_rows(state) -> list[str]:
 
         lane = ["·"] * segs
         if a_idx == b_idx:
-            lane[a_idx] = "X"   # same cell
+            lane[a_idx] = "X"  # same cell
         else:
             lane[a_idx] = "A"
             lane[b_idx] = "B"

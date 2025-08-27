@@ -9,7 +9,9 @@ Very simple AI that:
 from __future__ import annotations
 
 import discord
+
 from .state import DuelState
+
 
 async def maybe_ai_take_turn(interaction: discord.Interaction, ds: DuelState) -> None:
     """
@@ -18,16 +20,25 @@ async def maybe_ai_take_turn(interaction: discord.Interaction, ds: DuelState) ->
     """
     return None
 
+
 import random
 
 from src.core.duel_core import (
-    DuelState, rg_to_loadout_range, compute_attack_numbers,
-    load_player_stats, armor_kind_from_wclass, apply_armor_reduction,
-    record_hit, clamp, iclamp,
+    DuelState,
+    apply_armor_reduction,
+    armor_kind_from_wclass,
+    clamp,
+    compute_attack_numbers,
+    iclamp,
+    load_player_stats,
+    record_hit,
+    rg_to_loadout_range,
 )
+
 from .actions import fists_too_far
-from .battlefield import update_cover_flags, mark_path_between
-from .views import maybe_offer_finisher, hud_update_with_view, hud_update_auto
+from .battlefield import mark_path_between, update_cover_flags
+from .views import hud_update_auto, hud_update_with_view, maybe_offer_finisher
+
 
 async def maybe_ai_take_turn(inter, state: DuelState):
     if not state.active or not state.current().is_ai:
@@ -41,6 +52,7 @@ async def maybe_ai_take_turn(inter, state: DuelState):
 
     # Pending grenade on AI's tile?
     from .actions import resolve_pending_grenade
+
     await resolve_pending_grenade(inter, state, state.current())
 
     ai = state.current()
@@ -50,8 +62,12 @@ async def maybe_ai_take_turn(inter, state: DuelState):
     if state.choking:
         choker, target = state.choking
         if ai.user_id == choker:
-            state.breath[target] = iclamp(state.breath.get(target, 50) - random.randint(8, 12), 0, 100)
-            state.bloodflow[target] = iclamp(state.bloodflow.get(target, 50) - random.randint(4, 8), 0, 100)
+            state.breath[target] = iclamp(
+                state.breath.get(target, 50) - random.randint(8, 12), 0, 100
+            )
+            state.bloodflow[target] = iclamp(
+                state.bloodflow.get(target, 50) - random.randint(4, 8), 0, 100
+            )
             state.push(f"🤖 {ai.name} tightens the choke.")
             if state.breath[target] <= 0 or state.bloodflow[target] <= 0:
                 state.unconscious.add(target)
@@ -78,8 +94,12 @@ async def maybe_ai_take_turn(inter, state: DuelState):
             dmg = random.randint(1, 2)
             foe.hp = max(0, foe.hp - dmg)
             if random.random() < 0.5:
-                state.positioning[ai.user_id] = iclamp(state.positioning.get(ai.user_id, 50) + 10, 0, 100)
-                state.positioning[foe.user_id] = iclamp(state.positioning.get(foe.user_id, 50) - 10, 0, 100)
+                state.positioning[ai.user_id] = iclamp(
+                    state.positioning.get(ai.user_id, 50) + 10, 0, 100
+                )
+                state.positioning[foe.user_id] = iclamp(
+                    state.positioning.get(foe.user_id, 50) - 10, 0, 100
+                )
                 swing = " Position improved."
             else:
                 swing = ""
@@ -124,10 +144,11 @@ async def maybe_ai_take_turn(inter, state: DuelState):
         else:
             p = float(calc["accuracy"]) / 100.0
             if foe.user_id in state.in_cover:
-                p *= (1.0 - float(state.cover_pct.get(foe.user_id, 0)) / 100.0)
+                p *= 1.0 - float(state.cover_pct.get(foe.user_id, 0)) / 100.0
             if foe.user_id in state.hidden:
                 p = 0.0
-            atk = load_player_stats(ai.user_id); dfn = load_player_stats(foe.user_id)
+            atk = load_player_stats(ai.user_id)
+            dfn = load_player_stats(foe.user_id)
             p += 0.015 * (atk["combat"] - dfn["combat"]) + 0.010 * (atk["fitness"] - dfn["fitness"])
             p = clamp(p, 0.00, 0.98)
             if random.random() <= p:
@@ -136,9 +157,13 @@ async def maybe_ai_take_turn(inter, state: DuelState):
                 final, mit = apply_armor_reduction(state, foe.user_id, dfn, base, kind)
                 foe.hp = max(0, foe.hp - final)
                 if weapon_name == "Fists":
-                    state.push(f"🤖 {ai.name} **swings** and hits {foe.name} for **{final}**{f' (−{mit} armor)' if mit>0 else ''}.")
+                    state.push(
+                        f"🤖 {ai.name} **swings** and hits {foe.name} for **{final}**{f' (−{mit} armor)' if mit>0 else ''}."
+                    )
                 else:
-                    state.push(f"🤖 {ai.name} fires **{calc['weapon'].name}** and hits {foe.name} for **{final}**{f' (−{mit} armor)' if mit>0 else ''}.")
+                    state.push(
+                        f"🤖 {ai.name} fires **{calc['weapon'].name}** and hits {foe.name} for **{final}**{f' (−{mit} armor)' if mit>0 else ''}."
+                    )
                 record_hit(state, ai.user_id, foe.user_id, "shot", calc["weapon"].name)
                 took_action = True
             else:

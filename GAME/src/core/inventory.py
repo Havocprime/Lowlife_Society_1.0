@@ -1,17 +1,20 @@
 # FILE: src/core/inventory.py
 from __future__ import annotations
-import logging
-from typing import Dict, Any, List, Optional, Tuple
 
-from src.core.persist import load_player, save_player
+import logging
+from typing import Any, Dict, List, Optional, Tuple
+
 from src.core.items import instantiate_from_def
+from src.core.persist import load_player, save_player
 
 log = logging.getLogger("inventory")
 
-VALID_SLOTS = ["primary","secondary","armor","accessory"]
+VALID_SLOTS = ["primary", "secondary", "armor", "accessory"]
+
 
 def ensure_player(guild_id: int, user_id: int) -> Dict[str, Any]:
     return load_player(guild_id, user_id)
+
 
 def _find_item(state: Dict[str, Any], inst_id: str) -> Optional[Dict[str, Any]]:
     for it in state["inventory"]:
@@ -25,13 +28,15 @@ def _find_item(state: Dict[str, Any], inst_id: str) -> Optional[Dict[str, Any]]:
             return it
     return None
 
+
 def grant_item(state: Dict[str, Any], item: Dict[str, Any]) -> None:
     state["inventory"].append(item)
     save_player(state)
 
+
 def remove_item(state: Dict[str, Any], inst_id: str) -> bool:
     inv = state["inventory"]
-    idx = next((i for i,it in enumerate(inv) if it["inst_id"] == inst_id), -1)
+    idx = next((i for i, it in enumerate(inv) if it["inst_id"] == inst_id), -1)
     if idx >= 0:
         inv.pop(idx)
         for slot, iid in list(state["equipment"].items()):
@@ -41,7 +46,8 @@ def remove_item(state: Dict[str, Any], inst_id: str) -> bool:
         return True
     return False
 
-def equip_item(state: Dict[str, Any], inst_id: str, slot: Optional[str] = None) -> Tuple[bool,str]:
+
+def equip_item(state: Dict[str, Any], inst_id: str, slot: Optional[str] = None) -> Tuple[bool, str]:
     item = _find_item(state, inst_id)
     if not item:
         return False, "Item not found."
@@ -57,7 +63,8 @@ def equip_item(state: Dict[str, Any], inst_id: str, slot: Optional[str] = None) 
     save_player(state)
     return True, f"Equipped {item['name']} to {slot}."
 
-def unequip_slot(state: Dict[str, Any], slot: str) -> Tuple[bool,str]:
+
+def unequip_slot(state: Dict[str, Any], slot: str) -> Tuple[bool, str]:
     if slot not in VALID_SLOTS:
         return False, f"Invalid slot '{slot}'."
     if state["equipment"].get(slot) is None:
@@ -66,10 +73,13 @@ def unequip_slot(state: Dict[str, Any], slot: str) -> Tuple[bool,str]:
     save_player(state)
     return True, f"Unequipped {slot}."
 
+
 # ---------------- Weight / Capacity ----------------
+
 
 def base_capacity(state: Dict[str, Any]) -> float:
     return float(state.get("limits", {}).get("carry_capacity", 25.0))
+
 
 def capacity_bonus_from_equipment(state: Dict[str, Any]) -> float:
     """Each EQUIPPED item with tag 'carry' grants +5.0 kg."""
@@ -82,17 +92,22 @@ def capacity_bonus_from_equipment(state: Dict[str, Any]) -> float:
             bonus += 5.0
     return bonus
 
+
 def current_capacity(state: Dict[str, Any]) -> float:
     return round(base_capacity(state) + capacity_bonus_from_equipment(state), 2)
+
 
 def total_weight(state: Dict[str, Any]) -> float:
     w = sum(float(it.get("weight", 0)) for it in state["inventory"])
     return round(w, 2)
 
+
 def is_overweight(state: Dict[str, Any]) -> bool:
     return total_weight(state) > current_capacity(state)
 
+
 # ---------------- Derived Mods ----------------
+
 
 def derived_equipped_mods(state: Dict[str, Any]) -> Dict[str, int]:
     mods: Dict[str, int] = {}
@@ -102,15 +117,18 @@ def derived_equipped_mods(state: Dict[str, Any]) -> Dict[str, int]:
         item = next((x for x in state["inventory"] if x["inst_id"] == iid), None)
         if not item:
             continue
-        for k,v in item.get("mods", {}).items():
+        for k, v in item.get("mods", {}).items():
             mods[k] = mods.get(k, 0) + int(v)
     return mods
+
 
 def get_equipped_ids(state: Dict[str, Any]) -> List[str]:
     return [iid for iid in state["equipment"].values() if iid]
 
+
 def get_equipped_mods(state: Dict[str, Any]) -> Dict[str, int]:
     return derived_equipped_mods(state)
+
 
 def get_equipped_items(state: Dict[str, Any]) -> Dict[str, Any]:
     out: Dict[str, Any] = {}
@@ -122,16 +140,26 @@ def get_equipped_items(state: Dict[str, Any]) -> Dict[str, Any]:
         out[slot] = it
     return out
 
+
 # ---------------- Item Generation Helpers ----------------
+
 
 def generate_item(def_id: str, tier: str = "common") -> Dict[str, Any]:
     return instantiate_from_def(def_id, tier=tier)
 
+
 def give_basic_loadout(state: Dict[str, Any]) -> None:
-    for def_id, tier in [("melee.bat","common"), ("pistol.m9","common"), ("armor.leather","common"), ("med.basic","common")]:
+    for def_id, tier in [
+        ("melee.bat", "common"),
+        ("pistol.m9", "common"),
+        ("armor.leather", "common"),
+        ("med.basic", "common"),
+    ]:
         grant_item(state, generate_item(def_id, tier))
 
+
 # ---------------- Consumables & Transfer ----------------
+
 
 def use_consumable(state: Dict[str, Any], inst_id: str) -> Tuple[bool, str]:
     it = _find_item(state, inst_id)
@@ -145,7 +173,10 @@ def use_consumable(state: Dict[str, Any], inst_id: str) -> Tuple[bool, str]:
         return False, "Failed to consume item."
     return True, effect_msg
 
-def transfer_item(from_state: Dict[str, Any], to_state: Dict[str, Any], inst_id: str) -> Tuple[bool, str]:
+
+def transfer_item(
+    from_state: Dict[str, Any], to_state: Dict[str, Any], inst_id: str
+) -> Tuple[bool, str]:
     it = _find_item(from_state, inst_id)
     if not it:
         return False, "Item not found."

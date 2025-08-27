@@ -1,0 +1,28 @@
+[tool.black]
+line-length = 100
+target-version = ["py312"]
+exclude = '''
+/(
+    \.git
+  | \.venv
+  | var
+  | dist
+  | build
+  | __pycache__
+  | GAME/src/bot/archive
+)/
+'''
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+exclude = ["GAME/var", "GAME/src/bot/archive", "**/__pycache__", "build", "dist", ".venv"]
+
+# 🔽 minimal lint for now (only import order)
+[tool.ruff.lint]
+select = ["I"]
+
+[tool.pytest.ini_options]
+pythonpath = ["GAME"]            # so `src.*` imports resolve in tests
+testpaths = ["GAME/tests"]
+addopts = "-q"

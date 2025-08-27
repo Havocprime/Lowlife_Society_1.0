@@ -1,11 +1,16 @@
-import os, sqlite3
+import os
+import sqlite3
 from pathlib import Path
+
 
 def write(p: Path, s: str):
     p.parent.mkdir(parents=True, exist_ok=True)
     p.write_text(s, encoding="utf-8")
 
-write(Path("src/core/schema.sql"), """
+
+write(
+    Path("src/core/schema.sql"),
+    """
 -- players
 CREATE TABLE IF NOT EXISTS players (
   discord_id           TEXT PRIMARY KEY,
@@ -52,9 +57,12 @@ CREATE TABLE IF NOT EXISTS join_events (
   post_roles_json      TEXT,
   snapshot_json        TEXT
 );
-""".strip())
+""".strip(),
+)
 
-write(Path("src/core/portraits.py"), """
+write(
+    Path("src/core/portraits.py"),
+    """
 from pathlib import Path
 PORTRAIT_DIR = Path("game/assets/portraits")
 def list_portraits():
@@ -67,9 +75,12 @@ def pick_portrait_for_user(user_id: int) -> str | None:
     if not files:
         return None
     return str(files[user_id % len(files)])
-""".strip())
+""".strip(),
+)
 
-write(Path("src/core/risk.py"), """
+write(
+    Path("src/core/risk.py"),
+    """
 from datetime import datetime, timezone
 def compute_risk(snapshot: dict) -> tuple[int, list[str]]:
     reasons = []; score = 0
@@ -93,9 +104,12 @@ def compute_risk(snapshot: dict) -> tuple[int, list[str]]:
     if member.get("pending"):
         score += 10; reasons.append("membership_screen_pending")
     return score, reasons
-""".strip())
+""".strip(),
+)
 
-write(Path("src/core/db.py"), """
+write(
+    Path("src/core/db.py"),
+    """
 import json, sqlite3
 from pathlib import Path
 DB_PATH = Path("data/lowlife.db")
@@ -147,9 +161,12 @@ def upsert_player(snapshot: dict):
         for r in roles:
             db.execute("INSERT OR IGNORE INTO player_roles (discord_id,role_id,role_name) VALUES (?,?,?)",
                        (user.get("id"), r.get("id"), r.get("name")))
-""".strip())
+""".strip(),
+)
 
-write(Path("src/cogs/invite_tracker.py"), """
+write(
+    Path("src/cogs/invite_tracker.py"),
+    """
 import discord
 from discord.ext import commands
 class InviteTracker(commands.Cog):
@@ -190,9 +207,12 @@ class InviteTracker(commands.Cog):
         return None, None, None
 async def setup(bot: commands.Bot):
     await bot.add_cog(InviteTracker(bot))
-""".strip())
+""".strip(),
+)
 
-write(Path("src/cogs/member_intake.py"), """
+write(
+    Path("src/cogs/member_intake.py"),
+    """
 from __future__ import annotations
 import os, discord
 from discord.ext import commands
@@ -303,9 +323,12 @@ class MemberIntake(commands.Cog):
             await channel.send(embed=e)
 async def setup(bot: commands.Bot):
     await bot.add_cog(MemberIntake(bot))
-""".strip())
+""".strip(),
+)
 
-write(Path("src/cogs/admin_inspector.py"), """
+write(
+    Path("src/cogs/admin_inspector.py"),
+    """
 import os, io, json, discord
 from discord.ext import commands
 from discord import app_commands
@@ -372,9 +395,13 @@ class AdminInspector(commands.Cog):
         await interaction.response.send_message(embed=e, file=file, ephemeral=True)
 async def setup(bot: commands.Bot):
     await bot.add_cog(AdminInspector(bot))
-""".strip())
+""".strip(),
+)
 
 write(Path("scripts/__init__.py"), "")
-write(Path("scripts/init_db.py"), "from src.core.db import init\nif __name__ == '__main__':\n    init()\n    print('DB initialized at data/lowlife.db')\n")
+write(
+    Path("scripts/init_db.py"),
+    "from src.core.db import init\nif __name__ == '__main__':\n    init()\n    print('DB initialized at data/lowlife.db')\n",
+)
 
 print("Wrote files to src/core, src/cogs, scripts")

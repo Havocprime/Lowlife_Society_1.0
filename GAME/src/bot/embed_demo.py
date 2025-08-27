@@ -1,18 +1,20 @@
 # FILE: src/bot/embed_demo.py
 from __future__ import annotations
 
+from pathlib import Path
+
 import discord
 from discord import app_commands
 from discord.ext import commands
-from pathlib import Path
 
 # ---- CONFIG ----
 # Put your image at: assets/combat_template.png
 # You can change this if you prefer a different path/filename.
 IMAGE_PATH = Path("assets/combat_template.png")
-ATTACH_NAME = "combat_template.png"   # name used by attachment:// URL
+ATTACH_NAME = "combat_template.png"  # name used by attachment:// URL
 
 EMBED_COLOR = 0x8A2BE2  # purple-ish for Lowlife vibes
+
 
 def _build_combat_embed(image_attach_name: str) -> discord.Embed:
     """
@@ -50,7 +52,9 @@ def _build_combat_embed(image_attach_name: str) -> discord.Embed:
     # Fields to mimic a combat readout
     e.add_field(name="Attacker Action", value="**Choke** (Stamina −6)", inline=True)
     e.add_field(name="Defender Reaction", value="**Struggle** (Stamina −4)", inline=True)
-    e.add_field(name="Outcome", value="**Choke escalates** → Defender **Unconscious**", inline=False)
+    e.add_field(
+        name="Outcome", value="**Choke escalates** → Defender **Unconscious**", inline=False
+    )
 
     e.add_field(name="Attacker HP", value="**82 / 100**", inline=True)
     e.add_field(name="Defender HP", value="**41 / 100**", inline=True)
@@ -72,7 +76,10 @@ def register_embed_demo(tree: app_commands.CommandTree):
         register_embed_demo(tree)
     """
 
-    @tree.command(name="combat_embed_template", description="Show a combat embed with all image fields populated.")
+    @tree.command(
+        name="combat_embed_template",
+        description="Show a combat embed with all image fields populated.",
+    )
     async def combat_embed_template(interaction: discord.Interaction):
         # Validate image existence and send a friendly error if missing
         if not IMAGE_PATH.exists():
@@ -93,18 +100,28 @@ def register_embed_demo(tree: app_commands.CommandTree):
 
         # Example action row just for context (not required for image testing)
         view = discord.ui.View()
-        view.add_item(discord.ui.Button(label="Choke", style=discord.ButtonStyle.danger, disabled=True))
-        view.add_item(discord.ui.Button(label="Push", style=discord.ButtonStyle.secondary, disabled=True))
-        view.add_item(discord.ui.Button(label="Mercy", style=discord.ButtonStyle.success, disabled=True))
+        view.add_item(
+            discord.ui.Button(label="Choke", style=discord.ButtonStyle.danger, disabled=True)
+        )
+        view.add_item(
+            discord.ui.Button(label="Push", style=discord.ButtonStyle.secondary, disabled=True)
+        )
+        view.add_item(
+            discord.ui.Button(label="Mercy", style=discord.ButtonStyle.success, disabled=True)
+        )
 
         await interaction.response.send_message(embed=embed, file=file, view=view)
+
 
 # Optional: standalone Cog loader (if you prefer cogs)
 class EmbedDemo(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-    @app_commands.command(name="combat_embed_template_cog", description="(Cog) Combat embed with all image fields populated.")
+    @app_commands.command(
+        name="combat_embed_template_cog",
+        description="(Cog) Combat embed with all image fields populated.",
+    )
     async def combat_embed_template_cog(self, interaction: discord.Interaction):
         if not IMAGE_PATH.exists():
             await interaction.response.send_message(
@@ -115,6 +132,7 @@ class EmbedDemo(commands.Cog):
         embed = _build_combat_embed(ATTACH_NAME)
         file = discord.File(IMAGE_PATH, filename=ATTACH_NAME)
         await interaction.response.send_message(embed=embed, file=file)
+
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(EmbedDemo(bot))
