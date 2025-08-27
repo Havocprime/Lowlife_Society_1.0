@@ -8,7 +8,7 @@ from discord import app_commands
 from discord.ext import commands
 
 # DB helpers
-from src.core.events import add_admin_note, list_admin_notes, delete_admin_note  # type: ignore
+from src.core.events import add_admin_note, delete_admin_note, list_admin_notes  # type: ignore
 
 
 def _is_admin(m: discord.Member) -> bool:
@@ -68,10 +68,14 @@ async def notes_list(
         return
 
     limit = max(1, min(int(limit or 10), 50))
-    rows = list_admin_notes(interaction.guild.id, user.id, limit)  # -> [(id, ts, admin_id, text), ...]
+    rows = list_admin_notes(
+        interaction.guild.id, user.id, limit
+    )  # -> [(id, ts, admin_id, text), ...]
 
     if not rows:
-        await interaction.response.send_message(f"No notes found for {user.mention}.", ephemeral=True)
+        await interaction.response.send_message(
+            f"No notes found for {user.mention}.", ephemeral=True
+        )
         return
 
     lines = []
@@ -111,6 +115,7 @@ async def notes_delete(interaction: discord.Interaction, note_id: int):
 
 class AdminNotes(commands.Cog):
     """Empty cog class so the extension can be loaded; commands are on the group above."""
+
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
@@ -120,6 +125,7 @@ async def setup(bot: commands.Bot):
     # If bot.py didn’t pre-register the group, register it here too:
     try:
         from ..bot.bot import GUILD_ID  # optional import
+
         if GUILD_ID:
             bot.tree.add_command(notes, guild=discord.Object(id=GUILD_ID))
         else:

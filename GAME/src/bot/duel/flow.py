@@ -1,8 +1,9 @@
 # FILE: src/bot/duel/flow.py
 from __future__ import annotations
 
-from .state import DuelState, RANGE_NAMES
 from .battlefield import readable_state
+from .state import RANGE_NAMES, DuelState
+
 
 def render_state(ds: DuelState) -> str:
     head = f"**Round {ds.round_no}** — {RANGE_NAMES[ds.current_range]}\n{readable_state(ds)}"

@@ -4,9 +4,11 @@ from discord.ext import commands
 intents = discord.Intents.default()
 bot = commands.Bot(command_prefix="!", intents=intents)
 
+
 @bot.event
 async def on_ready():
     print(f"Logged in as {bot.user}")
+
 
 @bot.command()
 async def mission(ctx):
@@ -30,8 +32,9 @@ async def mission(ctx):
             "and prepare the City Hub foundation.\n\n"
             "Every action from here plugs into the Custodian log. Nothing is lost. Nothing is wasted. This is the climb."
         ),
-        color=discord.Color.red()
+        color=discord.Color.red(),
     )
     await ctx.send(embed=embed)
+
 
 bot.run("")

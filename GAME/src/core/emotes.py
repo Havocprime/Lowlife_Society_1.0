@@ -13,9 +13,11 @@ EmojiSpec = Union[str, int]
 # Tileset definition
 # ----------------------------
 
+
 @dataclass
 class Tileset:
     """A named palette of emoji specs by category and key."""
+
     name: str
     categories: Dict[str, Dict[str, EmojiSpec]] = field(default_factory=dict)
     # optional prefix for custom emoji names when rendering <:{prefix+key}:{id}>
@@ -23,6 +25,7 @@ class Tileset:
 
     def get(self, category: str, key: str) -> Optional[EmojiSpec]:
         return self.categories.get(category, {}).get(key)
+
 
 # ----------------------------
 # Built-in Unicode fallback tileset
@@ -39,7 +42,7 @@ UNICODE_TILESET = Tileset(
             "p4": "🔻",
         },
         "enemies": {
-            "default": "✖",      # defeat marker / enemy
+            "default": "✖",  # defeat marker / enemy
             "boss": "☠️",
             "npc": "◼️",
         },
@@ -47,8 +50,8 @@ UNICODE_TILESET = Tileset(
             "sandbag": "🧱",
             "barricade": "🚧",
             "dumpster": "🗑️",
-            "blank": "🗑️",       # placeholder tile (visible)
-            "transparent": ":blank_square_emoji:", # stand-in; real “blank” should be a custom transparent emoji
+            "blank": "🗑️",  # placeholder tile (visible)
+            "transparent": ":blank_square_emoji:",  # stand-in; real “blank” should be a custom transparent emoji
         },
         "hazards": {
             "fire": "🔥",
@@ -100,7 +103,7 @@ CUSTOM_DEFAULT = Tileset(
             "sandbag": 888888888888888888,
             "barricade": 999999999999999999,
             "dumpster": 101010101010101010,
-            "blank": 999999999999999999,        # visible blank tile (e.g., grey)
+            "blank": 999999999999999999,  # visible blank tile (e.g., grey)
             "transparent": 999999999999999999,  # your uploaded transparent :blank: ID
         },
         "hazards": {
@@ -138,7 +141,7 @@ CUSTOM_GREYGRID = Tileset(
             "p2": 312312312312312311,
         },
         "cover": {
-            "blank": 312312312312312320,        # grey tile
+            "blank": 312312312312312320,  # grey tile
             "transparent": 312312312312312321,  # transparent tile
         },
     },
@@ -156,8 +159,10 @@ _TILESETS: Dict[str, Tileset] = {
 
 _ACTIVE_TILESET: Tileset = CUSTOM_DEFAULT  # default to custom; you can switch to "unicode"
 
+
 def available_tilesets() -> list[str]:
     return list(_TILESETS.keys())
+
 
 def set_active_tileset(name: str) -> None:
     global _ACTIVE_TILESET
@@ -166,12 +171,15 @@ def set_active_tileset(name: str) -> None:
         raise ValueError(f"Tileset '{name}' not found. Available: {available_tilesets()}")
     _ACTIVE_TILESET = ts
 
+
 def get_active_tileset() -> str:
     return _ACTIVE_TILESET.name
+
 
 # ----------------------------
 # Core getters
 # ----------------------------
+
 
 def _resolve_spec(category: str, key: str) -> EmojiSpec:
     """
@@ -188,6 +196,7 @@ def _resolve_spec(category: str, key: str) -> EmojiSpec:
     # final safety
     return "❓"
 
+
 def emoji_string(category: str, key: str) -> str:
     """
     Return a renderable emoji string for text/embeds.
@@ -202,6 +211,7 @@ def emoji_string(category: str, key: str) -> str:
     # ensure consistent naming: ll_{category}_{key}
     name = f"{prefix}{category}_{key}"
     return f"<:{name}:{spec}>"
+
 
 def emoji_partial(category: str, key: str):
     """
@@ -222,31 +232,40 @@ def emoji_partial(category: str, key: str):
     name = f"{prefix}{category}_{key}"
     return discord.PartialEmoji(name=name, id=spec, animated=False)
 
+
 # ----------------------------
 # Convenience aliases by category
 # ----------------------------
 
+
 def player(slot: str = "p1") -> str:
     return emoji_string("players", slot)
+
 
 def enemy(kind: str = "default") -> str:
     return emoji_string("enemies", kind)
 
+
 def cover(kind: str = "sandbag") -> str:
     return emoji_string("cover", kind)
+
 
 def hazard(kind: str = "fire") -> str:
     return emoji_string("hazards", kind)
 
+
 def ui(icon: str = "cursor") -> str:
     return emoji_string("ui", icon)
+
 
 def status(state: str = "ok") -> str:
     return emoji_string("status", state)
 
+
 # ----------------------------
 # Runtime mutation helpers
 # ----------------------------
+
 
 def register_id(category: str, key: str, emoji_id: int, tileset: str | None = None) -> None:
     """
@@ -258,6 +277,7 @@ def register_id(category: str, key: str, emoji_id: int, tileset: str | None = No
         raise ValueError(f"Tileset '{tileset}' not found.")
     ts.categories.setdefault(category, {})[key] = emoji_id
 
+
 def register_unicode(category: str, key: str, emoji: str, tileset: str | None = None) -> None:
     """
     Register/override a Unicode emoji at runtime.
@@ -266,6 +286,7 @@ def register_unicode(category: str, key: str, emoji: str, tileset: str | None = 
     if not ts:
         raise ValueError(f"Tileset '{tileset}' not found.")
     ts.categories.setdefault(category, {})[key] = emoji
+
 
 # ----------------------------
 # Example: quick defaults

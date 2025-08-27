@@ -1,12 +1,13 @@
 # GAME/src/admin/sync.py
 from __future__ import annotations
+
 import discord
 from discord import app_commands
 from discord.ext import commands
 
-from src.core.settings import SETTINGS
 from src.core.ack import ack_once
-from src.core.perm import require_role, dangerous_op_cooldown, Role
+from src.core.perm import Role, dangerous_op_cooldown, require_role
+from src.core.settings import SETTINGS
 
 
 class SyncCmd(commands.Cog):
@@ -17,8 +18,8 @@ class SyncCmd(commands.Cog):
         name="sync",
         description="Sync application commands (scope: guild | global | copy).",
     )
-    @require_role(Role.ADMIN)                     # our role gate
-    @dangerous_op_cooldown("sync", seconds=15)    # simple throttle
+    @require_role(Role.ADMIN)  # our role gate
+    @dangerous_op_cooldown("sync", seconds=15)  # simple throttle
     @app_commands.describe(scope="guild | global | copy")
     async def sync(self, interaction: discord.Interaction, scope: str | None = "guild"):
         # acknowledge safely (no double-ack crashes)

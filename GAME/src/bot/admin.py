@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import discord
 from discord import app_commands
+
 from src.core.storage import delete_player
 
 # import the duel session table so we can clear a stuck duel in-channel
@@ -9,6 +10,7 @@ try:
     from src.bot.duel import SESSIONS as DUEL_SESSIONS
 except Exception:
     DUEL_SESSIONS = {}
+
 
 def register_admin(tree: app_commands.CommandTree) -> None:
     @tree.command(name="ping", description="Bot health-check")

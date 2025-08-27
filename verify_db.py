@@ -1,5 +1,6 @@
-from src.core.settings import SETTINGS
 import sqlite3
+
+from src.core.settings import SETTINGS
 
 print("DB path:", SETTINGS.db_path)
 con = sqlite3.connect(SETTINGS.db_path)

@@ -2,10 +2,10 @@
 import json
 import time
 from pathlib import Path
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
 
 import discord
-from discord import app_commands, Interaction, Member  # import types directly
+from discord import Interaction, Member, app_commands  # import types directly
 
 from src.core.debug import get_logger, slash_try
 
@@ -17,9 +17,10 @@ DB_COMBATS = DATA_DIR / "combats.json"
 DB_PLAYERS = DATA_DIR / "players.json"
 
 RANGES = ["Close", "Near", "Mid", "Far", "OutOfRange"]
-COLOR_LIVE = 0x2ecc71   # green
-COLOR_ENDED = 0xe74c3c  # red
-MAX_HP_DEFAULT = 50     # until rules wire-in
+COLOR_LIVE = 0x2ECC71  # green
+COLOR_ENDED = 0xE74C3C  # red
+MAX_HP_DEFAULT = 50  # until rules wire-in
+
 
 # -------------------- tiny DB helpers --------------------
 def _load_combats() -> Dict[str, Any]:
@@ -30,8 +31,10 @@ def _load_combats() -> Dict[str, Any]:
             return {}
     return {}
 
+
 def _save_combats(db: Dict[str, Any]) -> None:
     DB_COMBATS.write_text(json.dumps(db, indent=2), encoding="utf-8")
+
 
 def _load_players() -> Dict[str, Any]:
     if DB_PLAYERS.exists():
@@ -41,8 +44,10 @@ def _load_players() -> Dict[str, Any]:
             return {}
     return {}
 
+
 def _key(guild_id: Optional[int]) -> str:  # one duel per guild (prototype)
     return str(guild_id or 0)
+
 
 # -------------------- labels & HUD (ephemeral) --------------------
 async def _user_label(inter: Interaction, user_id: int) -> str:
@@ -59,6 +64,7 @@ async def _user_label(inter: Interaction, user_id: int) -> str:
     except Exception:
         return f"<@{user_id}>"
 
+
 def _defaults_for_user(uid: str) -> Dict[str, Any]:
     return {
         "alias": f"User {uid}",
@@ -71,26 +77,31 @@ def _defaults_for_user(uid: str) -> Dict[str, Any]:
         "blood": 0,
     }
 
+
 def _player_snapshot(uid: int) -> Dict[str, Any]:
     db = _load_players()
     row = db.get(str(uid), {})
     snap = _defaults_for_user(str(uid))
-    snap.update({
-        "alias": row.get("alias", snap["alias"]),
-        "cash": row.get("cash", 0),
-        "net_worth": row.get("net_worth", 0),
-        "level": row.get("level", 1),
-        "equipped": row.get("equipped", "Fists"),
-        "weight": row.get("weight", 0.0),
-        "capacity": row.get("capacity", 30.0),
-        "blood": row.get("blood", 0),
-    })
+    snap.update(
+        {
+            "alias": row.get("alias", snap["alias"]),
+            "cash": row.get("cash", 0),
+            "net_worth": row.get("net_worth", 0),
+            "level": row.get("level", 1),
+            "equipped": row.get("equipped", "Fists"),
+            "weight": row.get("weight", 0.0),
+            "capacity": row.get("capacity", 30.0),
+            "blood": row.get("blood", 0),
+        }
+    )
     return snap
+
 
 def _hp_for_user_in_duel(uid: int, d: Optional[Dict[str, Any]]) -> int:
     if not d or "hp" not in d:
         return MAX_HP_DEFAULT
     return int(d["hp"]["attacker" if uid == d.get("attacker_id") else "defender"])
+
 
 def _hud_line_for_user(uid: int, d: Optional[Dict[str, Any]]) -> str:
     p = _player_snapshot(uid)
@@ -106,12 +117,14 @@ def _hud_line_for_user(uid: int, d: Optional[Dict[str, Any]]) -> str:
         f"⚖️ {p['weight']}/{p['capacity']}"
     )
 
+
 async def _send_hud_ephemeral(inter: Interaction, uid: int, d: Optional[Dict[str, Any]]) -> None:
     await inter.followup.send(
         _hud_line_for_user(uid, d),
         ephemeral=True,
         allowed_mentions=discord.AllowedMentions.none(),
     )
+
 
 # -------------------- public tracker (no private HUD inside) --------------------
 def _build_tracker_embed(
@@ -125,13 +138,18 @@ def _build_tracker_embed(
 ) -> discord.Embed:
     color = COLOR_LIVE if live else COLOR_ENDED
     desc = f"**Range:** {rng} • **Round:** {rnd}" + ("" if live else "\n**Status:** Ended")
-    emb = discord.Embed(title=f"⚔️ {attacker_label} vs {defender_label}", description=desc, color=color)
+    emb = discord.Embed(
+        title=f"⚔️ {attacker_label} vs {defender_label}", description=desc, color=color
+    )
     if last_action:
         emb.add_field(name="Last action", value=last_action, inline=False)
     return emb
 
+
 # -------------------- message helpers --------------------
-async def _fetch_message(client: discord.Client, channel_id: int, message_id: int) -> Optional[discord.Message]:
+async def _fetch_message(
+    client: discord.Client, channel_id: int, message_id: int
+) -> Optional[discord.Message]:
     ch = client.get_channel(channel_id)
     try:
         if ch is None:
@@ -140,6 +158,7 @@ async def _fetch_message(client: discord.Client, channel_id: int, message_id: in
     except Exception:
         return None
 
+
 async def _delete_msg(msg: Optional[discord.Message]) -> None:
     try:
         if msg:
@@ -147,8 +166,10 @@ async def _delete_msg(msg: Optional[discord.Message]) -> None:
     except Exception:
         pass
 
+
 def _mentions_only(uid: int) -> discord.AllowedMentions:
     return discord.AllowedMentions(users=[discord.Object(id=uid)], roles=False, everyone=False)
+
 
 async def _replace_tracker(
     inter: Interaction,
@@ -164,6 +185,7 @@ async def _replace_tracker(
     d["channel_id"], d["message_id"] = new_msg.channel.id, new_msg.id
     _save_combats(combats)
 
+
 # -------------------- command registration --------------------
 def register(tree: app_commands.CommandTree) -> None:
     @tree.command(name="duel", description="Start a duel at Mid range.")
@@ -177,7 +199,9 @@ def register(tree: app_commands.CommandTree) -> None:
         k = _key(inter.guild_id)
         existing = combats.get(k)
         if existing and existing.get("live", True):
-            await inter.response.send_message("A duel is already active here. Use **/end_duel** first.", ephemeral=True)
+            await inter.response.send_message(
+                "A duel is already active here. Use **/end_duel** first.", ephemeral=True
+            )
             return
 
         await inter.response.defer(ephemeral=True)
@@ -193,11 +217,18 @@ def register(tree: app_commands.CommandTree) -> None:
             "live": True,
             "hp": {"attacker": MAX_HP_DEFAULT, "defender": MAX_HP_DEFAULT},
         }
-        log.info("Duel start (guild=%s): attacker=%s defender=%s", inter.guild_id, inter.user.id, target.id)
+        log.info(
+            "Duel start (guild=%s): attacker=%s defender=%s",
+            inter.guild_id,
+            inter.user.id,
+            target.id,
+        )
 
         a_lbl = await _user_label(inter, combats[k]["attacker_id"])
         d_lbl = await _user_label(inter, combats[k]["defender_id"])
-        tracker = _build_tracker_embed(a_lbl, d_lbl, "Mid", 1, live=True, last_action="Duel started.")
+        tracker = _build_tracker_embed(
+            a_lbl, d_lbl, "Mid", 1, live=True, last_action="Duel started."
+        )
         await _replace_tracker(inter, combats, combats[k], tracker)
         await _send_hud_ephemeral(inter, inter.user.id, combats[k])
 
@@ -219,7 +250,9 @@ def register(tree: app_commands.CommandTree) -> None:
         combats = _load_combats()
         k = _key(inter.guild_id)
         if k not in combats:
-            await inter.response.send_message("No active duel. Use **/duel** first.", ephemeral=True)
+            await inter.response.send_message(
+                "No active duel. Use **/duel** first.", ephemeral=True
+            )
             return
         d = combats[k]
         await inter.response.send_message(
@@ -233,7 +266,9 @@ def register(tree: app_commands.CommandTree) -> None:
         combats = _load_combats()
         k = _key(inter.guild_id)
         if k not in combats:
-            await inter.response.send_message("No active duel. Use **/duel** first.", ephemeral=True)
+            await inter.response.send_message(
+                "No active duel. Use **/duel** first.", ephemeral=True
+            )
             return
         d = combats[k]
         if not d.get("live", True):
@@ -252,13 +287,22 @@ def register(tree: app_commands.CommandTree) -> None:
         d["range"] = new
         d["round"] += 1
         _save_combats(combats)
-        log.info("Advance (guild=%s user=%s): %s -> %s round=%s", inter.guild_id, inter.user.id, cur, new, d["round"])
+        log.info(
+            "Advance (guild=%s user=%s): %s -> %s round=%s",
+            inter.guild_id,
+            inter.user.id,
+            cur,
+            new,
+            d["round"],
+        )
 
         a_lbl = await _user_label(inter, d["attacker_id"])
         b_lbl = await _user_label(inter, d["defender_id"])
         actor_lbl = await _user_label(inter, inter.user.id)
         last = f"**{actor_lbl}** advanced: **{cur} → {new}**"
-        tracker = _build_tracker_embed(a_lbl, b_lbl, d["range"], d["round"], live=True, last_action=last)
+        tracker = _build_tracker_embed(
+            a_lbl, b_lbl, d["range"], d["round"], live=True, last_action=last
+        )
         await _replace_tracker(inter, combats, d, tracker)
         await _send_hud_ephemeral(inter, inter.user.id, d)
 
@@ -268,7 +312,9 @@ def register(tree: app_commands.CommandTree) -> None:
         combats = _load_combats()
         k = _key(inter.guild_id)
         if k not in combats:
-            await inter.response.send_message("No active duel. Use **/duel** first.", ephemeral=True)
+            await inter.response.send_message(
+                "No active duel. Use **/duel** first.", ephemeral=True
+            )
             return
         d = combats[k]
         if not d.get("live", True):
@@ -287,15 +333,26 @@ def register(tree: app_commands.CommandTree) -> None:
         d["range"] = new
         d["round"] += 1
         _save_combats(combats)
-        log.info("Retreat (guild=%s user=%s): %s -> %s round=%s", inter.guild_id, inter.user.id, cur, new, d["round"])
+        log.info(
+            "Retreat (guild=%s user=%s): %s -> %s round=%s",
+            inter.guild_id,
+            inter.user.id,
+            cur,
+            new,
+            d["round"],
+        )
 
         a_lbl = await _user_label(inter, d["attacker_id"])
         b_lbl = await _user_label(inter, d["defender_id"])
         actor_lbl = await _user_label(inter, inter.user.id)
         opponent_id = d["defender_id"] if inter.user.id == d["attacker_id"] else d["attacker_id"]
         last = f"**{actor_lbl}** retreated: **{cur} → {new}**  |  <@{opponent_id}> your opponent moved."
-        tracker = _build_tracker_embed(a_lbl, b_lbl, d["range"], d["round"], live=True, last_action=last)
-        await _replace_tracker(inter, combats, d, tracker, allowed_mentions=_mentions_only(opponent_id))
+        tracker = _build_tracker_embed(
+            a_lbl, b_lbl, d["range"], d["round"], live=True, last_action=last
+        )
+        await _replace_tracker(
+            inter, combats, d, tracker, allowed_mentions=_mentions_only(opponent_id)
+        )
         await _send_hud_ephemeral(inter, inter.user.id, d)
 
     @tree.command(name="end_duel", description="End the current duel in this server.")
@@ -315,7 +372,9 @@ def register(tree: app_commands.CommandTree) -> None:
 
         a_lbl = await _user_label(inter, d["attacker_id"])
         b_lbl = await _user_label(inter, d["defender_id"])
-        tracker = _build_tracker_embed(a_lbl, b_lbl, d["range"], d["round"], live=False, last_action="Duel ended.")
+        tracker = _build_tracker_embed(
+            a_lbl, b_lbl, d["range"], d["round"], live=False, last_action="Duel ended."
+        )
         await _replace_tracker(inter, combats, d, tracker)
 
         combats.pop(k, None)
@@ -331,7 +390,9 @@ def register(tree: app_commands.CommandTree) -> None:
         if k in combats:
             d = combats[k]
             try:
-                msg = await _fetch_message(inter.client, d.get("channel_id") or 0, d.get("message_id") or 0)
+                msg = await _fetch_message(
+                    inter.client, d.get("channel_id") or 0, d.get("message_id") or 0
+                )
                 await _delete_msg(msg)
             except Exception:
                 pass
@@ -342,5 +403,3 @@ def register(tree: app_commands.CommandTree) -> None:
             await inter.response.send_message("No duel state found.", ephemeral=True)
 
     log.info("Registered duel commands")
-
-

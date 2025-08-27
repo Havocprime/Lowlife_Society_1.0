@@ -1,7 +1,10 @@
 # GAME/src/cogs/audit_log.py
 from __future__ import annotations
-import json, os
+
+import json
+import os
 from typing import Optional
+
 import aiosqlite
 import discord
 from discord import app_commands
@@ -15,6 +18,7 @@ except Exception:
     AUDIT_DB_PATH = os.path.join(os.path.dirname(__file__), "..", "..", "data", "audit.sqlite")
 AUDIT_DB_PATH = os.path.normpath(AUDIT_DB_PATH)
 
+
 class AuditLogCog(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
@@ -22,7 +26,9 @@ class AuditLogCog(commands.Cog):
     async def _fetch_one(self, trace_id: str):
         async with aiosqlite.connect(AUDIT_DB_PATH) as db:
             db.row_factory = aiosqlite.Row
-            async with db.execute("SELECT * FROM audit_log WHERE id = ? LIMIT 1", (trace_id,)) as cur:
+            async with db.execute(
+                "SELECT * FROM audit_log WHERE id = ? LIMIT 1", (trace_id,)
+            ) as cur:
                 return await cur.fetchone()
 
     async def _fetch_many(self, query: str, params: tuple, limit: int = 20):
@@ -39,7 +45,9 @@ class AuditLogCog(commands.Cog):
     async def audit_trace(self, interaction: discord.Interaction, id: str):
         row = await self._fetch_one(id)
         if not row:
-            await interaction.response.send_message(f"❌ No action found for ID `{id}`.", ephemeral=True)
+            await interaction.response.send_message(
+                f"❌ No action found for ID `{id}`.", ephemeral=True
+            )
             return
 
         details = {}
@@ -66,25 +74,46 @@ class AuditLogCog(commands.Cog):
 
     @app_commands.command(name="audit_trace_user", description="Show recent actions by a user.")
     @app_commands.describe(user="User to inspect", limit="Max rows (default 20, max 100)")
-    async def audit_trace_user(self, interaction: discord.Interaction, user: discord.User, limit: Optional[int] = 20):
+    async def audit_trace_user(
+        self, interaction: discord.Interaction, user: discord.User, limit: Optional[int] = 20
+    ):
         limit = max(1, min(limit or 20, 100))
-        rows = await self._fetch_many("SELECT * FROM audit_log WHERE user_id = ?", (user.id,), limit)
+        rows = await self._fetch_many(
+            "SELECT * FROM audit_log WHERE user_id = ?", (user.id,), limit
+        )
         if not rows:
-            await interaction.response.send_message(f"ℹ️ No recent actions for {user.mention}.", ephemeral=True)
+            await interaction.response.send_message(
+                f"ℹ️ No recent actions for {user.mention}.", ephemeral=True
+            )
             return
 
-        lines = [f"- `{r['id']}` • `{r['action_type']}` • ts={r['ts']} • cmd={r['command_name'] or '—'}" for r in rows]
+        lines = [
+            f"- `{r['id']}` • `{r['action_type']}` • ts={r['ts']} • cmd={r['command_name'] or '—'}"
+            for r in rows
+        ]
         await interaction.response.send_message(
             f"**Recent actions for {user.mention} (limit {limit})**\n" + "\n".join(lines[:50]),
-            ephemeral=True
+            ephemeral=True,
         )
 
-    @app_commands.command(name="audit_recent", description="List recent actions, optionally filter by action_type.")
-    @app_commands.describe(action_type="Filter (e.g., duel.start, inventory.add)", limit="Max rows (default 20, max 100)")
-    async def audit_recent(self, interaction: discord.Interaction, action_type: Optional[str] = None, limit: Optional[int] = 20):
+    @app_commands.command(
+        name="audit_recent", description="List recent actions, optionally filter by action_type."
+    )
+    @app_commands.describe(
+        action_type="Filter (e.g., duel.start, inventory.add)",
+        limit="Max rows (default 20, max 100)",
+    )
+    async def audit_recent(
+        self,
+        interaction: discord.Interaction,
+        action_type: Optional[str] = None,
+        limit: Optional[int] = 20,
+    ):
         limit = max(1, min(limit or 20, 100))
         if action_type:
-            rows = await self._fetch_many("SELECT * FROM audit_log WHERE action_type = ?", (action_type,), limit)
+            rows = await self._fetch_many(
+                "SELECT * FROM audit_log WHERE action_type = ?", (action_type,), limit
+            )
         else:
             rows = await self._fetch_many("SELECT * FROM audit_log WHERE 1=1", tuple(), limit)
 
@@ -92,26 +121,42 @@ class AuditLogCog(commands.Cog):
             await interaction.response.send_message("ℹ️ No recent actions found.", ephemeral=True)
             return
 
-        lines = [f"- `{r['id']}` • `{r['action_type']}` • ts={r['ts']} • user={r['user_id']} • cmd={r['command_name'] or '—'}" for r in rows]
+        lines = [
+            f"- `{r['id']}` • `{r['action_type']}` • ts={r['ts']} • user={r['user_id']} • cmd={r['command_name'] or '—'}"
+            for r in rows
+        ]
         await interaction.response.send_message(
-            f"**Recent actions (limit {limit})**\n" + "\n".join(lines[:50]),
-            ephemeral=True
+            f"**Recent actions (limit {limit})**\n" + "\n".join(lines[:50]), ephemeral=True
         )
 
-    @app_commands.command(name="audit_trace_item", description="Find actions that touched a specific item_id.")
-    @app_commands.describe(item_id="Item ID to search for in details", limit="Max rows (default 20, max 100)")
-    async def audit_trace_item(self, interaction: discord.Interaction, item_id: str, limit: Optional[int] = 20):
+    @app_commands.command(
+        name="audit_trace_item", description="Find actions that touched a specific item_id."
+    )
+    @app_commands.describe(
+        item_id="Item ID to search for in details", limit="Max rows (default 20, max 100)"
+    )
+    async def audit_trace_item(
+        self, interaction: discord.Interaction, item_id: str, limit: Optional[int] = 20
+    ):
         limit = max(1, min(limit or 20, 100))
-        rows = await self._fetch_many("SELECT * FROM audit_log WHERE details LIKE ?", (f'%{item_id}%',), limit)
+        rows = await self._fetch_many(
+            "SELECT * FROM audit_log WHERE details LIKE ?", (f"%{item_id}%",), limit
+        )
         if not rows:
-            await interaction.response.send_message(f"ℹ️ No actions referencing `item_id={item_id}`.", ephemeral=True)
+            await interaction.response.send_message(
+                f"ℹ️ No actions referencing `item_id={item_id}`.", ephemeral=True
+            )
             return
 
-        lines = [f"- `{r['id']}` • `{r['action_type']}` • ts={r['ts']} • user={r['user_id']}" for r in rows]
+        lines = [
+            f"- `{r['id']}` • `{r['action_type']}` • ts={r['ts']} • user={r['user_id']}"
+            for r in rows
+        ]
         await interaction.response.send_message(
             f"**Actions referencing item `{item_id}` (limit {limit})**\n" + "\n".join(lines[:50]),
-            ephemeral=True
+            ephemeral=True,
         )
+
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(AuditLogCog(bot))

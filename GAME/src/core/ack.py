@@ -1,5 +1,7 @@
 from __future__ import annotations
+
 import discord
+
 
 async def ack_once(interaction: discord.Interaction, *, ephemeral: bool = True) -> None:
     """

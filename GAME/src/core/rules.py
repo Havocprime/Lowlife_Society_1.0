@@ -1,11 +1,20 @@
 # GAME/src/core/audit.py
 from __future__ import annotations
-import os, json, uuid, time, functools, inspect
-from typing import Any, Optional, Callable, Awaitable, Dict
+
+import functools
+import inspect
+import json
+import os
+import time
+import uuid
+from typing import Any, Awaitable, Callable, Dict, Optional
+
 import aiosqlite
 import discord
 
-_AUDIT_DB_PATH = os.getenv("AUDIT_DB_PATH", os.path.join(os.path.dirname(__file__), "..", "..", "data", "audit.sqlite"))
+_AUDIT_DB_PATH = os.getenv(
+    "AUDIT_DB_PATH", os.path.join(os.path.dirname(__file__), "..", "..", "data", "audit.sqlite")
+)
 
 _SCHEMA = """
 CREATE TABLE IF NOT EXISTS audit_log (
@@ -25,11 +34,13 @@ CREATE INDEX IF NOT EXISTS idx_audit_user_ts ON audit_log(user_id, ts);
 CREATE INDEX IF NOT EXISTS idx_audit_action_ts ON audit_log(action_type, ts);
 """
 
+
 async def ensure_db() -> None:
     os.makedirs(os.path.dirname(_AUDIT_DB_PATH), exist_ok=True)
     async with aiosqlite.connect(_AUDIT_DB_PATH) as db:
         await db.executescript(_SCHEMA)
         await db.commit()
+
 
 async def log_action(
     *,
@@ -50,10 +61,21 @@ async def log_action(
         await db.execute(
             "INSERT INTO audit_log (id, ts, guild_id, channel_id, user_id, target_user_id, action_type, command_name, details) "
             "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-            (trace_id, ts, guild_id, channel_id, user_id, target_user_id, action_type, command_name, payload),
+            (
+                trace_id,
+                ts,
+                guild_id,
+                channel_id,
+                user_id,
+                target_user_id,
+                action_type,
+                command_name,
+                payload,
+            ),
         )
         await db.commit()
     return trace_id
+
 
 def audit_event(
     action_type: str,
@@ -66,8 +88,10 @@ def audit_event(
     - target_user: optional callable fn(*args, **kwargs)->discord.User|Member|None to resolve a target
     - extra: optional callable fn(*args, **kwargs)->dict to attach structured details
     """
+
     def _wrap(func: Callable[..., Awaitable[Any]]):
         sig = inspect.signature(func)
+
         @functools.wraps(func)
         async def inner(*args, **kwargs):
             # Try to infer interaction/context
@@ -83,7 +107,11 @@ def audit_event(
             guild_id = interaction.guild_id if interaction else None
             channel_id = interaction.channel_id if interaction else None
             user_id = interaction.user.id if interaction else None
-            command_name = interaction.command.qualified_name if (interaction and interaction.command) else None
+            command_name = (
+                interaction.command.qualified_name
+                if (interaction and interaction.command)
+                else None
+            )
 
             tgt = None
             if target_user:
@@ -102,8 +130,13 @@ def audit_event(
                     details = {}
 
             trace_id = await log_action(
-                guild_id=guild_id, channel_id=channel_id, user_id=user_id,
-                target_user_id=tgt, action_type=action_type, command_name=command_name, details=details
+                guild_id=guild_id,
+                channel_id=channel_id,
+                user_id=user_id,
+                target_user_id=tgt,
+                action_type=action_type,
+                command_name=command_name,
+                details=details,
             )
 
             # Attach the trace ID to interaction for downstream usage if handy
@@ -112,5 +145,7 @@ def audit_event(
                 interaction.extras["trace_id"] = trace_id
 
             return await func(*args, **kwargs)
+
         return inner
+
     return _wrap

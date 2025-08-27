@@ -1,30 +1,52 @@
 from __future__ import annotations
 
-import os, io, json, csv, discord
+import csv
+import io
+import json
+import os
 from datetime import datetime, timezone
-from discord.ext import commands
-from discord import app_commands
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
+import discord
+from discord import app_commands
+from discord.ext import commands
+
 # event log helpers
-from src.core.events import recent_events, last_event_time, DB_PATH
+from src.core.events import DB_PATH, last_event_time, recent_events
 
 # ---- config ----
 ADMIN_ROLE_ID = int(os.getenv("ADMIN_ROLE_ID", "0"))
-TRUSTED_ROLE_IDS = {int(x) for x in os.getenv("TRUSTED_ROLE_IDS", "").split(",") if x.strip().isdigit()}
-TRUSTED_ROLE_NAMES = {x.strip().lower() for x in os.getenv("TRUSTED_ROLE_NAMES", "").split(",") if x.strip()}
+TRUSTED_ROLE_IDS = {
+    int(x) for x in os.getenv("TRUSTED_ROLE_IDS", "").split(",") if x.strip().isdigit()
+}
+TRUSTED_ROLE_NAMES = {
+    x.strip().lower() for x in os.getenv("TRUSTED_ROLE_NAMES", "").split(",") if x.strip()
+}
 
 DANGEROUS_PERMS = {
-    "administrator","manage_guild","manage_channels","manage_roles","manage_webhooks",
-    "kick_members","ban_members","mention_everyone","manage_messages","manage_threads",
-    "mute_members","deafen_members","move_members","priority_speaker"
+    "administrator",
+    "manage_guild",
+    "manage_channels",
+    "manage_roles",
+    "manage_webhooks",
+    "kick_members",
+    "ban_members",
+    "mention_everyone",
+    "manage_messages",
+    "manage_threads",
+    "mute_members",
+    "deafen_members",
+    "move_members",
+    "priority_speaker",
 }
+
 
 # ---- utils ----
 def _flag_names(flags_obj) -> list[str]:
     out: list[str] = []
-    if not flags_obj: return out
+    if not flags_obj:
+        return out
     try:
         for f in flags_obj.all():
             out.append(getattr(f, "name", str(f)))
@@ -35,7 +57,8 @@ def _flag_names(flags_obj) -> list[str]:
         val = getattr(flags_obj, "value", 0)
         cls = flags_obj.__class__
         for attr in dir(cls):
-            if attr.startswith("_"): continue
+            if attr.startswith("_"):
+                continue
             bit = getattr(cls, attr, None)
             if isinstance(bit, int) and (val & bit):
                 out.append(attr.lower())
@@ -43,16 +66,23 @@ def _flag_names(flags_obj) -> list[str]:
         pass
     return out
 
+
 def _hex_color(v):
-    try: return f"#{int(v):06X}"
-    except Exception: return None
+    try:
+        return f"#{int(v):06X}"
+    except Exception:
+        return None
+
 
 def _rel_ymdh(a: datetime | None, b: datetime | None = None) -> str:
-    if not a: return "—"
-    if b is None: b = datetime.now(timezone.utc)
+    if not a:
+        return "—"
+    if b is None:
+        b = datetime.now(timezone.utc)
     y = b.year - a.year - ((b.month, b.day, b.hour) < (a.month, a.day, a.hour))
     ay = a.replace(year=a.year + y)
     from calendar import monthrange
+
     m = (b.year - ay.year) * 12 + b.month - ay.month - (b.day < ay.day)
     ny = ay.year + (ay.month + m - 1) // 12
     nm = (ay.month + m - 1) % 12 + 1
@@ -62,18 +92,27 @@ def _rel_ymdh(a: datetime | None, b: datetime | None = None) -> str:
     d = delta.days
     h = delta.seconds // 3600
     parts = []
-    if y: parts.append(f"{y}_years")
-    if m: parts.append(f"{m}_months")
-    if d: parts.append(f"{d}_days")
+    if y:
+        parts.append(f"{y}_years")
+    if m:
+        parts.append(f"{m}_months")
+    if d:
+        parts.append(f"{d}_days")
     parts.append(f"{h}_hours")
     return "_".join(parts) + " ago"
 
+
 def _is_trusted(member: discord.Member) -> bool:
-    if member.guild_permissions.administrator: return True
-    if ADMIN_ROLE_ID and any(r.id == ADMIN_ROLE_ID for r in member.roles): return True
-    if TRUSTED_ROLE_IDS and any(r.id in TRUSTED_ROLE_IDS for r in member.roles): return True
-    if TRUSTED_ROLE_NAMES and any(r.name.lower() in TRUSTED_ROLE_NAMES for r in member.roles): return True
+    if member.guild_permissions.administrator:
+        return True
+    if ADMIN_ROLE_ID and any(r.id == ADMIN_ROLE_ID for r in member.roles):
+        return True
+    if TRUSTED_ROLE_IDS and any(r.id in TRUSTED_ROLE_IDS for r in member.roles):
+        return True
+    if TRUSTED_ROLE_NAMES and any(r.name.lower() in TRUSTED_ROLE_NAMES for r in member.roles):
+        return True
     return False
+
 
 # ---- formatting helpers ----
 LA_TZ = None
@@ -82,13 +121,15 @@ try:
 except Exception:
     LA_TZ = None
 
+
 def _fmt_ts_local(ts_in) -> str:
     try:
         if isinstance(ts_in, datetime):
             dt = ts_in
         elif isinstance(ts_in, (int, float)) or (isinstance(ts_in, str) and ts_in.isdigit()):
             val = float(ts_in)
-            if val > 1e12: val /= 1000.0
+            if val > 1e12:
+                val /= 1000.0
             dt = datetime.fromtimestamp(val, tz=timezone.utc)
         elif isinstance(ts_in, str):
             s = ts_in.strip()
@@ -104,37 +145,48 @@ def _fmt_ts_local(ts_in) -> str:
             dt = dt.astimezone(LA_TZ)
         hour = dt.hour
         ampm = "AM" if hour < 12 else "PM"
-        h12  = hour % 12 or 12
+        h12 = hour % 12 or 12
         return f"{dt.day}/{dt.month}/{dt.year % 100:02d} {h12}:{dt.minute:02d} {ampm}"
     except Exception:
         return str(ts_in)
 
+
 def _to_int(x):
-    try: return int(x)
-    except Exception: return None
+    try:
+        return int(x)
+    except Exception:
+        return None
+
 
 def _ch_mention_from_payload(guild: discord.Guild, d: dict) -> str:
     cid = d.get("channel_id") or d.get("channel") or d.get("cid")
     if isinstance(cid, dict):
         cid = cid.get("id")
     cid = _to_int(cid)
-    if not cid: return "—"
+    if not cid:
+        return "—"
     ch = guild.get_channel(cid)
     return ch.mention if ch else f"<#{cid}>"
+
 
 def _extract_text(d: dict) -> str:
     for k in ("content", "message", "msg", "text", "body"):
         v = d.get(k)
-        if isinstance(v, str) and v: return v
+        if isinstance(v, str) and v:
+            return v
         if isinstance(v, dict):
             c = v.get("content")
-            if isinstance(c, str) and c: return c
+            if isinstance(c, str) and c:
+                return c
     return ""
 
+
 def _snippet(s: str | None, n: int = 120) -> str:
-    if not s: return ""
+    if not s:
+        return ""
     s = s.replace("\n", " ").strip()
     return (s[:n] + "…") if len(s) > n else s
+
 
 # ---- Cog ----
 class AdminInspector(commands.Cog):
@@ -144,7 +196,9 @@ class AdminInspector(commands.Cog):
     def _is_admin(self, i: discord.Interaction) -> bool:
         return isinstance(i.user, discord.Member) and i.user.guild_permissions.administrator
 
-    @app_commands.command(name="inspect", description="Admin: full profile with derived stats and recent actions")
+    @app_commands.command(
+        name="inspect", description="Admin: full profile with derived stats and recent actions"
+    )
     @app_commands.describe(user="Target member (defaults to you)")
     async def inspect(self, interaction, user: discord.Member | None = None):
         if not self._is_admin(interaction):
@@ -154,7 +208,7 @@ class AdminInspector(commands.Cog):
         member: discord.Member = user or interaction.user  # type: ignore
 
         created = member.created_at
-        joined  = member.joined_at
+        joined = member.joined_at
         avatar_url = member.display_avatar.url if member.display_avatar else None
         banner_url = None
         try:
@@ -164,42 +218,57 @@ class AdminInspector(commands.Cog):
         except Exception:
             pass
 
-        roles_sorted = [r for r in sorted(member.roles, key=lambda r: r.position) if r.name != "@everyone"]
+        roles_sorted = [
+            r for r in sorted(member.roles, key=lambda r: r.position) if r.name != "@everyone"
+        ]
         top3 = [r.name for r in roles_sorted[-3:]] if roles_sorted else []
-        high_risk = [p for p, ok in dict(member.guild_permissions).items() if ok and p in DANGEROUS_PERMS][:5]
+        high_risk = [
+            p for p, ok in dict(member.guild_permissions).items() if ok and p in DANGEROUS_PERMS
+        ][:5]
         trusted = _is_trusted(member)
 
         status = str(getattr(member, "status", "offline"))
         dev = {
             "desktop": str(getattr(member, "desktop_status", "offline")),
-            "mobile":  str(getattr(member, "mobile_status", "offline")),
-            "web":     str(getattr(member, "web_status", "offline")),
+            "mobile": str(getattr(member, "mobile_status", "offline")),
+            "web": str(getattr(member, "web_status", "offline")),
         }
         last_acted = last_event_time(member.id) or "—"
         badges = _flag_names(getattr(member, "public_flags", None))
-        accent = getattr(member, "accent_color", None); accent_val = getattr(accent, "value", None)
+        accent = getattr(member, "accent_color", None)
+        accent_val = getattr(accent, "value", None)
 
-        header = "\n".join([
-            f"{member.mention} --",
-            f"ID -- `{member.id}`",
-            f"Account Created -- `{created.isoformat().replace('+00:00','Z') if created else '—'}` ({_rel_ymdh(created)})",
-            f"Joined Guild -- `{joined.isoformat().replace('+00:00','Z') if joined else '—'}` ({_rel_ymdh(joined)})",
-        ])
+        header = "\n".join(
+            [
+                f"{member.mention} --",
+                f"ID -- `{member.id}`",
+                f"Account Created -- `{created.isoformat().replace('+00:00','Z') if created else '—'}` ({_rel_ymdh(created)})",
+                f"Joined Guild -- `{joined.isoformat().replace('+00:00','Z') if joined else '—'}` ({_rel_ymdh(joined)})",
+            ]
+        )
 
-        e = discord.Embed(title="🛠️ Admin Inspector — Full Profile", description=header, colour=discord.Color.blurple())
-        if avatar_url: e.set_thumbnail(url=avatar_url)
-        if banner_url: e.set_image(url=banner_url)
+        e = discord.Embed(
+            title="🛠️ Admin Inspector — Full Profile",
+            description=header,
+            colour=discord.Color.blurple(),
+        )
+        if avatar_url:
+            e.set_thumbnail(url=avatar_url)
+        if banner_url:
+            e.set_image(url=banner_url)
 
         last_acted_pretty = _fmt_ts_local(last_acted) if last_acted != "—" else "—"
         e.add_field(
             name="Status / Devices",
             value=f"Current Status: {status} <{last_acted_pretty}>\n"
-                  f"🖥 {dev['desktop']}\n📱 {dev['mobile']}\n🌐 {dev['web']}",
-            inline=False
+            f"🖥 {dev['desktop']}\n📱 {dev['mobile']}\n🌐 {dev['web']}",
+            inline=False,
         )
 
         e.add_field(name="Top Roles", value=(", ".join(top3) or "—"), inline=False)
-        e.add_field(name="⚠️ High-Risk Perms (top 5)", value=(", ".join(high_risk) or "—"), inline=False)
+        e.add_field(
+            name="⚠️ High-Risk Perms (top 5)", value=(", ".join(high_risk) or "—"), inline=False
+        )
         e.add_field(name="Trusted", value=("Yes ✅" if trusted else "No ❌"), inline=True)
         e.add_field(name="Accent", value=f"`{_hex_color(accent_val) or '—'}`", inline=True)
         e.add_field(name="Badges", value=(", ".join(badges) or "—")[:1024], inline=False)
@@ -220,7 +289,9 @@ class AdminInspector(commands.Cog):
                     desc = f"msg@{ch} — “{text or '—'}”"
                 elif kind == "message_edit":
                     ch = _ch_mention_from_payload(interaction.guild, d)  # type: ignore
-                    after = _snippet(_extract_text(d) or (d.get("after") or {}).get("content") or "")
+                    after = _snippet(
+                        _extract_text(d) or (d.get("after") or {}).get("content") or ""
+                    )
                     desc = f"edit@{ch} — “{after or '—'}”"
                 elif kind == "message_delete":
                     ch = _ch_mention_from_payload(interaction.guild, d)  # type: ignore
@@ -237,7 +308,8 @@ class AdminInspector(commands.Cog):
                     removed = d.get("removed") or []
                     desc = f"roles: +{len(added)} / -{len(removed)}"
                 elif kind == "voice_channel":
-                    b = d.get("before"); a = d.get("after")
+                    b = d.get("before")
+                    a = d.get("after")
                     desc = f"voice: {b or '—'} → {a or '—'}"
                 else:
                     desc = kind.replace("_", " ")
@@ -249,12 +321,17 @@ class AdminInspector(commands.Cog):
         e.add_field(name="Log DB", value=f"`{str(DB_PATH)}`", inline=False)
 
         # attach CSV
-        out = io.StringIO(); w = csv.writer(out); w.writerow(["ts_utc","kind","payload"])
+        out = io.StringIO()
+        w = csv.writer(out)
+        w.writerow(["ts_utc", "kind", "payload"])
         for ts, kind, payload in recents:
             w.writerow([ts, kind, payload])
-        file = discord.File(io.BytesIO(out.getvalue().encode("utf-8")), filename=f"recent_actions_{member.id}.csv")
+        file = discord.File(
+            io.BytesIO(out.getvalue().encode("utf-8")), filename=f"recent_actions_{member.id}.csv"
+        )
 
         await interaction.followup.send(embed=e, file=file, ephemeral=True)
+
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(AdminInspector(bot))

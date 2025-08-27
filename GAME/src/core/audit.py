@@ -1,7 +1,12 @@
 # GAME/src/core/audit.py
 from __future__ import annotations
-import os, json, uuid, time, functools
-from typing import Any, Optional, Callable, Awaitable, Dict
+
+import functools
+import json
+import os
+import time
+import uuid
+from typing import Any, Awaitable, Callable, Dict, Optional
 
 import aiosqlite
 import discord
@@ -71,7 +76,17 @@ async def log_action(
                 (id, ts, guild_id, channel_id, user_id, target_user_id, action_type, command_name, details)
             VALUES (?,  ?,  ?,        ?,         ?,       ?,              ?,           ?,            ?)
             """,
-            (trace_id, ts, guild_id, channel_id, user_id, target_user_id, action_type, command_name, payload),
+            (
+                trace_id,
+                ts,
+                guild_id,
+                channel_id,
+                user_id,
+                target_user_id,
+                action_type,
+                command_name,
+                payload,
+            ),
         )
         await db.commit()
     return trace_id
@@ -82,7 +97,7 @@ def audit_event(
     target_user: Optional[Callable[..., Optional[discord.User | discord.Member]]] = None,
     extra: Optional[Callable[..., Dict[str, Any]]] = None,
     *,
-    ack: bool = False,                # set True only if you want the decorator to ack early
+    ack: bool = False,  # set True only if you want the decorator to ack early
     skip_commands: tuple[str, ...] = ("sync",),  # never touch /sync's token
 ):
     """
@@ -91,6 +106,7 @@ def audit_event(
     - Optionally acknowledges once up-front (ack=True) using ack_once, except for commands in skip_commands.
     - Always logs after the handler finishes (success or error), including status & error info.
     """
+
     def _wrap(func: Callable[..., Awaitable[Any]]):
         @functools.wraps(func)
         async def inner(*args, **kwargs):
@@ -107,7 +123,11 @@ def audit_event(
             guild_id = interaction.guild_id if interaction else None
             channel_id = interaction.channel_id if interaction else None
             user_id = interaction.user.id if interaction else None
-            cmd_name = (interaction.command and interaction.command.qualified_name) if interaction else None
+            cmd_name = (
+                (interaction.command and interaction.command.qualified_name)
+                if interaction
+                else None
+            )
 
             # Resolve target user (pure Python)
             tgt_id: Optional[int] = None
@@ -131,6 +151,7 @@ def audit_event(
             if ack and interaction is not None and (cmd_name or "") not in skip_commands:
                 try:
                     from src.core.ack import ack_once  # local import to avoid cycles
+
                     await ack_once(interaction, ephemeral=True)
                 except Exception:
                     # ack is best-effort; never fail the command because of the decorator
@@ -173,4 +194,5 @@ def audit_event(
                     pass
 
         return inner
+
     return _wrap

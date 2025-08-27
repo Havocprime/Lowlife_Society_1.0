@@ -6,9 +6,10 @@ from typing import List, Optional
 
 import discord
 
+from .battlefield import compose_distance_rows  # back-compat shim is fine
+
 # State & helpers
 from .state import DuelState, RangeGate
-from .battlefield import compose_distance_rows  # back-compat shim is fine
 
 # ----------------------------- constants / glyphs ------------------------------
 
@@ -17,11 +18,11 @@ CLOUD = "⛅"
 RAIN = "🌧️"
 NIGHT = "🌙"
 
-GLYPH_P1 = "🔷"   # trail for player 1
-GLYPH_P2 = "🔶"   # trail for player 2
+GLYPH_P1 = "🔷"  # trail for player 1
+GLYPH_P2 = "🔶"  # trail for player 2
 GLYPH_COVER = "🧱"  # cover cell indicator
-GLYPH_SEG = "·"     # empty cell dot
-GLYPH_MEET = "✖"    # both in same cell
+GLYPH_SEG = "·"  # empty cell dot
+GLYPH_MEET = "✖"  # both in same cell
 
 HEART = "❤️"
 ARMOR = "🛡️"
@@ -39,13 +40,14 @@ RANGE_METERS = {
 
 RANGE_NAME = {
     RangeGate.CLOSE: "Close",
-    RangeGate.NEAR:  "Near",
-    RangeGate.MID:   "Mid",
-    RangeGate.FAR:   "Far",
-    RangeGate.OUT:   "Out",
+    RangeGate.NEAR: "Near",
+    RangeGate.MID: "Mid",
+    RangeGate.FAR: "Far",
+    RangeGate.OUT: "Out",
 }
 
 # ----------------------------- small format helpers ---------------------------
+
 
 def _weather_icon(state: DuelState) -> str:
     tod = (getattr(state, "time_of_day", "day") or "day").lower()
@@ -58,22 +60,30 @@ def _weather_icon(state: DuelState) -> str:
         return CLOUD
     return SUN
 
+
 def _hp_bar(cur: int, maxhp: int = 100, width: int = 22) -> str:
     cur = max(0, min(maxhp, int(cur)))
     fill = math.floor((cur / maxhp) * width)
     return "█" * fill + "░" * (width - fill)
+
 
 def _blood_bar(liters: float, max_l: float = 5.0, width: int = 24) -> str:
     liters = max(0.0, min(max_l, float(liters)))
     fill = math.floor((liters / max_l) * width)
     return "█" * fill + "░" * (width - fill)
 
+
 def _kit_name(kit: dict | None, primary: bool = True) -> str:
     if not isinstance(kit, dict):
         return "—"
     if primary:
-        return str(kit.get("primary_name") or kit.get("primary") or kit.get("primary_weapon") or "—")
-    return str(kit.get("secondary_name") or kit.get("secondary") or kit.get("secondary_weapon") or "—")
+        return str(
+            kit.get("primary_name") or kit.get("primary") or kit.get("primary_weapon") or "—"
+        )
+    return str(
+        kit.get("secondary_name") or kit.get("secondary") or kit.get("secondary_weapon") or "—"
+    )
+
 
 def _cover_name(n: int) -> str:
     if n <= 0:
@@ -82,7 +92,9 @@ def _cover_name(n: int) -> str:
         return "Partial"
     return "Full"
 
+
 # ----------------------------- distance / map block ---------------------------
+
 
 def _render_map_rows(state: DuelState) -> List[str]:
     """
@@ -151,7 +163,9 @@ def _render_map_rows(state: DuelState) -> List[str]:
         rows.append(cover_row)
     return rows
 
+
 # ----------------------------- public HUD builder -----------------------------
+
 
 def player_hud_embed(state: DuelState, viewer: discord.abc.User | discord.Member) -> discord.Embed:
     """
@@ -175,7 +189,11 @@ def player_hud_embed(state: DuelState, viewer: discord.abc.User | discord.Member
 
     # Header
     title = f"⚔️ Combat {icon}"
-    turn_name = getattr(a, "display", "A") if getattr(state, "turn_of", 1) == 1 else getattr(b, "display", "B")
+    turn_name = (
+        getattr(a, "display", "A")
+        if getattr(state, "turn_of", 1) == 1
+        else getattr(b, "display", "B")
+    )
     desc_header = (
         f"**Range:** {r_name} **{r_lo}–{r_hi}m** (≈{approx}m)  •  "
         f"**Round:** {getattr(state, 'round_no', 1)}  •  "
@@ -189,13 +207,19 @@ def player_hud_embed(state: DuelState, viewer: discord.abc.User | discord.Member
     p2kit = getattr(state, "_p2kit", None)
 
     # --- Fighter blocks ---------------------------------------------------------
-    a_hp = int(getattr(a, "hp", 100)); b_hp = int(getattr(b, "hp", 100))
-    a_arm = getattr(a, "armor", (0, 0)); b_arm = getattr(b, "armor", (0, 0))
-    if not isinstance(a_arm, tuple): a_arm = (int(getattr(a, "armor_cur", 0)), int(getattr(a, "armor_max", 0)))
-    if not isinstance(b_arm, tuple): b_arm = (int(getattr(b, "armor_cur", 0)), int(getattr(b, "armor_max", 0)))
+    a_hp = int(getattr(a, "hp", 100))
+    b_hp = int(getattr(b, "hp", 100))
+    a_arm = getattr(a, "armor", (0, 0))
+    b_arm = getattr(b, "armor", (0, 0))
+    if not isinstance(a_arm, tuple):
+        a_arm = (int(getattr(a, "armor_cur", 0)), int(getattr(a, "armor_max", 0)))
+    if not isinstance(b_arm, tuple):
+        b_arm = (int(getattr(b, "armor_cur", 0)), int(getattr(b, "armor_max", 0)))
 
-    a_wp1 = _kit_name(p1kit, True); a_wp2 = _kit_name(p1kit, False)
-    b_wp1 = _kit_name(p2kit, True); b_wp2 = _kit_name(p2kit, False)
+    a_wp1 = _kit_name(p1kit, True)
+    a_wp2 = _kit_name(p1kit, False)
+    b_wp1 = _kit_name(p2kit, True)
+    b_wp2 = _kit_name(p2kit, False)
 
     left = (
         f"**{getattr(a, 'display', 'A')}**\n"
@@ -249,7 +273,7 @@ def player_hud_embed(state: DuelState, viewer: discord.abc.User | discord.Member
     )
 
     # --- Grenade info (acting player for convenience) ---------------------------
-    acting_is_a = (getattr(state, "turn_of", 1) == 1)
+    acting_is_a = getattr(state, "turn_of", 1) == 1
     kit = p1kit if acting_is_a else p2kit
     try:
         grenades = int(kit.get("grenades", 0)) if isinstance(kit, dict) else 0
@@ -258,10 +282,14 @@ def player_hud_embed(state: DuelState, viewer: discord.abc.User | discord.Member
     em.add_field(name="Grenade", value=f"{GRENADE} {grenades}", inline=True)
 
     # Footer for viewer context (ephemeral edits etc.)
-    em.set_footer(text=f"Use the buttons to act. Viewer: {getattr(viewer,'display_name',getattr(viewer,'name','?'))}")
+    em.set_footer(
+        text=f"Use the buttons to act. Viewer: {getattr(viewer,'display_name',getattr(viewer,'name','?'))}"
+    )
     return em
 
+
 # ----------------------------- finish helpers ----------------------------------
+
 
 def finish_summary(state: DuelState) -> str:
     """Text summary for end-of-duel banner."""
@@ -276,7 +304,10 @@ def finish_summary(state: DuelState) -> str:
         return "It ends in a draw."
     return "Duel concluded."
 
-async def post_public_banner(client_or_interaction, state: DuelState, content: Optional[str] = None):
+
+async def post_public_banner(
+    client_or_interaction, state: DuelState, content: Optional[str] = None
+):
     """Legacy helper: post the initial public banner."""
     try:
         channel_id = getattr(state, "channel_id", None)
@@ -289,6 +320,7 @@ async def post_public_banner(client_or_interaction, state: DuelState, content: O
             await channel.send(content or "Duel started.")
     except Exception:
         pass
+
 
 async def update_public_result(client_or_interaction, state: DuelState, text: str):
     """Post a public result note (timeout, mercy, victory, etc.)."""

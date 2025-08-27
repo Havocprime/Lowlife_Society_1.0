@@ -4,21 +4,23 @@ import discord
 from discord import app_commands
 
 from src.core.duel_core import (
-    RangeBand,
     GrappleState,
-    next_range_after_advance,
-    next_range_after_retreat,
-    compute_attack,
+    RangeBand,
     allowed_grapple_moves,
     apply_grapple_move,
+    compute_attack,
+    next_range_after_advance,
+    next_range_after_retreat,
 )
 from src.core.embeds import build_combat_embed
 
 # In-memory duel session by channel
 SESSIONS: dict[int, dict] = {}
 
+
 def _get_session(interaction: discord.Interaction) -> dict | None:
     return SESSIONS.get(interaction.channel_id)
+
 
 def register_duel(tree: app_commands.CommandTree) -> None:
     @tree.command(name="duel", description="Start a 1v1 duel in this channel.")
@@ -79,9 +81,7 @@ def register_duel(tree: app_commands.CommandTree) -> None:
             app_commands.Choice(name="push", value="push"),
         ]
     )
-    async def grapple_cmd(
-        interaction: discord.Interaction, move: app_commands.Choice[str]
-    ) -> None:
+    async def grapple_cmd(interaction: discord.Interaction, move: app_commands.Choice[str]) -> None:
         s = _get_session(interaction)
         if not s:
             await interaction.response.send_message("No duel in this channel.", ephemeral=True)

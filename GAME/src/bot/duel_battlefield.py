@@ -5,19 +5,19 @@ import random
 from collections import deque
 from typing import Deque, Dict, List
 
-from src.core.duel_core import range_label, iclamp
+from src.core.duel_core import iclamp, range_label
 
 # ---- Glyphs & tiles ----
 GLYPH_A = "🔶"
 GLYPH_B = "🔷"
-GLYPH_A_SMALL = "🔸"   # peek icon when A is inside cover
-GLYPH_B_SMALL = "🔹"   # peek icon when B is inside cover
+GLYPH_A_SMALL = "🔸"  # peek icon when A is inside cover
+GLYPH_B_SMALL = "🔹"  # peek icon when B is inside cover
 GLYPH_GRAPPLE = "🤼"
 
 # Background (stored internally per cell as a char; rendered to UI as TILE_BG_VIS)
 TILE_BG_DAY = "◽"
 TILE_BG_NIGHT = "◾"
-TILE_BG_VIS = "..."     # what the user sees for any background cell
+TILE_BG_VIS = "..."  # what the user sees for any background cell
 
 # Cover & props
 TILE_COVER = "🚧"
@@ -62,8 +62,8 @@ def init_battlefield(state) -> None:
     place(TILE_DOOR, (0, 2))
     place(TILE_BARREL, (1, 3))
 
-    state.map_tiles = tiles      # internal per-cell e.g. "◽", "🚧", ...
-    state.map_bg = bg            # "◽" or "◾"
+    state.map_tiles = tiles  # internal per-cell e.g. "◽", "🚧", ...
+    state.map_bg = bg  # "◽" or "◾"
     state.bf_ready = True
 
 

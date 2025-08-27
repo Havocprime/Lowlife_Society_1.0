@@ -1,7 +1,10 @@
 from __future__ import annotations
+
 import discord
 from discord import app_commands
-from src.core.storage import get_inventory, get_equipped, equip_item, add_item, ensure_player
+
+from src.core.storage import add_item, ensure_player, equip_item, get_equipped, get_inventory
+
 
 def register_inventory(tree: app_commands.CommandTree) -> None:
     @tree.command(name="inventory", description="Show your inventory (ephemeral).")
@@ -25,9 +28,14 @@ def register_inventory(tree: app_commands.CommandTree) -> None:
     @tree.command(name="give", description="Admin: give an item to a user.")
     async def give_cmd(interaction: discord.Interaction, user: discord.Member, item: str):
         if not interaction.user.guild_permissions.administrator:
-            await interaction.response.send_message("Admin only.", ephemeral=True); return
+            await interaction.response.send_message("Admin only.", ephemeral=True)
+            return
         ok = add_item(user.id, item)
         if ok:
-            await interaction.response.send_message(f"Gave **{item}** to {user.mention}.", ephemeral=True)
+            await interaction.response.send_message(
+                f"Gave **{item}** to {user.mention}.", ephemeral=True
+            )
         else:
-            await interaction.response.send_message(f"{user.mention} already has **{item}**.", ephemeral=True)
+            await interaction.response.send_message(
+                f"{user.mention} already has **{item}**.", ephemeral=True
+            )

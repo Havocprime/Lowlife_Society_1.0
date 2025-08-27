@@ -1,7 +1,8 @@
 from __future__ import annotations
+
 import os
-from pathlib import Path
 from dataclasses import dataclass
+from pathlib import Path
 
 # NEW: load .env automatically
 try:
@@ -9,9 +10,9 @@ try:
 except Exception:
     load_dotenv = None
 
-GAME_DIR = Path(__file__).resolve().parents[2]   # .../GAME
+GAME_DIR = Path(__file__).resolve().parents[2]  # .../GAME
 REPO_DIR = GAME_DIR.parent
-VAR      = GAME_DIR / "var"
+VAR = GAME_DIR / "var"
 VAR.mkdir(exist_ok=True)
 
 if load_dotenv:
@@ -19,10 +20,13 @@ if load_dotenv:
     load_dotenv(REPO_DIR / ".env")
     load_dotenv(GAME_DIR / ".env", override=True)
 
-def _env_bool(key: str, default: bool=False) -> bool:
+
+def _env_bool(key: str, default: bool = False) -> bool:
     v = os.getenv(key)
-    if v is None: return default
+    if v is None:
+        return default
     return v.strip() not in ("0", "false", "False", "")
+
 
 @dataclass(frozen=True)
 class Settings:
@@ -35,9 +39,9 @@ class Settings:
     @staticmethod
     def load() -> "Settings":
         token = os.getenv("DISCORD_TOKEN", "").strip()
-        gid   = int(os.getenv("DISCORD_GUILD_ID", "0") or "0")
-        dbp   = Path(os.getenv("DB_PATH", str(VAR / "lowlife.db")))
-        env   = os.getenv("APP_ENV", "dev").lower()
+        gid = int(os.getenv("DISCORD_GUILD_ID", "0") or "0")
+        dbp = Path(os.getenv("DB_PATH", str(VAR / "lowlife.db")))
+        env = os.getenv("APP_ENV", "dev").lower()
         return Settings(
             discord_token=token,
             guild_id=gid,
@@ -45,17 +49,21 @@ class Settings:
             app_env=env,
             log_json=_env_bool("LOG_JSON", False),
         )
+
 
 SETTINGS = Settings.load()
 
-ROOT = Path(__file__).resolve().parents[2]   # .../GAME
-VAR  = ROOT / "var"
+ROOT = Path(__file__).resolve().parents[2]  # .../GAME
+VAR = ROOT / "var"
 VAR.mkdir(exist_ok=True)
 
-def _env_bool(key: str, default: bool=False) -> bool:
+
+def _env_bool(key: str, default: bool = False) -> bool:
     v = os.getenv(key)
-    if v is None: return default
+    if v is None:
+        return default
     return v.strip() not in ("0", "false", "False", "")
+
 
 @dataclass(frozen=True)
 class Settings:
@@ -68,9 +76,9 @@ class Settings:
     @staticmethod
     def load() -> "Settings":
         token = os.getenv("DISCORD_TOKEN", "").strip()
-        gid   = int(os.getenv("DISCORD_GUILD_ID", "0") or "0")
-        dbp   = Path(os.getenv("DB_PATH", str(VAR / "lowlife.db")))
-        env   = os.getenv("APP_ENV", "dev").lower()
+        gid = int(os.getenv("DISCORD_GUILD_ID", "0") or "0")
+        dbp = Path(os.getenv("DB_PATH", str(VAR / "lowlife.db")))
+        env = os.getenv("APP_ENV", "dev").lower()
         return Settings(
             discord_token=token,
             guild_id=gid,
@@ -78,5 +86,6 @@ class Settings:
             app_env=env,
             log_json=_env_bool("LOG_JSON", False),
         )
+
 
 SETTINGS = Settings.load()

@@ -3,21 +3,34 @@ from __future__ import annotations
 
 import math
 import random
-from typing import Any, Dict, Tuple, Optional
+from typing import Any, Dict, Optional, Tuple
 
+from .battlefield import dodge_chance, to_hit
 from .state import (
-    DuelState, FighterState, RangeGate, RANGE_NAMES,
-    CHOKE_DAMAGE, CHOKE_STAM_DRAIN,
-    GRENADE_HIT_PCT, GRENADE_DMG, GRENADE_DESTROY_PARTIAL_PCT,
-    BLOCK_REDUCTION, clamp, roll, chance,
-    get_combatkit, pick_weapon_for_range,
-    COVER_NONE, COVER_PARTIAL, COVER_FULL
+    BLOCK_REDUCTION,
+    CHOKE_DAMAGE,
+    CHOKE_STAM_DRAIN,
+    COVER_FULL,
+    COVER_NONE,
+    COVER_PARTIAL,
+    GRENADE_DESTROY_PARTIAL_PCT,
+    GRENADE_DMG,
+    GRENADE_HIT_PCT,
+    RANGE_NAMES,
+    DuelState,
+    FighterState,
+    RangeGate,
+    chance,
+    clamp,
+    get_combatkit,
+    pick_weapon_for_range,
+    roll,
 )
-from .battlefield import to_hit, dodge_chance
 
 # -----------------------------------------------------------------------------
 # small helpers
 # -----------------------------------------------------------------------------
+
 
 def _log(ds: DuelState, text: str) -> None:
     # tolerate old/new logging styles
@@ -28,6 +41,7 @@ def _log(ds: DuelState, text: str) -> None:
     else:
         ds.log.append(text)
 
+
 def _apply_damage(f: FighterState, dmg: int) -> None:
     try:
         f.hp = max(0, int(getattr(f, "hp", 100)) - int(dmg))
@@ -35,15 +49,19 @@ def _apply_damage(f: FighterState, dmg: int) -> None:
         # keep going even if a custom FighterState has different fields
         pass
 
+
 def _idx_for_actor(ds: DuelState, actor: FighterState) -> int:
     return 1 if actor is ds.p1 or actor is getattr(ds, "a", None) else 2
+
 
 def _fighter_by_uid(ds: DuelState, uid: int) -> FighterState:
     a = getattr(ds, "a", ds.p1)
     b = getattr(ds, "b", ds.p2)
     return a if a.user_id == uid else b
 
+
 # ----------------------- Defensive Intents -----------------------
+
 
 def act_block(ds: DuelState, idx: int) -> str:
     f = ds.fighter(idx)
@@ -52,6 +70,7 @@ def act_block(ds: DuelState, idx: int) -> str:
     f.status_dodge = False
     return f"{f.display} raises a **block**."
 
+
 def act_dodge(ds: DuelState, idx: int) -> str:
     f = ds.fighter(idx)
     f.stamina = clamp(f.stamina - 6, 0, 100)
@@ -59,12 +78,15 @@ def act_dodge(ds: DuelState, idx: int) -> str:
     f.status_block = False
     return f"{f.display} prepares to **dodge**."
 
+
 # ----------------------- Attacks -----------------------
+
 
 def _consume_defense_text(defender: FighterState, used: str) -> str:
     defender.status_block = False
     defender.status_dodge = False
     return used
+
 
 def act_punch(ds: DuelState, idx: int) -> str:
     if ds.current_range != RangeGate.CLOSE:
@@ -73,7 +95,9 @@ def act_punch(ds: DuelState, idx: int) -> str:
 
     # Defender may dodge?
     if dfn.status_dodge and chance(dodge_chance(dfn)):
-        return _consume_defense_text(dfn, f"{atk.display} throws a **punch**, but {dfn.display} **dodges**.")
+        return _consume_defense_text(
+            dfn, f"{atk.display} throws a **punch**, but {dfn.display} **dodges**."
+        )
 
     dmg = roll((5, 9))
 
@@ -87,10 +111,16 @@ def act_punch(ds: DuelState, idx: int) -> str:
     atk.stamina = clamp(atk.stamina - 5, 0, 100)
     return f"{atk.display} **punches** {dfn.display} for **{dmg}**{extra}."
 
+
 def act_shoot(ds: DuelState, idx: int) -> str:
     atk, dfn = ds.fighter(idx), ds.foe(idx)
-    gate = {RangeGate.CLOSE:"CLOSE", RangeGate.NEAR:"NEAR", RangeGate.MID:"MID",
-            RangeGate.FAR:"FAR", RangeGate.OUT:"OUT"}[ds.current_range]
+    gate = {
+        RangeGate.CLOSE: "CLOSE",
+        RangeGate.NEAR: "NEAR",
+        RangeGate.MID: "MID",
+        RangeGate.FAR: "FAR",
+        RangeGate.OUT: "OUT",
+    }[ds.current_range]
 
     if gate == "OUT":
         return f"❌ Target is **out of range**."
@@ -101,7 +131,9 @@ def act_shoot(ds: DuelState, idx: int) -> str:
     if dfn.status_dodge and chance(dodge_chance(dfn)):
         _consume_defense_text(dfn, "")
         atk.stamina = clamp(atk.stamina - 7, 0, 100)
-        return f"{atk.display} fires **{getattr(wp,'name','weapon')}**, but {dfn.display} **dodges**."
+        return (
+            f"{atk.display} fires **{getattr(wp,'name','weapon')}**, but {dfn.display} **dodges**."
+        )
 
     hit = chance(to_hit(getattr(wp, "accuracy", 0.55), dfn.cover, atk.stamina))
     atk.stamina = clamp(atk.stamina - 7, 0, 100)
@@ -119,6 +151,7 @@ def act_shoot(ds: DuelState, idx: int) -> str:
     _apply_damage(dfn, dmg)
     return f"{atk.display} **hits** with {getattr(wp,'name','weapon')} for **{dmg}**."
 
+
 def act_grenade(ds: DuelState, idx: int) -> str:
     atk, dfn = ds.fighter(idx), ds.foe(idx)
     atk.stamina = clamp(atk.stamina - 10, 0, 100)
@@ -134,7 +167,9 @@ def act_grenade(ds: DuelState, idx: int) -> str:
         return text
     return f"{atk.display} **throws a grenade** — it **misses**."
 
+
 # ----------------------- Grapple / Choke Flow -----------------------
+
 
 def act_grapple(ds: DuelState, idx: int) -> str:
     atk, dfn = ds.fighter(idx), ds.foe(idx)
@@ -145,6 +180,7 @@ def act_grapple(ds: DuelState, idx: int) -> str:
         dfn.is_choked_by = atk.user_id
         return f"{atk.display} **secures a grapple** on {dfn.display}."
     return f"{atk.display} attempts to grapple but **fails**."
+
 
 def act_choke(ds: DuelState, idx: int) -> str:
     atk, dfn = ds.fighter(idx), ds.foe(idx)
@@ -160,6 +196,7 @@ def act_choke(ds: DuelState, idx: int) -> str:
     _apply_damage(dfn, dmg)
     return f"{atk.display} **chokes** {dfn.display} for **{dmg}**. {dfn.display} is struggling to breathe!"
 
+
 def act_push(ds: DuelState, idx: int) -> str:
     atk, dfn = ds.fighter(idx), ds.foe(idx)
     if atk.choking_target != dfn.user_id:
@@ -169,6 +206,7 @@ def act_push(ds: DuelState, idx: int) -> str:
     before = ds.current_range
     ds.current_range = RangeGate(min(before + 1, RangeGate.OUT))
     return f"{atk.display} **pushes** {dfn.display} off, breaking the choke ({RANGE_NAMES[before]} → {RANGE_NAMES[ds.current_range]})."
+
 
 def act_gouge(ds: DuelState, idx: int) -> str:
     vic, atk = ds.fighter(idx), ds.foe(idx)
@@ -182,9 +220,11 @@ def act_gouge(ds: DuelState, idx: int) -> str:
         return f"{vic.display} **gouges** to break free, countering for **{dmg}**!"
     return f"{vic.display} tries to **gouge** free but **fails**."
 
+
 # -----------------------------------------------------------------------------
 # Back-compat shims required by the legacy view / AI
 # -----------------------------------------------------------------------------
+
 
 def can_throw_grenade(user_id: int) -> bool:
     try:
@@ -193,12 +233,14 @@ def can_throw_grenade(user_id: int) -> bool:
     except Exception:
         return False
 
+
 def grenade_hit_chance(ds: DuelState, thrower_id: int, target_id: int) -> float:
     # Use the same math as a middling firearm, adjusted by target cover.
     thrower = _fighter_by_uid(ds, thrower_id)
     target = _fighter_by_uid(ds, target_id)
     base_acc = 0.60
     return to_hit(base_acc, getattr(target, "cover", COVER_NONE), getattr(thrower, "stamina", 50))
+
 
 async def resolve_pending_grenade(interaction, ds: DuelState, actor: FighterState) -> None:
     """
@@ -213,8 +255,12 @@ async def resolve_pending_grenade(interaction, ds: DuelState, actor: FighterStat
     dmg = int(entry.get("damage", 0))
     src = _fighter_by_uid(ds, from_id)
     _apply_damage(actor, dmg)
-    _log(ds, f"💥 The grenade from **{src.display}** detonates near **{actor.display}** for **{dmg}**.")
+    _log(
+        ds,
+        f"💥 The grenade from **{src.display}** detonates near **{actor.display}** for **{dmg}**.",
+    )
     ds.grenades_pending = pending  # write back, just in case
+
 
 def attack_once(ds: DuelState, attacker: FighterState, defender: FighterState) -> None:
     """Single auto-attack used by the legacy 'Attack' button."""
@@ -226,6 +272,7 @@ def attack_once(ds: DuelState, attacker: FighterState, defender: FighterState) -
     else:
         text = act_shoot(ds, idx)
     _log(ds, text)
+
 
 def fists_too_far(ds: DuelState, *_, **__) -> bool:
     """Legacy AI helper stub: True when punching is not viable."""

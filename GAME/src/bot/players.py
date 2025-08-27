@@ -1,8 +1,11 @@
 from __future__ import annotations
+
 import discord
 from discord import app_commands
-from src.core.storage import ensure_player, load_player, save_player
+
 from src.core.embeds import build_sheet_embed
+from src.core.storage import ensure_player, load_player, save_player
+
 
 def register_players(tree: app_commands.CommandTree) -> None:
     @tree.command(name="create", description="Create your character.")
