@@ -89,11 +89,31 @@ def _perm_names(perms: discord.Permissions) -> set[str]:
     return out
 
 
-def _agg_member_perms(m: discord.Member) -> discord.Permissions:
-    value = 0
-    for r in m.roles:
-        value |= r.permissions.value
-    return discord.Permissions(value=value)
+# --- replace or add ---
+def _agg_member_perms(member: discord.Member) -> set[str]:
+    """
+    Return the union of all allowed permission names for this member.
+    Never constructs Permissions from ad-hoc dicts; only uses real Permission objects.
+    """
+    out: set[str] = set()
+
+    # member.guild_permissions is already a discord.Permissions
+    gp = getattr(member, "guild_permissions", None)
+    if isinstance(gp, discord.Permissions):
+        for name, allowed in gp:
+            if allowed:
+                out.add(name)
+
+    # include union of each role's permissions
+    for role in getattr(member, "roles", []) or []:
+        rp = getattr(role, "permissions", None)
+        if isinstance(rp, discord.Permissions):
+            for name, allowed in rp:
+                if allowed:
+                    out.add(name)
+
+    return out
+
 
 
 class ActivityLogger(commands.Cog):
@@ -526,6 +546,8 @@ class ActivityLogger(commands.Cog):
 
         bp = _agg_member_perms(before)
         ap = _agg_member_perms(after)
+        added   = sorted(ap - bp)
+        removed = sorted(bp - ap)
         bnames = _perm_names(bp)
         anames = _perm_names(ap)
         gained = sorted((anames - bnames) & RISKY_PERMS)

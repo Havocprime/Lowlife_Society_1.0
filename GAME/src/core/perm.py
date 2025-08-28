@@ -7,12 +7,16 @@ import typing as t
 
 import discord
 from discord.ext import commands
+from src.core.config import get_role_ids
+
 
 # Optional: allow role IDs via env (comma-sep)
-_ADMIN_ROLE_IDS = {
-    int(x) for x in os.getenv("ADMIN_ROLE_IDS", "").split(",") if x.strip().isdigit()
-}
-_MOD_ROLE_IDS = {int(x) for x in os.getenv("MOD_ROLE_IDS", "").split(",") if x.strip().isdigit()}
+_ADMIN_ENV = {int(x) for x in os.getenv("ADMIN_ROLE_IDS", "").split(",") if x.strip().isdigit()}
+_MOD_ENV   = {int(x) for x in os.getenv("MOD_ROLE_IDS", "").split(",")   if x.strip().isdigit()}
+
+def _admin_ids(): return _ADMIN_ENV | get_role_ids("admin_role_ids")
+def _mod_ids():   return _MOD_ENV   | get_role_ids("mod_role_ids")
+
 
 
 class Role:
@@ -29,12 +33,12 @@ def _has_role(member: discord.Member, role_ids: set[int]) -> bool:
 
 
 def user_role(member: discord.Member) -> str:
-    # grant ADMIN either by discord permission or configured role ids
-    if member.guild_permissions.administrator or _has_role(member, _ADMIN_ROLE_IDS):
+    if member.guild_permissions.administrator or _has_role(member, _admin_ids()):
         return Role.ADMIN
-    if _has_role(member, _MOD_ROLE_IDS):
+    if _has_role(member, _mod_ids()):
         return Role.MOD
     return Role.USER
+
 
 
 def require_role(min_role: str):

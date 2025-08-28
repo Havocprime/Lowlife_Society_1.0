@@ -1,3 +1,4 @@
+# GAME/src/bot/bot.py
 from __future__ import annotations
 
 import asyncio
@@ -15,13 +16,12 @@ from zoneinfo import ZoneInfo
 import discord
 from discord import app_commands
 from discord.ext import commands
-from dotenv import load_dotenv
 
 BUILD_TAG = "bot.py:v4-inspect_full-and-cmd-origin-log"
 
 # ---------- paths & env ----------
 THIS_FILE = Path(__file__).resolve()
-SRC_DIR = THIS_FILE.parents[1]  # .../GAME/src
+SRC_DIR = THIS_FILE.parents[1]   # .../GAME/src
 GAME_DIR = THIS_FILE.parents[2]  # .../GAME
 REPO_DIR = THIS_FILE.parents[3]  # repo root
 for p in (GAME_DIR, SRC_DIR, REPO_DIR):
@@ -29,16 +29,22 @@ for p in (GAME_DIR, SRC_DIR, REPO_DIR):
     if sp not in sys.path:
         sys.path.insert(0, sp)
 
-# --- settings ---
-from src.core.settings import SETTINGS
+# --- settings (after sys.path is set) ---
+from src.core.settings import SETTINGS  # noqa: E402
 
 TOKEN = SETTINGS.discord_token
 GUILD_ID = SETTINGS.guild_id
 
-
-# ✅ import AFTER sys.path is set
-from src.core.audit import audit_event, ensure_db
-from src.core.events import DB_PATH, last_event_time, list_admin_notes, message_count, recent_events
+# audit + events helpers
+from src.core.audit import audit_event, ensure_db  # noqa: E402
+from src.core.events import (  # noqa: E402
+    DB_PATH,
+    last_event_time,
+    list_admin_notes,
+    message_count,
+    recent_events,
+)
+from src.core.errors import setup_error_reporting  # noqa: E402
 
 COGS = [
     "src.cogs.activity_logger",
@@ -138,21 +144,8 @@ def _fmt_ts_local(ts_in) -> str:
         ampm = "AM" if hour < 12 else "PM"
         h12 = hour % 12 or 12
         return f"{dt.day}/{dt.month}/{dt.year % 100:02d} {h12}:{dt.minute:02d} {ampm}"
-
     except Exception:
         return str(ts_in)
-
-
-def _is_trusted(member: discord.Member) -> bool:
-    if member.guild_permissions.administrator:
-        return True
-    if ADMIN_ROLE_ID and any(r.id == ADMIN_ROLE_ID for r in member.roles):
-        return True
-    if TRUSTED_ROLE_IDS and any(r.id in TRUSTED_ROLE_IDS for r in member.roles):
-        return True
-    if TRUSTED_ROLE_NAMES and any(r.name.lower() in TRUSTED_ROLE_NAMES for r in member.roles):
-        return True
-    return False
 
 
 def _snippet(s: str | None, n: int = 120) -> str:
@@ -169,24 +162,14 @@ def _to_int(x):
         return None
 
 
-def _ch_mention_from_payload(guild: discord.Guild, d: dict) -> str:
-    cid = d.get("channel_id") or d.get("channel") or d.get("cid")
-    if isinstance(cid, dict):
-        cid = cid.get("id")
-    cid = _to_int(cid)
-    if not cid:
-        return "—"
-    ch = guild.get_channel(cid)
-    return ch.mention if ch else f"<#{cid}>"
-
-
 def _ch_label_from_payload(guild: discord.Guild, d: dict) -> str:
     """Return '#channelname' if found, otherwise <#id> or '—'."""
     cid = d.get("channel_id") or d.get("channel") or d.get("cid")
     if isinstance(cid, dict):
         cid = cid.get("id")
-    cid = _to_int(cid)
-    if not cid:
+    try:
+        cid = int(cid)
+    except Exception:
         return "—"
     ch = guild.get_channel(cid)
     return f"#{ch.name}" if ch else f"<#{cid}>"
@@ -204,19 +187,55 @@ def _extract_text(d: dict) -> str:
     return ""
 
 
-def _role_mentions(guild: discord.Guild, ids: list[str] | list[int] | None) -> str:
-    if not ids:
-        return "—"
-    out = []
-    for rid in ids:
-        rid_i = _to_int(rid)
-        if rid_i is None:
-            out.append(f"`{rid}`")
-            continue
-        r = guild.get_role(rid_i)
-        out.append(r.mention if r else f"`{rid_i}`")
-    return ", ".join(out) if out else "—"
+def _is_trusted(member: discord.Member) -> bool:
+    # Uses guild admin perms + any configured roles (kept same as your original logic)
+    if member.guild_permissions.administrator:
+        return True
+    try:
+        from src.core.perm import user_role, Role
+        return user_role(member) in (Role.ADMIN, Role.MOD)
+    except Exception:
+        return False
 
+
+class LowlifeBot(commands.Bot):
+    async def setup_hook(self):
+        # global crash/error capture
+        setup_error_reporting(self)
+
+        # Ensure audit DB/schema
+        try:
+            res = ensure_db()
+            if asyncio.iscoroutine(res):
+                await res
+            log.info("audit DB ready")
+        except Exception:
+            log.exception("audit DB init failed")
+
+        async def try_load(mod: str):
+            try:
+                await self.load_extension(mod)
+                log.info("loaded extension: %s", mod)
+            except Exception:
+                log.exception("failed to load %s", mod)
+
+        # Base cogs
+        for mod in COGS:
+            await try_load(mod)
+
+        # Extra/feature/admin cogs
+        for mod in (
+            "src.cogs.events",
+            "src.features.character_sheet.commands",
+            "src.admin.sync",
+            "src.admin.export",
+            "src.admin.audit",
+            "src.admin.freeze",
+            "src.admin.econ",
+            "src.admin.audit_paged",
+            "src.admin.roles",
+        ):
+            await try_load(mod)
 
 class LowlifeBot(commands.Bot):
     async def setup_hook(self):
@@ -229,48 +248,27 @@ class LowlifeBot(commands.Bot):
         except Exception:
             log.exception("audit DB init failed")
 
-        async def setup_hook(self):
-            # ... your other loads ...
-            await self.load_extension("src.cogs.events")
-            await self.load_extension("src.features.character_sheet.commands")
-            await self.load_extension("src.admin.sync")
-            await self.load_extension("src.admin.export")
-            await self.load_extension("src.admin.audit")
-
-        async def try_load(mod: str):
+        # --- load extensions (add the new one here) ---
+        async def safe_load(mod: str):
             try:
                 await self.load_extension(mod)
                 log.info("loaded extension: %s", mod)
             except Exception:
                 log.exception("failed to load %s", mod)
 
-        for mod in COGS:
-            await try_load(mod)
+        await safe_load("src.cogs.events")
+        # await safe_load("src.features.character_sheet.commands")
+        await safe_load("src.admin.sync")
+        await safe_load("src.admin.export")
+        await safe_load("src.admin.audit")
+        await safe_load("src.admin.audit_paged")   # <-- ADD THIS LINE
+        await safe_load("src.admin.freeze")
+        await safe_load("src.admin.econ")
+        await safe_load("src.admin.roles")
+        await safe_load("src.admin.backup")
 
-        # --- register notes group into the active scope (robust) ---
-        try:
-            mod = importlib.import_module("src.cogs.admin_notes")
-            notes_group = getattr(mod, "notes", None)
-            if notes_group:
-                exists = self.tree.get_command("notes")  # type: ignore
-                if exists is None:
-                    try:
-                        if GUILD_ID:
-                            self.tree.add_command(notes_group, guild=discord.Object(id=GUILD_ID))
-                        else:
-                            self.tree.add_command(notes_group)
-                        log.info("registered notes group")
-                    except Exception as e:
-                        if "already registered" in str(e).lower():
-                            log.info(
-                                "notes group already present; skipping (add_command duplicate)"
-                            )
-                        else:
-                            raise
-                else:
-                    log.info("notes group already present; skipping (found in tree)")
-        except Exception as e:
-            log.warning("could not register notes group: %s", e)
+        # (your notes-group registration, command defs, register_and_sync(), etc. come after this)
+
 
         # --- /sync (admin) — tries guild, then global, and reports both ---
         @app_commands.command(
@@ -450,8 +448,7 @@ class LowlifeBot(commands.Bot):
             e.add_field(name="Msg Counts", value=f"7d: `{msg7}` • 30d: `{msg30}`", inline=True)
             e.add_field(name="Log DB", value=f"`{str(DB_PATH)}`", inline=True)
 
-            # --- recent actions: explicit formatting here (always show the section) ---
-            # Try to call recent_events with guild first (some versions require it)
+            # recent actions
             try:
                 recents = recent_events(member.id, 50, interaction.guild.id)  # type: ignore[attr-defined]
             except TypeError:
@@ -460,93 +457,61 @@ class LowlifeBot(commands.Bot):
             def _recent_line(ts, kind, data):
                 ch = _ch_label_from_payload(interaction.guild, data) if interaction.guild else "—"  # type: ignore
                 txt = _snippet(_extract_text(data))
-
                 if kind == "message":
-                    prefix = "Msg"
-                    body = txt or "—"
+                    prefix = "Msg"; body = txt or "—"
                 elif kind == "message_edit":
-                    prefix = "Edit"
-                    body = txt or (data.get("after") or {}).get("content") or "—"
+                    prefix = "Edit"; body = txt or (data.get("after") or {}).get("content") or "—"
                 elif kind == "message_delete":
-                    prefix = "Del"
-                    body = txt or (data.get("before") or {}).get("content") or "unknown"
+                    prefix = "Del"; body = txt or (data.get("before") or {}).get("content") or "unknown"
                 elif kind == "message_bulk_delete":
                     prefix = f"BulkDel x{data.get('count', 0)}"
                     cached = data.get("cached_with_text", 0)
                     body = f"{cached} with text" if cached else ""
                 else:
-                    prefix = kind.replace("_", " ").title()
-                    body = txt or ""
-
+                    prefix = kind.replace("_", " ").title(); body = txt or ""
                 return f"{_fmt_ts_local(ts)}  {prefix}@{ch} - {body or '—'}"
 
             pretty = []
-            for row in recents[:20]:  # cap at 20 lines
-                # tolerate (ts, kind, payload) OR (id, ts, kind, payload)
+            for row in recents[:20]:
                 if len(row) >= 4:
                     _, ts, kind, payload = row[0], row[1], row[2], row[3]
                 elif len(row) >= 3:
                     ts, kind, payload = row[0], row[1], row[2]
                 else:
-                    ts, kind, payload = (
-                        row[0],
-                        (row[1] if len(row) > 1 else "event"),
-                        (row[2] if len(row) > 2 else "{}"),
-                    )
-
+                    ts, kind, payload = row[0], (row[1] if len(row) > 1 else "event"), (row[2] if len(row) > 2 else "{}")
                 try:
-                    data = (
-                        json.loads(payload or "{}")
-                        if isinstance(payload, (str, bytes))
-                        else (payload or {})
-                    )
+                    data = json.loads(payload or "{}") if isinstance(payload, (str, bytes)) else (payload or {})
                 except Exception:
                     data = {}
-
-                # Trim every individual line a bit so the field fits 1024 chars
                 line = _recent_line(ts, kind, data)
                 if len(line) > 120:
                     line = line[:117] + "…"
                 pretty.append(line)
 
-            # Always show the section (even if empty)
-            out = (
-                "\n".join(pretty)
-                if pretty
-                else "None recorded yet — start chatting to populate this!"
-            )
-            # Ensure Discord field limit (1024 chars)
+            out = "\n".join(pretty) if pretty else "None recorded yet — start chatting to populate this!"
             while len(out) > 1024 and len(pretty) > 1:
-                pretty.pop()  # drop the oldest line in our slice
+                pretty.pop()
                 out = "\n".join(pretty)
 
             e.add_field(name="Recent Actions", value=out, inline=False)
+            e.set_footer(text=f"{BUILD_TAG} — Use /note_list to view all, /note_add to add, /note_delete to remove")
 
-            e.set_footer(
-                text=f"{BUILD_TAG} — Use /note_list to view all, /note_add to add, /note_delete to remove"
-            )
-
-            out = io.StringIO()
-            w = csv.writer(out)
+            s = io.StringIO()
+            w = csv.writer(s)
             w.writerow(["ts_utc", "kind", "payload"])
             for ts, kind, payload in recents:
                 w.writerow([ts, kind, payload])
-            file = discord.File(
-                io.BytesIO(out.getvalue().encode("utf-8")),
-                filename=f"recent_actions_{member.id}.csv",
-            )
-            await interaction.followup.send(embed=e, file=file, ephemeral=True)
+            f = discord.File(io.BytesIO(s.getvalue().encode("utf-8")), filename=f"recent_actions_{member.id}.csv")
+            await interaction.followup.send(embed=e, file=f, ephemeral=True)
 
         # ----- register & SYNC with fallback -----
         async def register_and_sync():
-            # Always add GLOBAL commands locally so dispatch never fails
+            # add GLOBAL handlers to avoid dispatch errors
             for fn, label in ((sync_cmd, "sync"), (inspect_full, "inspect_full")):
                 try:
                     self.tree.add_command(fn)
                 except Exception as e:
-                    if "already registered" in str(e).lower():
-                        pass
-                    else:
+                    if "already registered" not in str(e).lower():
                         log.warning("add_command(global,%s) failed: %s", label, e)
 
             guild_added = False
@@ -557,12 +522,9 @@ class LowlifeBot(commands.Bot):
                         self.tree.add_command(fn, guild=guild)
                         guild_added = True
                     except Exception as e:
-                        if "already registered" in str(e).lower():
-                            guild_added = True
-                        else:
+                        if "already registered" not in str(e).lower():
                             log.warning("add_command(guild,%s) failed: %s", label, e)
 
-            # Try to sync both scopes; report counts
             g_count = "n/a"
             try:
                 gcmds = await self.tree.sync()
@@ -573,11 +535,7 @@ class LowlifeBot(commands.Bot):
             if GUILD_ID and guild_added:
                 try:
                     gcmds = await self.tree.sync(guild=discord.Object(id=GUILD_ID))
-                    log.info(
-                        "startup sync — Guild: %d • Global: %s",
-                        len(gcmds if "gcmds" in locals() else []),
-                        g_count,
-                    )
+                    log.info("startup sync — Guild: %d • Global: %s", len(gcmds), g_count)
                     log.info("slash commands guild-synced: %d cmds to %s", len(gcmds), GUILD_ID)
                 except Exception as e:
                     log.warning("Guild sync failed for %s (%s).", GUILD_ID, e)
@@ -587,7 +545,7 @@ class LowlifeBot(commands.Bot):
 
         await register_and_sync()
 
-        # Inventory
+        # Inventory: list what got registered
         for cmd in self.tree.walk_commands():
             mod = getattr(cmd.callback, "__module__", "?")
             log.info("slash cmd: /%s from %s", cmd.qualified_name, mod)

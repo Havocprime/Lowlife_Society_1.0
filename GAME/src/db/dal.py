@@ -1,3 +1,4 @@
+# GAME/src/db/dal.py
 from __future__ import annotations
 
 import datetime as dt
@@ -8,6 +9,7 @@ from pathlib import Path
 from typing import Optional
 
 from src.core.settings import SETTINGS
+from src.core.ops import econ_frozen
 
 
 def _conn() -> sqlite3.Connection:
@@ -17,26 +19,24 @@ def _conn() -> sqlite3.Connection:
     return conn
 
 
-# --- Players & Characters ---
+# ---------------------------
+# Players & Characters
+# ---------------------------
 def upsert_player(discord_id: str, username: str | None, joined_ts: str | None = None) -> int:
+    now = dt.datetime.utcnow().isoformat() + "Z"
     with _conn() as c:
         r = c.execute("SELECT id FROM players WHERE discord_id=?", (discord_id,)).fetchone()
         if r:
             c.execute(
                 "UPDATE players SET username=?, last_seen_at=? WHERE id=?",
-                (username, dt.datetime.utcnow().isoformat() + "Z", r["id"]),
+                (username, now, r["id"]),
             )
-            return r["id"]
+            return int(r["id"])
         cur = c.execute(
             "INSERT INTO players(discord_id, username, joined_at, last_seen_at) VALUES(?,?,?,?)",
-            (
-                discord_id,
-                username,
-                joined_ts or dt.datetime.utcnow().isoformat() + "Z",
-                dt.datetime.utcnow().isoformat() + "Z",
-            ),
+            (discord_id, username, joined_ts or now, now),
         )
-        return cur.lastrowid
+        return int(cur.lastrowid)
 
 
 def create_character(player_id: int, codename: str, faction: str | None = None) -> int:
@@ -45,7 +45,7 @@ def create_character(player_id: int, codename: str, faction: str | None = None) 
             "INSERT INTO characters(player_id, codename, faction, created_at) VALUES(?,?,?,?)",
             (player_id, codename, faction, dt.datetime.utcnow().isoformat() + "Z"),
         )
-        cid = cur.lastrowid
+        cid = int(cur.lastrowid)
         c.execute("INSERT INTO profiles(character_id) VALUES(?)", (cid,))
         return cid
 
@@ -60,7 +60,9 @@ def get_characters(player_id: int) -> list[sqlite3.Row]:
         return c.execute("SELECT * FROM characters WHERE player_id=?", (player_id,)).fetchall()
 
 
-# --- Item Defs ---
+# ---------------------------
+# Item Defs
+# ---------------------------
 def get_itemdef_by_name(name: str):
     with _conn() as c:
         return c.execute("SELECT * FROM item_defs WHERE name=?", (name,)).fetchone()
@@ -85,8 +87,10 @@ def ensure_itemdef(
         return int(cur.lastrowid)
 
 
-# --- Wallet & Transactions ---
-def ensure_wallet(owner_type: str, owner_id: int):
+# ---------------------------
+# Wallet & Transactions
+# ---------------------------
+def ensure_wallet(owner_type: str, owner_id: int) -> None:
     with _conn() as c:
         r = c.execute(
             "SELECT id FROM wallets WHERE owner_type=? AND owner_id=?", (owner_type, owner_id)
@@ -112,11 +116,20 @@ def tx_credit(
     amount: int,
     *,
     reason: str = "",
-    idem: str | None = None,
+    idem: str,  # required for safety
     meta: dict | None = None,
+    allow_overdraft: bool = True,
 ) -> int | None:
     assert amount >= 0, "amount must be >= 0"
-    return _txn(owner_type, owner_id, amount, reason, idem, meta, allow_overdraft=True)
+    return _txn(
+        owner_type,
+        owner_id,
+        +amount,
+        reason=reason,
+        idem=idem,
+        meta=meta,
+        allow_overdraft=allow_overdraft,
+    )
 
 
 def tx_debit(
@@ -125,216 +138,88 @@ def tx_debit(
     amount: int,
     *,
     reason: str = "",
-    idem: str | None = None,
+    idem: str,  # required for safety
     meta: dict | None = None,
     allow_overdraft: bool = False,
 ) -> int | None:
     assert amount >= 0, "amount must be >= 0"
-    return _txn(owner_type, owner_id, -amount, reason, idem, meta, allow_overdraft=allow_overdraft)
+    return _txn(
+        owner_type,
+        owner_id,
+        -amount,
+        reason=reason,
+        idem=idem,
+        meta=meta,
+        allow_overdraft=allow_overdraft,
+    )
 
 
 def _txn(
     owner_type: str,
     owner_id: int,
     delta: int,
+    *,
     reason: str,
     idem: str | None,
     meta: dict | None,
-    *,
     allow_overdraft: bool,
 ) -> int | None:
-    # Auto-generate idempotency key if omitted (convenience mode)
-    # NOTE: This makes each call unique; pass a stable idem to dedupe retries.
-    if not idem:
-        idem = f"auto-{uuid.uuid4()}"
-    with _conn() as c:
-        # idempotency check (unique index will also enforce)
-        r = c.execute("SELECT id FROM transactions WHERE idempotency_key=?", (idem,)).fetchone()
-        if r:
-            return None  # already applied (idempotent no-op)
+    # Panic switch: block all econ writes when frozen
+    if econ_frozen():
+        raise RuntimeError("economy is temporarily frozen")
 
-        ensure_wallet(owner_type, owner_id)
-        # overdraft guard
-        if delta < 0 and not allow_overdraft:
-            bal = c.execute(
-                "SELECT balance FROM wallets WHERE owner_type=? AND owner_id=?",
-                (owner_type, owner_id),
-            ).fetchone()
-            if bal is None:
-                raise RuntimeError("wallet missing")
-            if int(bal["balance"]) + delta < 0:
-                raise ValueError("insufficient funds")
-
-        c.execute(
-            "UPDATE wallets SET balance = balance + ? WHERE owner_type=? AND owner_id=?",
-            (delta, owner_type, owner_id),
-        )
-        cur = c.execute(
-            """INSERT INTO transactions(owner_type, owner_id, amount, reason, idempotency_key, meta_json, created_at)
-                           VALUES(?,?,?,?,?,?,?)""",
-            (
-                owner_type,
-                owner_id,
-                delta,
-                reason,
-                idem,
-                json.dumps(meta or {}),
-                dt.datetime.utcnow().isoformat() + "Z",
-            ),
-        )
-        return int(cur.lastrowid)
-
-
-def get_balance(owner_type: str, owner_id: int) -> int:
-    with _conn() as c:
-        r = c.execute(
-            "SELECT balance FROM wallets WHERE owner_type=? AND owner_id=?", (owner_type, owner_id)
-        ).fetchone()
-        return int(r["balance"]) if r else 0
-
-
-def tx_credit(
-    owner_type: str,
-    owner_id: int,
-    amount: int,
-    *,
-    reason: str = "",
-    idem: str,
-    meta: dict | None = None,
-) -> int | None:
-    assert amount >= 0, "amount must be >= 0"
-    return _txn(owner_type, owner_id, amount, reason, idem, meta, allow_overdraft=True)
-
-
-def tx_debit(
-    owner_type: str,
-    owner_id: int,
-    amount: int,
-    *,
-    reason: str = "",
-    idem: str,
-    meta: dict | None = None,
-    allow_overdraft: bool = False,
-) -> int | None:
-    assert amount >= 0, "amount must be >= 0"
-    return _txn(owner_type, owner_id, -amount, reason, idem, meta, allow_overdraft=allow_overdraft)
-
-
-def _txn(
-    owner_type: str,
-    owner_id: int,
-    delta: int,
-    reason: str,
-    idem: str | None,
-    meta: dict | None,
-    *,
-    allow_overdraft: bool,
-) -> int | None:
-    if not idem:
+    if not idem or not str(idem).strip():
         raise ValueError("idempotency key (idem) is required")
+
+    now = dt.datetime.utcnow().isoformat() + "Z"
     with _conn() as c:
-        # idempotency check (unique index will also enforce)
+        # Fast idempotency check
         r = c.execute("SELECT id FROM transactions WHERE idempotency_key=?", (idem,)).fetchone()
         if r:
-            return None  # already applied (idempotent no-op)
+            return None  # already applied
 
-        ensure_wallet(owner_type, owner_id)
-        # overdraft guard
-        if delta < 0 and not allow_overdraft:
-            bal = c.execute(
-                "SELECT balance FROM wallets WHERE owner_type=? AND owner_id=?",
+        # Ensure wallet exists (inline to keep atomicity on this connection)
+        wr = c.execute(
+            "SELECT balance FROM wallets WHERE owner_type=? AND owner_id=?", (owner_type, owner_id)
+        ).fetchone()
+        if not wr:
+            c.execute(
+                "INSERT INTO wallets(owner_type, owner_id, balance) VALUES(?,?,0)",
                 (owner_type, owner_id),
-            ).fetchone()
-            if bal is None:
-                raise RuntimeError("wallet missing")
-            if int(bal["balance"]) + delta < 0:
-                raise ValueError("insufficient funds")
+            )
+            current_balance = 0
+        else:
+            current_balance = int(wr["balance"])
 
+        # Overdraft guard
+        if delta < 0 and not allow_overdraft and (current_balance + delta) < 0:
+            raise ValueError("insufficient funds")
+
+        # Apply balance change
         c.execute(
             "UPDATE wallets SET balance = balance + ? WHERE owner_type=? AND owner_id=?",
             (delta, owner_type, owner_id),
         )
+
+        # Record transaction
         cur = c.execute(
-            """INSERT INTO transactions(owner_type, owner_id, amount, reason, idempotency_key, meta_json, created_at)
-                           VALUES(?,?,?,?,?,?,?)""",
-            (
-                owner_type,
-                owner_id,
-                delta,
-                reason,
-                idem,
-                json.dumps(meta or {}),
-                dt.datetime.utcnow().isoformat() + "Z",
-            ),
+            """
+            INSERT INTO transactions(owner_type, owner_id, amount, reason, idempotency_key, meta_json, created_at)
+            VALUES(?,?,?,?,?,?,?)
+            """,
+            (owner_type, owner_id, delta, reason, idem, json.dumps(meta or {}), now),
         )
         return int(cur.lastrowid)
 
 
-def get_balance(owner_type: str, owner_id: int) -> int:
+# ---------------------------
+# Inventory
+# ---------------------------
+def grant_item(character_id: int, item_def_id: int, qty: int = 1, meta: dict | None = None) -> None:
     with _conn() as c:
         r = c.execute(
-            "SELECT balance FROM wallets WHERE owner_type=? AND owner_id=?", (owner_type, owner_id)
-        ).fetchone()
-        return int(r["balance"]) if r else 0
-
-
-def tx_credit(
-    owner_type: str,
-    owner_id: int,
-    amount: int,
-    reason: str = "",
-    idem: str | None = None,
-    meta: dict | None = None,
-):
-    assert amount >= 0
-    _txn(owner_type, owner_id, amount, reason, idem, meta)
-
-
-def tx_debit(
-    owner_type: str,
-    owner_id: int,
-    amount: int,
-    reason: str = "",
-    idem: str | None = None,
-    meta: dict | None = None,
-):
-    assert amount >= 0
-    _txn(owner_type, owner_id, -amount, reason, idem, meta)
-
-
-def _txn(
-    owner_type: str, owner_id: int, delta: int, reason: str, idem: str | None, meta: dict | None
-):
-    with _conn() as c:
-        if idem:
-            r = c.execute("SELECT id FROM transactions WHERE idempotency_key=?", (idem,)).fetchone()
-            if r:
-                return  # idempotent
-        ensure_wallet(owner_type, owner_id)
-        c.execute(
-            "UPDATE wallets SET balance = balance + ? WHERE owner_type=? AND owner_id=?",
-            (delta, owner_type, owner_id),
-        )
-        c.execute(
-            """INSERT INTO transactions(owner_type, owner_id, amount, reason, idempotency_key, meta_json, created_at)
-                    VALUES(?,?,?,?,?,?,?)""",
-            (
-                owner_type,
-                owner_id,
-                delta,
-                reason,
-                idem,
-                json.dumps(meta or {}),
-                dt.datetime.utcnow().isoformat() + "Z",
-            ),
-        )
-
-
-# --- Inventory ---
-def grant_item(character_id: int, item_def_id: int, qty: int = 1, meta: dict | None = None):
-    with _conn() as c:
-        r = c.execute(
-            """SELECT id, qty FROM inventory WHERE character_id=? AND item_def_id=? AND IFNULL(meta_json,'{}')=?""",
+            """SELECT id, qty FROM inventory
+               WHERE character_id=? AND item_def_id=? AND IFNULL(meta_json,'{}')=?""",
             (character_id, item_def_id, json.dumps(meta or {})),
         ).fetchone()
         if r:
@@ -350,20 +235,23 @@ def list_inventory(character_id: int) -> list[sqlite3.Row]:
     with _conn() as c:
         return c.execute(
             """SELECT inv.id, inv.qty, d.name, d.rarity, d.class, d.tags
-                            FROM inventory inv JOIN item_defs d ON d.id = inv.item_def_id
-                            WHERE inv.character_id=?""",
+               FROM inventory inv
+               JOIN item_defs d ON d.id = inv.item_def_id
+               WHERE inv.character_id=?""",
             (character_id,),
         ).fetchall()
 
 
-# --- Events ---
+# ---------------------------
+# Events
+# ---------------------------
 def append_event(
     ev_type: str, actor_discord_id: str | None, subject: str | None, payload: dict | None
-):
+) -> None:
     with _conn() as c:
         c.execute(
             """INSERT INTO events(type, actor_discord_id, subject, payload_json, created_at)
-                     VALUES(?,?,?,?,?)""",
+               VALUES(?,?,?,?,?)""",
             (
                 ev_type,
                 actor_discord_id,
