@@ -3,7 +3,15 @@ from __future__ import annotations
 import discord
 from discord import app_commands
 from discord.ext import commands
-from src.core.audit import audit_event
+
+# Safe import for the decorator (fallback no-op if audit module isn't ready yet)
+try:
+    from src.core.audit import audit_event
+except Exception:
+    def audit_event(*_args, **_kwargs):
+        def deco(fn): return fn
+        return deco
+
 
 class AuditCog(commands.Cog):
     def __init__(self, bot: commands.Bot):
@@ -26,6 +34,7 @@ class AuditCog(commands.Cog):
             "Use **/audit_recent_paged** instead (Prev/Next buttons, CSV-safe).",
             ephemeral=True,
         )
+
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(AuditCog(bot))

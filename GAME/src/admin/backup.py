@@ -1,3 +1,4 @@
+# GAME/src/admin/backup.py
 from __future__ import annotations
 import io, zipfile, os, datetime as dt
 import discord
@@ -6,7 +7,15 @@ from discord.ext import commands
 
 from src.core.settings import SETTINGS
 from src.core.ack import ack_once
-from src.core.audit import audit_event
+
+# Safe import for audit_event (fallback no-op to avoid hard import failures)
+try:
+    from src.core.audit import audit_event
+except Exception:
+    def audit_event(*_args, **_kwargs):
+        def deco(fn): return fn
+        return deco
+
 
 class BackupCog(commands.Cog):
     def __init__(self, bot: commands.Bot):
@@ -39,6 +48,7 @@ class BackupCog(commands.Cog):
             await interaction.followup.send(
                 "I can't DM you. Open your DMs and try again.", ephemeral=True
             )
+
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(BackupCog(bot))
