@@ -18,19 +18,18 @@ class AuditCog(commands.Cog):
         self.bot = bot
 
     @app_commands.command(
-        name="audit_recent",
-        description="(Legacy) Opens the paged audit viewer to avoid message-length limits."
+        name="audit_recent_legacy",
+        description="Legacy: prefer /audit_recent_paged.",
     )
     @audit_event(action_type="admin.audit_recent_legacy")
     async def audit_recent_legacy(self, interaction: discord.Interaction):
-        # keep it super robust: always ephemeral and short
         try:
             await interaction.response.defer(ephemeral=True, thinking=False)
         except Exception:
-            pass  # already acknowledged elsewhere
+            pass
 
         await interaction.followup.send(
-            "Heads-up: **/audit_recent** is legacy and can exceed Discord's 2,000-char limit.\n"
+            "Heads-up: **/audit_recent** is legacy and can exceed Discord’s 2,000-char limit.\n"
             "Use **/audit_recent_paged** instead (Prev/Next buttons, CSV-safe).",
             ephemeral=True,
         )

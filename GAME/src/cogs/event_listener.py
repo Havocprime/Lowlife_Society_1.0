@@ -5,8 +5,8 @@ from typing import Any, Optional
 import discord
 from discord.ext import commands
 
-# Use your async logger, not the decorator
-from src.core.audit import log_action
+# Import the module (safer than name imports during early init)
+from src.core import audit as audit_core
 
 
 def _sid(x: Any) -> Optional[int]:
@@ -14,7 +14,7 @@ def _sid(x: Any) -> Optional[int]:
 
 
 class EventListener(commands.Cog):
-    """Unified event listeners that write to audit_log via log_action(...)."""
+    """Event listeners that write into audit_log via audit_core.log_action(...)."""
 
     def __init__(self, bot: commands.Bot):
         self.bot = bot
@@ -24,7 +24,7 @@ class EventListener(commands.Cog):
     async def on_message(self, message: discord.Message):
         if message.author.bot:
             return
-        await log_action(
+        await audit_core.log_action(
             guild_id=_sid(message.guild),
             channel_id=_sid(message.channel),
             user_id=_sid(message.author),
@@ -40,7 +40,7 @@ class EventListener(commands.Cog):
     async def on_message_edit(self, before: discord.Message, after: discord.Message):
         if after.author and after.author.bot:
             return
-        await log_action(
+        await audit_core.log_action(
             guild_id=_sid(after.guild),
             channel_id=_sid(after.channel),
             user_id=_sid(after.author),
@@ -54,7 +54,7 @@ class EventListener(commands.Cog):
 
     @commands.Cog.listener()
     async def on_raw_message_delete(self, payload: discord.RawMessageDeleteEvent):
-        await log_action(
+        await audit_core.log_action(
             guild_id=payload.guild_id,
             channel_id=payload.channel_id,
             user_id=None,
@@ -64,7 +64,7 @@ class EventListener(commands.Cog):
 
     @commands.Cog.listener()
     async def on_raw_bulk_message_delete(self, payload: discord.RawBulkMessageDeleteEvent):
-        await log_action(
+        await audit_core.log_action(
             guild_id=payload.guild_id,
             channel_id=payload.channel_id,
             user_id=None,
@@ -75,7 +75,7 @@ class EventListener(commands.Cog):
     # -------- Reactions --------
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent):
-        await log_action(
+        await audit_core.log_action(
             guild_id=payload.guild_id,
             channel_id=payload.channel_id,
             user_id=payload.user_id,
@@ -85,7 +85,7 @@ class EventListener(commands.Cog):
 
     @commands.Cog.listener()
     async def on_raw_reaction_remove(self, payload: discord.RawReactionActionEvent):
-        await log_action(
+        await audit_core.log_action(
             guild_id=payload.guild_id,
             channel_id=payload.channel_id,
             user_id=payload.user_id,
@@ -96,7 +96,7 @@ class EventListener(commands.Cog):
     # -------- Members / Presence / Voice --------
     @commands.Cog.listener()
     async def on_member_update(self, before: discord.Member, after: discord.Member):
-        await log_action(
+        await audit_core.log_action(
             guild_id=_sid(after.guild),
             channel_id=None,
             user_id=_sid(after),
@@ -111,7 +111,7 @@ class EventListener(commands.Cog):
 
     @commands.Cog.listener()
     async def on_presence_update(self, before: discord.Member, after: discord.Member):
-        await log_action(
+        await audit_core.log_action(
             guild_id=_sid(after.guild),
             channel_id=None,
             user_id=_sid(after),
@@ -125,7 +125,7 @@ class EventListener(commands.Cog):
 
     @commands.Cog.listener()
     async def on_voice_state_update(self, member: discord.Member, before: discord.VoiceState, after: discord.VoiceState):
-        await log_action(
+        await audit_core.log_action(
             guild_id=_sid(member.guild),
             channel_id=None,
             user_id=_sid(member),
@@ -145,7 +145,7 @@ class EventListener(commands.Cog):
     # -------- Channels / Threads --------
     @commands.Cog.listener()
     async def on_guild_channel_create(self, channel: discord.abc.GuildChannel):
-        await log_action(
+        await audit_core.log_action(
             guild_id=_sid(channel.guild),
             channel_id=_sid(channel),
             user_id=None,
@@ -155,7 +155,7 @@ class EventListener(commands.Cog):
 
     @commands.Cog.listener()
     async def on_guild_channel_delete(self, channel: discord.abc.GuildChannel):
-        await log_action(
+        await audit_core.log_action(
             guild_id=_sid(channel.guild),
             channel_id=_sid(channel),
             user_id=None,
@@ -165,7 +165,7 @@ class EventListener(commands.Cog):
 
     @commands.Cog.listener()
     async def on_guild_channel_update(self, before: discord.abc.GuildChannel, after: discord.abc.GuildChannel):
-        await log_action(
+        await audit_core.log_action(
             guild_id=_sid(after.guild),
             channel_id=_sid(after),
             user_id=None,
@@ -175,7 +175,7 @@ class EventListener(commands.Cog):
 
     @commands.Cog.listener()
     async def on_thread_create(self, thread: discord.Thread):
-        await log_action(
+        await audit_core.log_action(
             guild_id=_sid(thread.guild),
             channel_id=_sid(thread),
             user_id=_sid(thread.owner),
@@ -185,7 +185,7 @@ class EventListener(commands.Cog):
 
     @commands.Cog.listener()
     async def on_thread_delete(self, thread: discord.Thread):
-        await log_action(
+        await audit_core.log_action(
             guild_id=_sid(thread.guild),
             channel_id=_sid(thread),
             user_id=None,
@@ -195,7 +195,7 @@ class EventListener(commands.Cog):
 
     @commands.Cog.listener()
     async def on_thread_update(self, before: discord.Thread, after: discord.Thread):
-        await log_action(
+        await audit_core.log_action(
             guild_id=_sid(after.guild),
             channel_id=_sid(after),
             user_id=None,
@@ -206,7 +206,7 @@ class EventListener(commands.Cog):
     # -------- Roles / Invites / Webhooks / Emojis --------
     @commands.Cog.listener()
     async def on_guild_role_create(self, role: discord.Role):
-        await log_action(
+        await audit_core.log_action(
             guild_id=_sid(role.guild),
             channel_id=None,
             user_id=None,
@@ -216,7 +216,7 @@ class EventListener(commands.Cog):
 
     @commands.Cog.listener()
     async def on_guild_role_delete(self, role: discord.Role):
-        await log_action(
+        await audit_core.log_action(
             guild_id=_sid(role.guild),
             channel_id=None,
             user_id=None,
@@ -226,7 +226,7 @@ class EventListener(commands.Cog):
 
     @commands.Cog.listener()
     async def on_guild_role_update(self, before: discord.Role, after: discord.Role):
-        await log_action(
+        await audit_core.log_action(
             guild_id=_sid(after.guild),
             channel_id=None,
             user_id=None,
@@ -236,7 +236,7 @@ class EventListener(commands.Cog):
 
     @commands.Cog.listener()
     async def on_invite_create(self, invite: discord.Invite):
-        await log_action(
+        await audit_core.log_action(
             guild_id=_sid(invite.guild),
             channel_id=_sid(invite.channel),
             user_id=_sid(invite.inviter),
@@ -250,7 +250,7 @@ class EventListener(commands.Cog):
 
     @commands.Cog.listener()
     async def on_invite_delete(self, invite: discord.Invite):
-        await log_action(
+        await audit_core.log_action(
             guild_id=_sid(invite.guild),
             channel_id=_sid(invite.channel),
             user_id=None,
@@ -260,7 +260,7 @@ class EventListener(commands.Cog):
 
     @commands.Cog.listener()
     async def on_webhooks_update(self, channel: discord.abc.GuildChannel):
-        await log_action(
+        await audit_core.log_action(
             guild_id=_sid(channel.guild),
             channel_id=_sid(channel),
             user_id=None,
@@ -270,7 +270,7 @@ class EventListener(commands.Cog):
 
     @commands.Cog.listener()
     async def on_guild_emojis_update(self, guild: discord.Guild, before, after):
-        await log_action(
+        await audit_core.log_action(
             guild_id=_sid(guild),
             channel_id=None,
             user_id=None,
@@ -280,7 +280,7 @@ class EventListener(commands.Cog):
 
     @commands.Cog.listener()
     async def on_guild_stickers_update(self, guild: discord.Guild, before, after):
-        await log_action(
+        await audit_core.log_action(
             guild_id=_sid(guild),
             channel_id=None,
             user_id=None,

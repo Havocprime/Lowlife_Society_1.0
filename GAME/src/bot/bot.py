@@ -13,10 +13,10 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 import discord
-from discord import app_commands
+from discord import app_commands, Forbidden
 from discord.ext import commands
 
-BUILD_TAG = "bot.py:v6c-lazy-audit-import"
+BUILD_TAG = "bot.py:v6d-lazy-decorator+graceful-sync"
 
 # ---------- paths & env ----------
 THIS_FILE = Path(__file__).resolve()
@@ -145,33 +145,18 @@ def _is_trusted(member: discord.Member) -> bool:
 
 class LowlifeBot(commands.Bot):
     async def setup_hook(self):
-        # Crash/error capture
+        # Global crash/error capture
         setup_error_reporting(self)
 
-        # ---- Lazy import the audit module (and provide fallbacks) ----
+        # ---- Resolve ONLY the audit_event decorator (no early DB calls) ----
         try:
-            from src.core.audit import ensure_db as _ensure_db, audit_event as _audit_event
+            from src.core.audit import audit_event as _audit_event
         except Exception as e:
-            log.warning("audit module unavailable (%s). Using no-op audit decorator.", e)
-
-            async def _ensure_db():
-                return None
-
-            def _audit_event(*args, **kwargs):
+            log.warning("audit decorator unavailable (%s) — using no-op.", e)
+            def _audit_event(*_a, **_k):
                 def deco(fn): return fn
                 return deco
-
-        # Ensure audit DB/schema (even if it's a no-op)
-        try:
-            res = _ensure_db()
-            if asyncio.iscoroutine(res):
-                await res
-            log.info("audit DB ready")
-        except Exception:
-            log.exception("audit DB init failed")
-
-        # helper so decorators below can capture the resolved decorator
-        audit_event = _audit_event  # noqa: F841  (used by decorators below)
+        audit_event = _audit_event  # used by decorators below
 
         async def try_load(mod: str):
             try:
@@ -190,42 +175,64 @@ class LowlifeBot(commands.Bot):
             # "src.features.character_sheet.commands",
             "src.admin.sync",
             "src.admin.export",
-            "src.admin.audit",         # upgraded audit viewer
+            "src.admin.audit",         # legacy wrapper (now *_legacy)
             "src.admin.freeze",
             "src.admin.econ",
             "src.admin.roles",
             "src.admin.backup",
             "src.cogs.event_listener", # full event coverage -> audit
-            "src.admin.investigate",   # optional
+            "src.admin.investigate",   # search/investigate tools
         ):
             await try_load(mod)
 
-        # --- /sync (admin) ---
+        # --- /sync (admin) — graceful across guild/global ---
         @app_commands.command(name="sync", description="Admin: resync slash commands (tries guild, then global)")
         @audit_event(action_type="admin.sync")
         async def sync_cmd(interaction: discord.Interaction):
             if not (isinstance(interaction.user, discord.Member) and interaction.user.guild_permissions.administrator):
                 await interaction.response.send_message("Nope.", ephemeral=True)
                 return
+
             await interaction.response.defer(ephemeral=True, thinking=True)
-            parts = []
-            if interaction.guild:
+            parts: list[str] = []
+
+            # Try configured guild ID first (if present)
+            tried_cfg = False
+            if GUILD_ID:
+                tried_cfg = True
+                try:
+                    cmds = await interaction.client.tree.sync(guild=discord.Object(id=GUILD_ID))  # type: ignore
+                    parts.append(f"Guild({GUILD_ID}): {len(cmds)}")
+                except Forbidden:
+                    parts.append(f"Guild({GUILD_ID}) skipped: Missing Access")
+                except Exception as e:
+                    parts.append(f"Guild({GUILD_ID}) failed: {type(e).__name__}")
+
+            # Also try the *current* server explicitly, if different/untried
+            if interaction.guild and (not tried_cfg or interaction.guild.id != GUILD_ID):
                 try:
                     cmds = await interaction.client.tree.sync(guild=interaction.guild)  # type: ignore
-                    parts.append(f"Guild: {len(cmds)}")
+                    parts.append(f"Here: {len(cmds)}")
                 except Exception as e:
-                    parts.append(f"Guild sync failed: {type(e).__name__}")
+                    parts.append(f"Here failed: {type(e).__name__}")
+
+            # Always try global
             try:
                 gcmds = await interaction.client.tree.sync()
                 parts.append(f"Global: {len(gcmds)}")
             except Exception as e:
-                parts.append(f"Global sync failed: {type(e).__name__}")
+                parts.append(f"Global failed: {type(e).__name__}")
+
             await interaction.followup.send("Synced — " + " • ".join(parts), ephemeral=True)
 
         # --- /inspect_full (admin) ---
         @app_commands.command(name="inspect_full", description="Admin: full profile with derived stats and recent actions")
         @app_commands.describe(user="Target member (defaults to you)")
-        @audit_event(action_type="admin.inspect", target_user=lambda interaction, user=None: user, extra=lambda interaction, user=None: {"scope": "full_profile"})
+        @audit_event(
+            action_type="admin.inspect",
+            target_user=lambda interaction, user=None: user,
+            extra=lambda interaction, user=None: {"scope": "full_profile"},
+        )
         async def inspect_full(interaction: discord.Interaction, user: discord.Member | None = None):
             if not (isinstance(interaction.user, discord.Member) and interaction.user.guild_permissions.administrator):
                 await interaction.response.send_message("Nope.", ephemeral=True)
@@ -311,7 +318,7 @@ class LowlifeBot(commands.Bot):
                       f"🖥 {dev['desktop']}\n📱 {dev['mobile']}\n🌐 {dev['web']}",
                 inline=False,
             )
-            if (activities):
+            if activities:
                 e.add_field(name="Activities", value="; ".join(activities)[:1024], inline=False)
 
             e.add_field(name="Top Roles", value=(", ".join(top3) or "—"), inline=False)
