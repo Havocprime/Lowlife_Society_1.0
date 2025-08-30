@@ -1,12 +1,12 @@
 # GAME/src/cogs/event_listener.py
 from __future__ import annotations
 from typing import Any, Optional
+from importlib import import_module
 
 import discord
 from discord.ext import commands
 
 # Import the module (safer than name imports during early init)
-from importlib import import_module
 from src.core import audit as audit_core
 
 
@@ -38,7 +38,7 @@ class EventListener(commands.Cog):
     # -------- Messages --------
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
-        if message.author.bot:
+        if message.author.bot or message.guild is None:
             return
         await _audit_log_action(
             guild_id=_sid(message.guild),
@@ -55,7 +55,7 @@ class EventListener(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message_edit(self, before: discord.Message, after: discord.Message):
-        if after.author and after.author.bot:
+        if after.guild is None or (after.author and after.author.bot):
             return
         await _audit_log_action(
             guild_id=_sid(after.guild),
@@ -70,8 +70,28 @@ class EventListener(commands.Cog):
             },
         )
 
+    # Cached delete (has content if message was cached)
+    @commands.Cog.listener()
+    async def on_message_delete(self, message: discord.Message):
+        if message.guild is None:
+            return
+        await _audit_log_action(
+            guild_id=_sid(message.guild),
+            channel_id=_sid(message.channel),
+            user_id=_sid(getattr(message, "author", None)),
+            action_type="message_delete",
+            details={
+                "message_id": message.id,
+                "before": {"content": message.content or ""},
+                "channel_name": getattr(message.channel, "name", None),
+            },
+        )
+
+    # Raw single delete
     @commands.Cog.listener()
     async def on_raw_message_delete(self, payload: discord.RawMessageDeleteEvent):
+        if payload.guild_id is None:
+            return
         await _audit_log_action(
             guild_id=payload.guild_id,
             channel_id=payload.channel_id,
@@ -80,8 +100,31 @@ class EventListener(commands.Cog):
             details={"message_id": payload.message_id},
         )
 
+    # Cached bulk delete
+    @commands.Cog.listener()
+    async def on_bulk_message_delete(self, messages: list[discord.Message]):
+        if not messages:
+            return
+        m0 = messages[0]
+        if m0.guild is None:
+            return
+        cached_with_text = sum(1 for m in messages if (m.content or "").strip())
+        await _audit_log_action(
+            guild_id=_sid(m0.guild),
+            channel_id=_sid(m0.channel),
+            user_id=None,
+            action_type="message_bulk_delete",
+            details={
+                "count": len(messages),
+                "cached_with_text": cached_with_text,
+            },
+        )
+
+    # Raw bulk delete
     @commands.Cog.listener()
     async def on_raw_bulk_message_delete(self, payload: discord.RawBulkMessageDeleteEvent):
+        if payload.guild_id is None:
+            return
         await _audit_log_action(
             guild_id=payload.guild_id,
             channel_id=payload.channel_id,
@@ -112,7 +155,7 @@ class EventListener(commands.Cog):
         )
 
     # -------- Members / Presence / Voice --------
-    @commands.Cog.listener())
+    @commands.Cog.listener()
     async def on_member_update(self, before: discord.Member, after: discord.Member):
         await _audit_log_action(
             guild_id=_sid(after.guild),
@@ -133,16 +176,22 @@ class EventListener(commands.Cog):
             guild_id=_sid(after.guild),
             channel_id=None,
             user_id=_sid(after),
-            action_type="presence_update",
+            action_type="presence",  # normalized label for your inspector
             details={
                 "status_before": str(before.status),
                 "status_after": str(after.status),
-                "activities": [getattr(a, "name", None) for a in (after.activities or []) if getattr(a, "name", None)],
+                "activities": [
+                    getattr(a, "name", None)
+                    for a in (after.activities or [])
+                    if getattr(a, "name", None)
+                ],
             },
         )
 
     @commands.Cog.listener()
-    async def on_voice_state_update(self, member: discord.Member, before: discord.VoiceState, after: discord.VoiceState):
+    async def on_voice_state_update(
+        self, member: discord.Member, before: discord.VoiceState, after: discord.VoiceState
+    ):
         await _audit_log_action(
             guild_id=_sid(member.guild),
             channel_id=None,

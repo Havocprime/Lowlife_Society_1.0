@@ -52,6 +52,8 @@ COGS = [
     "src.cogs.audit_log",
     "src.cogs.invite_tracker",
     "src.cogs.member_intake",
+    "src.cogs.welcome",
+
 ]
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
