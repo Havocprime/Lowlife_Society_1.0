@@ -280,3 +280,116 @@ def append_event(
                 dt.datetime.utcnow().isoformat() + "Z",
             ),
         )
+
+
+# --- NPC intros log ---------------------------------------------------------
+
+def ensure_npc_intro_table() -> None:
+    with _conn() as c:
+        c.execute("""
+        CREATE TABLE IF NOT EXISTS npc_intros (
+            id            INTEGER PRIMARY KEY AUTOINCREMENT,
+            ts_utc        TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%S','now')),
+
+            guild_id      INTEGER,
+            channel_id    INTEGER,
+            message_id    INTEGER,
+            member_id     INTEGER,
+
+            npc_fullname  TEXT    NOT NULL,
+            npc_gender    TEXT    NOT NULL,
+            image_filename TEXT   NOT NULL,
+
+            handoff_type  TEXT    NOT NULL,
+            handoff_value TEXT    NOT NULL,   -- phone/code/locker/etc
+            intro_text    TEXT    NOT NULL,
+            extra_json    TEXT    NOT NULL DEFAULT '{}'
+        );
+        """)
+
+async def log_npc_intro(
+    *,
+    guild_id: int | None,
+    channel_id: int | None,
+    message_id: int | None,
+    member_id: int | None,
+    npc_fullname: str,
+    npc_gender: str,
+    image_filename: str,
+    handoff_type: str,
+    handoff_value: str,
+    intro_text: str,
+    extra_json: dict | None = None,
+) -> int:
+    import json as _json
+    with _conn() as c:
+        cur = c.execute("""
+            INSERT INTO npc_intros (
+                guild_id, channel_id, message_id, member_id,
+                npc_fullname, npc_gender, image_filename,
+                handoff_type, handoff_value, intro_text, extra_json
+            )
+            VALUES (?,?,?,?,?,?,?,?,?,?,?)
+        """, (
+            guild_id, channel_id, message_id, member_id,
+            npc_fullname, npc_gender, image_filename,
+            handoff_type, handoff_value, intro_text, _json.dumps(extra_json or {})
+        ))
+        return int(cur.lastrowid)
+
+
+# --- NPC intros log ---------------------------------------------------------
+# Lightweight table so we can recall what NPC greeted whom, with what hand-off.
+
+def ensure_npc_intro_table() -> None:
+    with _conn() as c:
+        c.execute("""
+        CREATE TABLE IF NOT EXISTS npc_intros (
+            id              INTEGER PRIMARY KEY AUTOINCREMENT,
+            ts_utc          TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%S','now')),
+            guild_id        INTEGER,
+            channel_id      INTEGER,
+            message_id      INTEGER,
+            member_id       INTEGER,
+
+            npc_fullname    TEXT    NOT NULL,
+            npc_gender      TEXT    NOT NULL,
+            image_filename  TEXT    NOT NULL,
+
+            handoff_type    TEXT    NOT NULL,
+            handoff_value   TEXT    NOT NULL,   -- phone/code/locker/etc
+            intro_text      TEXT    NOT NULL,
+            extra_json      TEXT    NOT NULL DEFAULT '{}'
+        );
+        """)
+
+async def log_npc_intro(
+    *,
+    guild_id: int | None,
+    channel_id: int | None,
+    message_id: int | None,
+    member_id: int | None,
+    npc_fullname: str,
+    npc_gender: str,
+    image_filename: str,
+    handoff_type: str,
+    handoff_value: str,
+    intro_text: str,
+    extra_json: dict | None = None,
+) -> int:
+    import json as _json
+    with _conn() as c:
+        cur = c.execute("""
+            INSERT INTO npc_intros (
+                guild_id, channel_id, message_id, member_id,
+                npc_fullname, npc_gender, image_filename,
+                handoff_type, handoff_value, intro_text, extra_json
+            )
+            VALUES (?,?,?,?,?,?,?,?,?,?,?)
+        """, (
+            guild_id, channel_id, message_id, member_id,
+            npc_fullname, npc_gender, image_filename,
+            handoff_type, handoff_value, intro_text,
+            _json.dumps(extra_json or {})
+        ))
+        return int(cur.lastrowid)

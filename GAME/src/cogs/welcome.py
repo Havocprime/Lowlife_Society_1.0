@@ -4,209 +4,190 @@ from __future__ import annotations
 import os
 import random
 from pathlib import Path
-from typing import Optional, Iterable, Tuple
+from typing import Optional, Literal
 
 import discord
-from discord import app_commands
 from discord.ext import commands
+from discord import app_commands
 
-# Optional settings via env (or leave defaults)
-WELCOME_CHANNEL_ID = int(os.getenv("WELCOME_CHANNEL_ID", "0") or "0")
-MUGSHOT_DIR = os.getenv(
-    "MUGSHOT_DIR",
-    str(Path(__file__).resolve().parents[2] / "assets" / "mugshots"),
-)
+from src.core.settings import SETTINGS
+from src.data.npc_index import random_name
+from src.data.intro_templates import build_intro
 
-# Guild scoping so commands appear instantly after /sync
+# ---- DAL (guarded import so the cog always loads) --------------------------
 try:
-    from src.core.settings import SETTINGS
-    _GUILD_ID = int(SETTINGS.guild_id or 0)
+    from src.db.dal import ensure_npc_intro_table, log_npc_intro
 except Exception:
-    _GUILD_ID = int(os.getenv("GUILD_ID", "0") or "0")
+    ensure_npc_intro_table = None  # type: ignore
 
-_GUILD_OBJ = discord.Object(id=_GUILD_ID) if _GUILD_ID else None
-def _guild_deco():
-    return (lambda f: app_commands.guilds(_GUILD_OBJ)(f)) if _GUILD_OBJ else (lambda f: f)
+    async def log_npc_intro(**_kwargs):  # type: ignore
+        return 0
 
-# --- best-effort audit ---
+# ---- Audit (optional) ------------------------------------------------------
 try:
-    from src.core import audit as audit_core
-except Exception:
-    audit_core = None
+    from src.core.audit import audit_event
+except Exception:  # pragma: no cover
+    def audit_event(*_args, **_kwargs):
+        def deco(fn): return fn
+        return deco
 
-async def _audit_log(**kwargs):
+IMG_EXTS = {".png", ".jpg", ".jpeg", ".gif", ".webp"}
+Gender = Literal["male", "female"]
+
+
+# ---------- helpers ----------
+def _folder_from_config() -> Path:
+    """Priority: ENV WELCOME_IMAGES_DIR -> GAME/assets/mugshots"""
+    env = os.getenv("WELCOME_IMAGES_DIR")
+    if env:
+        return Path(env).expanduser().resolve()
+    here = Path(__file__).resolve()
+    game_dir = here.parents[2]  # .../GAME
+    return (game_dir / "assets" / "mugshots").resolve()
+
+
+def _welcome_channel_id() -> Optional[int]:
+    """Priority: ENV WELCOME_CHANNEL_ID -> SETTINGS.welcome_channel_id"""
+    raw = os.getenv("WELCOME_CHANNEL_ID") or getattr(SETTINGS, "welcome_channel_id", None)
     try:
-        fn = getattr(audit_core, "log_action", None)
-        if fn:
-            await fn(**kwargs)
-    except Exception:
-        pass
-
-
-def _iter_images(d: Path) -> Iterable[Path]:
-    exts = {".png", ".jpg", ".jpeg", ".gif", ".webp"}
-    try:
-        for p in d.iterdir():
-            if p.is_file() and p.suffix.lower() in exts:
-                yield p
-    except FileNotFoundError:
-        # directory doesn't exist
-        return
-
-
-def _pick_random_image(directory: Path) -> Optional[Path]:
-    try:
-        imgs = [p for p in _iter_images(directory)]
-        if not imgs:
-            return None
-        return random.choice(imgs)
+        return int(raw) if raw else None
     except Exception:
         return None
 
 
-def _is_admin(member: discord.Member) -> bool:
-    return bool(getattr(member, "guild_permissions", None) and member.guild_permissions.administrator)
+def _pick_random_image(base: Path, gender: Gender | None) -> Path:
+    """
+    If male/female subfolders exist, pick from that gender.
+    If not, fall back to the base folder.
+    """
+    folder = base
+    if gender and (base / gender).exists():
+        folder = base / gender
+    files = [p for p in folder.glob("*") if p.is_file() and p.suffix.lower() in IMG_EXTS]
+    if not files:
+        raise FileNotFoundError(f"No image files found in {folder}")
+    return random.choice(files)
 
 
+# ---------- cog ----------
 class WelcomeCog(commands.Cog):
-    """Welcome new members with a random mugshot + shoutout."""
+    """Welcome system: random mugshot + NPC name + gritty intro w/ hand-off."""
 
     def __init__(self, bot: commands.Bot):
         self.bot = bot
-        self._channel_id: int = WELCOME_CHANNEL_ID
-        self._mug_dir = Path(MUGSHOT_DIR)
+        self.folder = _folder_from_config()
+        # Create the table if DAL provided it
+        try:
+            if ensure_npc_intro_table:
+                ensure_npc_intro_table()
+        except Exception:
+            # Never block startup over DB problems
+            pass
 
-    # ---------- channel picking & permission checks ----------
-    def _pick_channel(self, guild: discord.Guild) -> Optional[discord.TextChannel]:
-        # 1) explicit env channel
-        if self._channel_id:
-            ch = guild.get_channel(self._channel_id)
-            if isinstance(ch, discord.TextChannel):
-                return ch
+    async def _send_welcome(
+        self,
+        member: discord.Member,
+        channel: discord.abc.Messageable,
+        gender: Gender | None = None,
+    ) -> None:
+        # Decide a gender bucket if both exist and none provided
+        if gender is None and (self.folder / "male").exists() and (self.folder / "female").exists():
+            gender = random.choice(["male", "female"])  # type: ignore
 
-        # 2) system channel if sendable
-        if guild.system_channel and isinstance(guild.system_channel, discord.TextChannel):
-            return guild.system_channel
+        img_path = _pick_random_image(self.folder, gender)
+        filename = img_path.name
 
-        # 3) first text channel
-        for ch in guild.text_channels:
-            return ch
-        return None
+        # Header (per your spec)
+        title = f"Welcome to The City: <:: {member.display_name} ::>"
 
-    @staticmethod
-    def _bot_perms(ch: discord.TextChannel) -> discord.Permissions:
-        me = ch.guild.me
-        return ch.permissions_for(me) if me else discord.Permissions.none()
+        # NPC identity + gritty intro + hand-off
+        npc_name = random_name(gender=gender or "any")
+        intro_text, handoff_type, contact_value, extra = build_intro(gender)
 
-    # returns (ok, reason)
-    async def _send_welcome(self, ch: discord.TextChannel, member: discord.Member) -> Tuple[bool, str]:
-        perms = self._bot_perms(ch)
-        if not perms.send_messages:
-            return False, "Bot lacks Send Messages in the target channel."
-        if not perms.embed_links:
-            return False, "Bot lacks Embed Links in the target channel."
+        file = discord.File(img_path, filename=filename)
+        embed = discord.Embed(title=title, colour=discord.Color.gold())
+        embed.description = intro_text                     # (above image)
+        embed.set_image(url=f"attachment://{filename}")   # image
+        embed.set_footer(text=f"– {npc_name}.\nLowlife Society")  # (below image)
 
-        text = f"Welcome to the City, {member.mention}."
-        embed = discord.Embed(title="🪪 New Arrival", description=text, colour=discord.Color.dark_gold())
-        embed.set_author(name=str(member), icon_url=getattr(member.display_avatar, "url", discord.Embed.Empty))
+        msg = await channel.send(embed=embed, file=file)
 
-        # Pick image; try to attach it if possible
-        fp: Optional[Path] = _pick_random_image(self._mug_dir)
-        file = None
-        if fp and perms.attach_files:
-            try:
-                file = discord.File(fp, filename=fp.name)  # open inside try
-                embed.set_image(url=f"attachment://{fp.name}")
-            except Exception:
-                # fall back to embed-only if the file can't be opened
-                file = None
-                embed.set_footer(text=f"(Failed to open mugshot {fp.name} — using embed only.)")
-        elif not fp:
-            embed.set_footer(text="(No mugshot found — add images to MUGSHOT_DIR to enable.)")
-        elif fp and not perms.attach_files:
-            embed.set_footer(text="(No Attach Files permission — using embed only.)")
+        # Log it (if DAL available)
+        try:
+            await log_npc_intro(
+                guild_id=getattr(getattr(channel, "guild", None), "id", None),
+                channel_id=getattr(channel, "id", None),
+                message_id=getattr(msg, "id", None),
+                member_id=getattr(member, "id", None),
+                npc_fullname=npc_name,
+                npc_gender=(gender or "any"),
+                image_filename=filename,
+                handoff_type=handoff_type,
+                handoff_value=contact_value,
+                intro_text=intro_text,
+                extra_json=extra,
+            )
+        except Exception:
+            # Never crash a welcome over the DB
+            pass
+
+    # -------- Commands --------
+    @app_commands.command(
+        name="welcome_preview",
+        description="Preview the welcome post (random mugshot + NPC).",
+    )
+    @app_commands.describe(
+        user="Preview as if this user joined (default: you)",
+        channel="Where to send the preview (default: here)",
+        gender="Force a gender bucket for the mugshot/name",
+    )
+    @app_commands.choices(
+        gender=[
+            app_commands.Choice(name="male", value="male"),
+            app_commands.Choice(name="female", value="female"),
+        ]
+    )
+    @audit_event(action_type="admin.welcome_preview")
+    async def welcome_preview(
+        self,
+        interaction: discord.Interaction,
+        user: Optional[discord.Member] = None,
+        channel: Optional[discord.abc.GuildChannel] = None,
+        gender: Optional[app_commands.Choice[str]] = None,
+    ):
+        await interaction.response.defer(ephemeral=True)
+        target_user = user or interaction.user  # type: ignore
+        target_channel = channel or interaction.channel  # type: ignore
+        forced_gender: Gender | None = (gender.value if gender else None)  # type: ignore
 
         try:
-            if file:
-                await ch.send(embed=embed, file=file)
-            else:
-                await ch.send(embed=embed)
-            await _audit_log(
-                guild_id=member.guild.id,
-                channel_id=ch.id,
-                user_id=member.id,
-                action_type="member_welcome_sent",
-                details={"mugshot": (str(fp) if fp else None), "channel_name": ch.name, "status": "ok"},
+            await self._send_welcome(target_user, target_channel, forced_gender)
+        except Exception as e:
+            await interaction.followup.send(
+                f"Welcome preview failed — **{type(e).__name__}**: {e}\n"
+                f"Folder: `{self.folder}`\n"
+                f"Tip: set **WELCOME_IMAGES_DIR** and (optional) add `male/` and `female/` subfolders.",
+                ephemeral=True,
             )
-            return True, "ok"
-        except discord.Forbidden:
-            await _audit_log(
-                guild_id=member.guild.id,
-                channel_id=ch.id,
-                user_id=member.id,
-                action_type="member_welcome_sent",
-                details={"mugshot": (str(fp) if fp else None), "channel_name": ch.name, "status": "forbidden"},
-            )
-            return False, "Forbidden when sending the welcome message."
+            return
 
-    # ---------- events ----------
+        await interaction.followup.send("Sent ✅", ephemeral=True)
+
+    # -------- Events --------
     @commands.Cog.listener()
     async def on_member_join(self, member: discord.Member):
-        if member.bot or not member.guild:
+        """Post a real welcome when someone joins (if a channel is configured)."""
+        channel_id = _welcome_channel_id()
+        if not channel_id:
             return
-        ch = self._pick_channel(member.guild)
+        ch = member.guild.get_channel(channel_id)
         if not ch:
             return
-        await self._send_welcome(ch, member)
-
-    # ---------- admin test commands ----------
-    @_guild_deco()
-    @app_commands.command(name="welcome_preview", description="Admin: preview the welcome message (uses random mugshot).")
-    @app_commands.describe(user="Preview for a specific user (defaults to you).")
-    async def welcome_preview(self, interaction: discord.Interaction, user: Optional[discord.Member] = None):
-        if not (isinstance(interaction.user, discord.Member) and _is_admin(interaction.user)):
-            await interaction.response.send_message("Nope.", ephemeral=True)
-            return
-        await interaction.response.defer(ephemeral=True, thinking=True)
-
-        member = user or interaction.user  # type: ignore
-        ch = self._pick_channel(interaction.guild) if interaction.guild else None  # type: ignore
-        if ch is None:
-            await interaction.followup.send("I don’t have a text channel to use here.", ephemeral=True)
-            return
-
-        ok, reason = await self._send_welcome(ch, member)
-        msg = "Sent a preview." if ok else f"Couldn’t send: {reason}"
-        await interaction.followup.send(msg, ephemeral=True)
-
-    # Alias
-    @_guild_deco()
-    @app_commands.command(name="welcome", description="Admin: preview the welcome message (alias).")
-    @app_commands.describe(user="Preview for a specific user (defaults to you).")
-    async def welcome(self, interaction: discord.Interaction, user: Optional[discord.Member] = None):
-        await self.welcome_preview(interaction, user)
-
-    # Quick diagnostics
-    @_guild_deco()
-    @app_commands.command(name="welcome_debug", description="Admin: show resolved welcome channel & mugshot stats.")
-    async def welcome_debug(self, interaction: discord.Interaction):
-        if not (isinstance(interaction.user, discord.Member) and _is_admin(interaction.user)):
-            await interaction.response.send_message("Nope.", ephemeral=True)
-            return
-        await interaction.response.defer(ephemeral=True, thinking=True)
-
-        ch = self._pick_channel(interaction.guild) if interaction.guild else None  # type: ignore
-        img_list = [p.name for p in _iter_images(self._mug_dir)] or []
-        ch_txt = getattr(ch, "mention", "—")
-        perms = self._bot_perms(ch) if isinstance(ch, discord.TextChannel) else None
-        details = [
-            f"Channel: {ch_txt}",
-            f"Images found: {len(img_list)}",
-            f"Dir: `{self._mug_dir}`",
-        ]
-        if perms:
-            details.append(f"Perms — send:{perms.send_messages} embed:{perms.embed_links} attach:{perms.attach_files}")
-        await interaction.followup.send("\n".join(details), ephemeral=True)
+        try:
+            await self._send_welcome(member, ch, None)
+        except Exception:
+            # Never block joins
+            pass
 
 
 async def setup(bot: commands.Bot):
