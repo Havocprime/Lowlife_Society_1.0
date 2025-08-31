@@ -4,7 +4,6 @@ from __future__ import annotations
 import datetime as dt
 import json
 import sqlite3
-import uuid
 from pathlib import Path
 from typing import Optional
 
@@ -12,10 +11,31 @@ from src.core.settings import SETTINGS
 from src.core.ops import econ_frozen
 
 
+# --- Resolve DB path and make sure its folder exists before opening ---
+_DB_PATH = Path(str(SETTINGS.db_path)).expanduser().resolve()
+
+def _ensure_dir() -> None:
+    # If GAME/data (or whatever parent) doesn't exist yet, create it.
+    _DB_PATH.parent.mkdir(parents=True, exist_ok=True)
+
 def _conn() -> sqlite3.Connection:
-    conn = sqlite3.connect(SETTINGS.db_path)
+    """
+    Centralized connection helper:
+      - Ensures parent directory exists (prevents 'unable to open database file')
+      - Sets row_factory for dict-like access
+      - Enables foreign keys
+      - Puts SQLite in WAL mode with NORMAL sync (good for bots)
+    """
+    _ensure_dir()
+    conn = sqlite3.connect(str(_DB_PATH), timeout=30)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys=ON;")
+    try:
+        conn.execute("PRAGMA journal_mode=WAL;")
+        conn.execute("PRAGMA synchronous=NORMAL;")
+    except Exception:
+        # Pragmas are best-effort; ignore if unavailable
+        pass
     return conn
 
 
