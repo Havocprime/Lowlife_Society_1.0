@@ -57,6 +57,9 @@ COGS = [
     "src.cogs.invite_tracker",
     "src.cogs.member_intake",
     "src.cogs.welcome",
+    await bot.load_extension("src.cogs.duel")
+    await bot.load_extension("src.cogs.inventory")
+    await bot.load_extension("src.cogs.admin_tools")
 ]
 
 log.info("Starting %s", BUILD_TAG)
