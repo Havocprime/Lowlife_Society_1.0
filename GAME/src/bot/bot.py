@@ -47,7 +47,7 @@ from src.core.events import (  # noqa: E402
 )
 from src.core.errors import setup_error_reporting  # noqa: E402
 
-# Base cogs always loaded
+# Base cogs always loaded (as STRINGS ONLY — load in setup_hook)
 COGS = [
     "src.cogs.activity_logger",
     "src.cogs.admin_inspector",
@@ -57,9 +57,10 @@ COGS = [
     "src.cogs.invite_tracker",
     "src.cogs.member_intake",
     "src.cogs.welcome",
-    await bot.load_extension("src.cogs.duel")
-    await bot.load_extension("src.cogs.inventory")
-    await bot.load_extension("src.cogs.admin_tools")
+    # New feature cogs:
+    "src.cogs.duel",
+    "src.cogs.inventory",
+    "src.cogs.admin_tools",
 ]
 
 log.info("Starting %s", BUILD_TAG)
@@ -85,7 +86,6 @@ try:
     LA_TZ = ZoneInfo("America/Los_Angeles")
 except Exception:
     LA_TZ = None
-
 
 # ---------- small helpers ----------
 def _hex_color(v):
@@ -268,7 +268,7 @@ class LowlifeBot(commands.Bot):
         for mod in COGS:
             await try_load(mod)
 
-        # Extra/feature/admin cogs
+        # Extra/feature/admin cogs (best-effort)
         for mod in (
             "src.cogs.events",              # writes to events table
             "src.admin.sync",
