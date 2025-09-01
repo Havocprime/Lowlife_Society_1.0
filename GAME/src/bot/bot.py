@@ -16,6 +16,37 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
+from discord import app_commands
+import logging
+log = logging.getLogger("boot")  # if you already have this, keep yours
+
+
+class LowlifeTree(app_commands.CommandTree):
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        """Global gate: block frozen accounts before any slash command runs."""
+        try:
+            import sqlite3
+            from pathlib import Path
+            DBP = Path(__file__).parents[1] / "db" / "audit.sqlite"
+            with sqlite3.connect(DBP) as conn:
+                row = conn.execute(
+                    "SELECT reason FROM account_freeze WHERE user_id=?",
+                    (str(getattr(interaction.user, "id", "")),)
+                ).fetchone()
+
+            if row:
+                msg = f"🚫 Your account is temporarily frozen: **{row[0]}**"
+                if not interaction.response.is_done():
+                    await interaction.response.send_message(msg, ephemeral=True)
+                else:
+                    await interaction.followup.send(msg, ephemeral=True)
+                return False
+        except Exception:
+            # fail open; do not block commands on DB hiccups
+            pass
+        return True
+
+
 BUILD_TAG = "bot.py:v6f-full-inspector+module-audit+safe-sync"
 
 # ---------- paths & env ----------
@@ -55,6 +86,8 @@ COGS = [
     "src.cogs.welcome",
 
 ]
+
+        
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 log = logging.getLogger("boot")
@@ -199,6 +232,58 @@ class LowlifeBot(commands.Bot):
         # global crash/error capture
         setup_error_reporting(self)
 
+                # Global freeze gate for ALL slash commands
+        async def _global_freeze_check(interaction: discord.Interaction) -> bool:
+            try:
+                import sqlite3
+                from pathlib import Path
+                DBP = Path(__file__).parents[1] / "db" / "audit.sqlite"
+                with sqlite3.connect(DBP) as conn:
+                    row = conn.execute(
+                        "SELECT reason FROM account_freeze WHERE user_id=?", (str(interaction.user.id),)
+                    ).fetchone()
+                if row:
+                    await interaction.response.send_message(
+                        f"🚫 Your account is temporarily frozen: **{row[0]}**", ephemeral=True
+                    )
+                    return False
+            except Exception:
+                # fail open rather than block commands on DB hiccup
+                pass
+            return True
+
+        # --- list all slash commands without crashing on Groups ---
+        def _log_cmd(c: app_commands.Command | app_commands.ContextMenu | app_commands.Group):
+            qname = getattr(c, "qualified_name", getattr(c, "name", "?"))
+            cb = getattr(c, "callback", None)
+            mod = getattr(cb, "__module__", getattr(c, "__module__", "?"))
+            log.info("slash cmd: /%s from %s", qname, mod)
+
+        for top in self.tree.get_commands():
+            if isinstance(top, app_commands.Group):
+                # Walk subcommands inside the group
+                for sub in top.walk_commands():
+                    _log_cmd(sub)
+            else:
+                _log_cmd(top)
+
+
+        # --- Custodian schema on boot ---
+        try:
+            from src.db.custodian_dal import ensure_custodian_schema
+            ensure_custodian_schema()
+            log.info("custodian schema ensured")
+        except Exception:
+            log.exception("custodian schema init failed")
+
+        try:
+            from src.db.dal import ensure_events_schema
+            ensure_events_schema()
+            log.info("events schema ensured")
+        except Exception as e:
+            log.warning("events schema ensure failed: %s", e)
+          
+
         # ---- Resolve ONLY the audit_event decorator via module import (robust) ----
         try:
             from src.core import audit as _audit_mod
@@ -224,19 +309,25 @@ class LowlifeBot(commands.Bot):
 
         # Extra/feature/admin cogs
         for mod in (
-            "src.cogs.events",
-            # "src.features.character_sheet.commands",
-            "src.admin.sync",        # owns /sync
+             "src.cogs.events",
+            # "src.features.character_sheet.commands",  # ← disable until ready
+            "src.admin.sync",
             "src.admin.export",
-            "src.admin.audit",       # legacy pointer command
+            "src.admin.audit",
+            "src.admin.custodian_cog",
+            # "src.admin.freeze_guard",
+            "src.admin.custodian_detectors",
+            "src.admin.custodian_anchor",
             "src.admin.freeze",
             "src.admin.econ",
             "src.admin.roles",
             "src.admin.backup",
             "src.cogs.event_listener",
             "src.admin.investigate",
+            "src.admin.events_viewer",
         ):
             await try_load(mod)
+
 
         # --- /inspect_full (admin) ---
         @app_commands.command(
@@ -515,10 +606,20 @@ class LowlifeBot(commands.Bot):
 
         await register_and_sync()
 
-        # Inventory: list what got registered
-        for cmd in self.tree.walk_commands():
-            mod = getattr(cmd.callback, "__module__", "?")
-            log.info("slash cmd: /%s from %s", cmd.qualified_name, mod)
+        # Inventory: list what got registered (works with Groups)
+        def _log_cmd(c: app_commands.Command | app_commands.ContextMenu | app_commands.Group):
+            qname = getattr(c, "qualified_name", getattr(c, "name", "?"))
+            cb = getattr(c, "callback", None)
+            mod = getattr(cb, "__module__", getattr(c, "__module__", "?"))
+            log.info("slash cmd: /%s from %s", qname, mod)
+
+        for top in self.tree.get_commands():
+            if isinstance(top, app_commands.Group):
+                for sub in top.walk_commands():
+                    _log_cmd(sub)
+            else:
+                _log_cmd(top)
+
 
     async def on_ready(self):
         log.info(
@@ -531,7 +632,7 @@ def build_bot() -> LowlifeBot:
     intents.members = True
     intents.presences = True
     intents.message_content = True
-    return LowlifeBot(command_prefix="!", intents=intents)
+    return LowlifeBot(command_prefix="!", intents=intents, tree_cls=LowlifeTree)
 
 
 async def main():

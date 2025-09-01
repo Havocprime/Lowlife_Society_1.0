@@ -2,14 +2,13 @@
 from __future__ import annotations
 
 import os
-from typing import Optional, List
-
+from typing import Optional, List, Callable, Any
+import functools
 import discord
 from discord import app_commands
 from discord.ext import commands
-
 from datetime import datetime, timezone
-
+from src.core.custodian import ledger
 
 
 ADMIN_ROLE_ID = int(os.getenv("ADMIN_ROLE_ID", "0") or "0")
@@ -49,6 +48,104 @@ def _ts_iso(ts_ms: Optional[int]) -> str:
         return str(ts_ms or "")
 
 
+# ---------- unified decorator ----------
+def _resolve_interaction(args, kwargs):
+    for a in args:
+        if getattr(a, "response", None) and getattr(a, "user", None):
+            return a
+    itx = kwargs.get("interaction")
+    if getattr(itx, "response", None) and getattr(itx, "user", None):
+        return itx
+    return None
+
+def _maybe_call(fn_or_val, interaction, **kw):
+    if callable(fn_or_val):
+        try:
+            return fn_or_val(interaction, **kw)
+        except TypeError:
+            return fn_or_val(interaction)
+    return fn_or_val
+
+def audit_event(
+    name_or_none: Optional[str] = None,
+    *,
+    action_type: Optional[str] = None,
+    target_user: Optional[Callable[..., Any]] = None,
+    extra: Optional[Callable[..., Any] | dict] = None,
+):
+    """
+    Flexible decorator for auditing.
+
+    Usages:
+      @audit_event("admin.do_thing")
+      @audit_event(action_type="admin.do_thing",
+                   target_user=lambda itx, user=None: user,
+                   extra=lambda itx: {...})
+    """
+    # Handle bare @audit_event without args
+    if callable(name_or_none) and action_type is None:
+        fn = name_or_none
+        derived = f"{getattr(fn, '__module__', 'unknown')}.{getattr(fn, '__name__', 'callback')}"
+        return audit_event(action_type=derived)(fn)
+
+    action = action_type or name_or_none or "unspecified"
+
+    def deco(fn):
+        @functools.wraps(fn)
+        async def wrapper(*args, **kwargs):
+            interaction = _resolve_interaction(args, kwargs)
+            actor_id = None
+            guild_id = None
+            channel_id = None
+            if interaction is not None:
+                try:
+                    actor_id = str(getattr(interaction.user, "id", None))
+                except Exception:
+                    pass
+                try:
+                    guild_id = str(getattr(interaction.guild, "id", None)) if getattr(interaction, "guild", None) else None
+                except Exception:
+                    pass
+                try:
+                    channel_id = str(getattr(interaction.channel, "id", None)) if getattr(interaction, "channel", None) else None
+                except Exception:
+                    pass
+
+            tu = _maybe_call(target_user, interaction, **kwargs) if target_user else None
+            if hasattr(tu, "id"):
+                tu = str(tu.id)
+            elif tu is not None:
+                tu = str(tu)
+
+            extra_ctx = _maybe_call(extra, interaction, **kwargs) if extra else {}
+            if not isinstance(extra_ctx, dict):
+                extra_ctx = {"extra": extra_ctx}
+
+            ctx = {
+                "fn": f"{getattr(fn, '__module__', '?')}.{getattr(fn, '__name__', '?')}",
+                "kwargs_keys": list(kwargs.keys())[:20],
+            }
+            ctx.update(extra_ctx or {})
+
+            try:
+                ledger.log(
+                    actor_id=str(actor_id or "system"),
+                    actor_type="user" if actor_id else "system",
+                    action=str(action),
+                    context_json=ctx,
+                    target_id=tu,
+                    guild_id=guild_id,
+                    channel_id=channel_id,
+                )
+            except Exception:
+                # Never block the command on audit failure
+                pass
+
+            return await fn(*args, **kwargs)
+        return wrapper
+    return deco
+
+
 # ---------- pagination view ----------
 class AuditPager(discord.ui.View):
     def __init__(
@@ -65,9 +162,7 @@ class AuditPager(discord.ui.View):
         self.guild = guild
         self.page_size = max(1, min(page_size, 25))
         self.page = 0
-        self.author_id = author_id  # lock controls to invoker
-
-        # Disable buttons when not needed
+        self.author_id = author_id
         self._sync_buttons()
 
     def _sync_buttons(self):
@@ -87,7 +182,6 @@ class AuditPager(discord.ui.View):
     def build_embed(self) -> discord.Embed:
         total = len(self.rows)
         total_pages = max(1, (total + self.page_size - 1) // self.page_size)
-
         lines: List[str] = []
         for r in self._page_slice():
             ts = _ts_iso(r.get("ts"))
@@ -96,7 +190,6 @@ class AuditPager(discord.ui.View):
             msg = _preview(r.get("content") or "")
             line = f"`{ts}` • **{et}** • {_chan_mention(self.guild, chid)}\n{msg}"
             lines.append(line)
-
         desc = "\n\n".join(lines) if lines else "_No events._"
         emb = discord.Embed(
             title=f"Audit Recent ({self.page + 1}/{total_pages})",
@@ -107,7 +200,6 @@ class AuditPager(discord.ui.View):
         return emb
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        # Restrict button use to the command invoker (or admins)
         if self.author_id and interaction.user.id != self.author_id:
             await interaction.response.send_message("Only the invoker can use these controls.", ephemeral=True)
             return False
@@ -134,7 +226,6 @@ class AuditCog(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-    # quick non-paged view (optional helper)
     @app_commands.command(name="audit_recent", description="Show recent audit events (not paged).")
     @is_admin()
     async def audit_recent(
@@ -164,7 +255,6 @@ class AuditCog(commands.Cog):
             chid = r.get("channel_id")
             msg = _preview(r.get("content") or "")
             lines.append(f"`{ts}` • **{et}** • {_chan_mention(inter.guild, chid)}\n{msg}")
-
         emb = discord.Embed(
             title="Audit Recent",
             description="\n\n".join(lines) if lines else "_No events._",
@@ -172,7 +262,6 @@ class AuditCog(commands.Cog):
         )
         await inter.followup.send(embed=emb, ephemeral=True)
 
-    # paged viewer (upgrade requested)
     @app_commands.command(name="audit_recent_paged", description="Browse recent audit events with paging.")
     @is_admin()
     async def audit_recent_paged(
@@ -184,10 +273,9 @@ class AuditCog(commands.Cog):
         action_type: Optional[str] = None,
         command_name: Optional[str] = None,
         q: Optional[str] = None,
-        limit: app_commands.Range[int, 20, 500] = 200,  # fetch up-front window for fast paging
+        limit: app_commands.Range[int, 20, 500] = 200,
     ):
         await inter.response.defer(ephemeral=True)
-
         rows = await query_events(
             guild_id=inter.guild_id,
             user_id=(user.id if user else None),
@@ -197,7 +285,6 @@ class AuditCog(commands.Cog):
             q=q,
             limit=limit,
         )
-
         view = AuditPager(rows=rows, guild=inter.guild, page_size=page_size, author_id=inter.user.id)
         await inter.followup.send(embed=view.build_embed(), view=view, ephemeral=True)
 

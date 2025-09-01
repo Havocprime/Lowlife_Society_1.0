@@ -11,6 +11,12 @@ from src.db import dal
 from src.features.character_sheet import service, ui
 
 
+async def setup(bot: commands.Bot):
+    # TODO: add your CharacterSheetCog here when ready, e.g.:
+    # from .cog_impl import CharacterSheetCog
+    # await bot.add_cog(CharacterSheetCog(bot))
+    return
+
 class CharacterSheetCmds(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
@@ -76,3 +82,4 @@ class CharacterSheetCmds(commands.Cog):
             f"✅ Granted **{qty}× {item_name}** to {member.mention}.", ephemeral=True
         )
         await interaction.followup.send(embed=embed, ephemeral=True)
+        
