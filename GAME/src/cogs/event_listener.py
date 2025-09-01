@@ -1,25 +1,32 @@
 # GAME/src/cogs/event_listener.py
 from __future__ import annotations
-from typing import Any, Optional
+
+from typing import Any, Optional, List
 from importlib import import_module
 
 import discord
 from discord.ext import commands
 
-# Import the module (safer than name imports during early init)
+# We import the module (not the symbol) so early import order won’t explode.
 from src.core import audit as audit_core
 
 
+# ---------------- internals ----------------
+
 def _sid(x: Any) -> Optional[int]:
+    """Return .id if present, else None."""
     return getattr(x, "id", None)
 
 
 async def _audit_log_action(**kwargs):
-    """Robust wrapper: try to call src.core.audit.log_action; safely no-op if not ready yet."""
+    """
+    Robust wrapper around src.core.audit.log_action(...).
+    If the module hasn’t finished initializing yet, we late-import and try again.
+    Never raise out of event dispatch.
+    """
     try:
         fn = getattr(audit_core, "log_action", None)
         if fn is None:
-            # late import in case the module finished initializing after we were imported
             mod = import_module("src.core.audit")
             fn = getattr(mod, "log_action", None)
         if fn is not None:
@@ -29,13 +36,59 @@ async def _audit_log_action(**kwargs):
         pass
 
 
+# ---------------- presence helpers ----------------
+
+def _activity_names(acts: Optional[List[discord.Activity]]) -> List[str]:
+    """Return up to 3 human names/states from activities for compact logging."""
+    out: List[str] = []
+    for a in acts or []:
+        name = getattr(a, "name", None) or getattr(a, "state", None)
+        if name:
+            out.append(str(name))
+        if len(out) >= 3:
+            break
+    return out
+
+
+def _presence_snapshot(m: discord.Member) -> dict:
+    """Capture a normalized snapshot of member presence/devices/activities."""
+    return {
+        "status": str(getattr(m, "status", "offline")),
+        "desktop": str(getattr(m, "desktop_status", "offline")),
+        "mobile":  str(getattr(m, "mobile_status", "offline")),
+        "web":     str(getattr(m, "web_status", "offline")),
+        "activities": _activity_names(getattr(m, "activities", None)),
+    }
+
+
+def _presence_changed(before: discord.Member, after: discord.Member) -> bool:
+    """Return True if any presence/devices/activities changed."""
+    if str(getattr(before, "status", "")) != str(getattr(after, "status", "")):
+        return True
+    if str(getattr(before, "desktop_status", "")) != str(getattr(after, "desktop_status", "")):
+        return True
+    if str(getattr(before, "mobile_status", "")) != str(getattr(after, "mobile_status", "")):
+        return True
+    if str(getattr(before, "web_status", "")) != str(getattr(after, "web_status", "")):
+        return True
+    if _activity_names(getattr(before, "activities", None)) != _activity_names(getattr(after, "activities", None)):
+        return True
+    return False
+
+
+# ---------------- Cog ----------------
+
 class EventListener(commands.Cog):
-    """Event listeners that write into audit_log via _audit_log_action(...)."""
+    """
+    Comprehensive event listeners that write to the audit ledger via _audit_log_action(...).
+    These are **separate** from the light-weight `events` table writers.
+    """
 
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
     # -------- Messages --------
+
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
         if message.author.bot or message.guild is None:
@@ -70,7 +123,7 @@ class EventListener(commands.Cog):
             },
         )
 
-    # Cached delete (has content if message was cached)
+    # Cached single delete (has content if message was cached)
     @commands.Cog.listener()
     async def on_message_delete(self, message: discord.Message):
         if message.guild is None:
@@ -87,7 +140,7 @@ class EventListener(commands.Cog):
             },
         )
 
-    # Raw single delete
+    # Raw single delete (no cache required)
     @commands.Cog.listener()
     async def on_raw_message_delete(self, payload: discord.RawMessageDeleteEvent):
         if payload.guild_id is None:
@@ -134,6 +187,7 @@ class EventListener(commands.Cog):
         )
 
     # -------- Reactions --------
+
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent):
         await _audit_log_action(
@@ -155,6 +209,7 @@ class EventListener(commands.Cog):
         )
 
     # -------- Members / Presence / Voice --------
+
     @commands.Cog.listener()
     async def on_member_update(self, before: discord.Member, after: discord.Member):
         await _audit_log_action(
@@ -171,20 +226,63 @@ class EventListener(commands.Cog):
         )
 
     @commands.Cog.listener()
+    async def on_member_join(self, member: discord.Member):
+        await _audit_log_action(
+            guild_id=_sid(member.guild),
+            channel_id=None,
+            user_id=_sid(member),
+            action_type="member_join",
+            details={"name": str(member)},
+        )
+
+    @commands.Cog.listener()
+    async def on_member_remove(self, member: discord.Member):
+        await _audit_log_action(
+            guild_id=_sid(member.guild),
+            channel_id=None,
+            user_id=_sid(member),
+            action_type="member_remove",
+            details={"name": str(member)},
+        )
+
+    @commands.Cog.listener()
     async def on_presence_update(self, before: discord.Member, after: discord.Member):
+        # Reduce noise — only log when something truly changed.
+        if not _presence_changed(before, after):
+            return
+
+        before_snap = _presence_snapshot(before)
+        after_snap = _presence_snapshot(after)
+
+        # Short human-readable summary so the generic text extractor shows content.
+        devbits = []
+        if after_snap["desktop"] != "offline":
+            devbits.append(f"🖥 {after_snap['desktop']}")
+        if after_snap["mobile"] != "offline":
+            devbits.append(f"📱 {after_snap['mobile']}")
+        if after_snap["web"] != "offline":
+            devbits.append(f"🌐 {after_snap['web']}")
+        devs = " | ".join(devbits)
+        acts = ", ".join(after_snap["activities"][:2])
+        tail = " • ".join([p for p in (devs, acts) if p])
+        summary = f"{before_snap['status']} → {after_snap['status']}"
+        if tail:
+            summary += f" — {tail}"
+
         await _audit_log_action(
             guild_id=_sid(after.guild),
-            channel_id=None,
+            channel_id=None,  # presence is not channel-scoped
             user_id=_sid(after),
-            action_type="presence",  # normalized label for your inspector
+            action_type="presence",
             details={
-                "status_before": str(before.status),
-                "status_after": str(after.status),
-                "activities": [
-                    getattr(a, "name", None)
-                    for a in (after.activities or [])
-                    if getattr(a, "name", None)
-                ],
+                # backward-compat keys:
+                "status_before": before_snap["status"],
+                "status_after":  after_snap["status"],
+                # richer structured snapshots:
+                "before": before_snap,
+                "after":  after_snap,
+                # and a generic "text" so existing inspector logic can display it nicely
+                "text": summary,
             },
         )
 
@@ -210,6 +308,7 @@ class EventListener(commands.Cog):
         )
 
     # -------- Channels / Threads --------
+
     @commands.Cog.listener()
     async def on_guild_channel_create(self, channel: discord.abc.GuildChannel):
         await _audit_log_action(
@@ -271,6 +370,7 @@ class EventListener(commands.Cog):
         )
 
     # -------- Roles / Invites / Webhooks / Emojis --------
+
     @commands.Cog.listener()
     async def on_guild_role_create(self, role: discord.Role):
         await _audit_log_action(
@@ -356,5 +456,6 @@ class EventListener(commands.Cog):
         )
 
 
+# ---- extension entry point ----
 async def setup(bot: commands.Bot):
     await bot.add_cog(EventListener(bot))

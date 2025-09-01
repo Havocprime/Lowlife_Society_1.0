@@ -6,7 +6,6 @@ import csv
 import io
 import json
 import logging
-import os
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -16,36 +15,9 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from discord import app_commands
-import logging
-log = logging.getLogger("boot")  # if you already have this, keep yours
-
-
-class LowlifeTree(app_commands.CommandTree):
-    async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        """Global gate: block frozen accounts before any slash command runs."""
-        try:
-            import sqlite3
-            from pathlib import Path
-            DBP = Path(__file__).parents[1] / "db" / "audit.sqlite"
-            with sqlite3.connect(DBP) as conn:
-                row = conn.execute(
-                    "SELECT reason FROM account_freeze WHERE user_id=?",
-                    (str(getattr(interaction.user, "id", "")),)
-                ).fetchone()
-
-            if row:
-                msg = f"🚫 Your account is temporarily frozen: **{row[0]}**"
-                if not interaction.response.is_done():
-                    await interaction.response.send_message(msg, ephemeral=True)
-                else:
-                    await interaction.followup.send(msg, ephemeral=True)
-                return False
-        except Exception:
-            # fail open; do not block commands on DB hiccups
-            pass
-        return True
-
+# ---------- boot logging ----------
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
+log = logging.getLogger("boot")
 
 BUILD_TAG = "bot.py:v6f-full-inspector+module-audit+safe-sync"
 
@@ -65,7 +37,7 @@ from src.core.settings import SETTINGS  # noqa: E402
 TOKEN = SETTINGS.discord_token
 GUILD_ID = SETTINGS.guild_id
 
-# event helpers
+# event helpers (for /inspect_full)
 from src.core.events import (  # noqa: E402
     DB_PATH,
     last_event_time,
@@ -75,6 +47,7 @@ from src.core.events import (  # noqa: E402
 )
 from src.core.errors import setup_error_reporting  # noqa: E402
 
+# Base cogs always loaded
 COGS = [
     "src.cogs.activity_logger",
     "src.cogs.admin_inspector",
@@ -84,13 +57,8 @@ COGS = [
     "src.cogs.invite_tracker",
     "src.cogs.member_intake",
     "src.cogs.welcome",
-
 ]
 
-        
-
-logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
-log = logging.getLogger("boot")
 log.info("Starting %s", BUILD_TAG)
 
 DANGEROUS_PERMS = {
@@ -116,6 +84,7 @@ except Exception:
     LA_TZ = None
 
 
+# ---------- small helpers ----------
 def _hex_color(v):
     try:
         return f"#{int(v):06X}"
@@ -131,16 +100,13 @@ def _rel_ymdh(a: datetime | None, b: datetime | None = None) -> str:
         b = datetime.now(timezone.utc)
     from calendar import monthrange
 
-    # years
     y = b.year - a.year - ((b.month, b.day, b.hour) < (a.month, a.day, a.hour))
     ay = a.replace(year=a.year + y)
-    # months
     m = (b.year - ay.year) * 12 + b.month - ay.month - (b.day < ay.day)
     ny = ay.year + (ay.month + m - 1) // 12
     nm = (ay.month + m - 1) % 12 + 1
     dmax = monthrange(ny, nm)[1]
     anchor = ay.replace(year=ny, month=nm, day=min(ay.day, dmax))
-    # remainder
     delta = b - anchor
     d = delta.days
     h = delta.seconds // 3600
@@ -227,46 +193,39 @@ def _is_trusted(member: discord.Member) -> bool:
         return False
 
 
+# ---------- Global gate via CommandTree ----------
+class LowlifeTree(app_commands.CommandTree):
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        """
+        Global gate: block frozen accounts before any slash command runs.
+        Uses the same DB path as the custodian_cog for consistency.
+        """
+        try:
+            import sqlite3
+            dbp = Path(__file__).parents[2] / "db" / "audit.sqlite"
+            with sqlite3.connect(dbp) as conn:
+                row = conn.execute(
+                    "SELECT reason FROM account_freeze WHERE user_id=?",
+                    (str(getattr(interaction.user, "id", "")),),
+                ).fetchone()
+            if row:
+                msg = f"🚫 Your account is temporarily frozen: **{row[0]}**"
+                if not interaction.response.is_done():
+                    await interaction.response.send_message(msg, ephemeral=True)
+                else:
+                    await interaction.followup.send(msg, ephemeral=True)
+                return False
+        except Exception:
+            # fail open; do not block commands on DB hiccups
+            pass
+        return True
+
+
+# ---------- Bot ----------
 class LowlifeBot(commands.Bot):
     async def setup_hook(self):
         # global crash/error capture
         setup_error_reporting(self)
-
-                # Global freeze gate for ALL slash commands
-        async def _global_freeze_check(interaction: discord.Interaction) -> bool:
-            try:
-                import sqlite3
-                from pathlib import Path
-                DBP = Path(__file__).parents[1] / "db" / "audit.sqlite"
-                with sqlite3.connect(DBP) as conn:
-                    row = conn.execute(
-                        "SELECT reason FROM account_freeze WHERE user_id=?", (str(interaction.user.id),)
-                    ).fetchone()
-                if row:
-                    await interaction.response.send_message(
-                        f"🚫 Your account is temporarily frozen: **{row[0]}**", ephemeral=True
-                    )
-                    return False
-            except Exception:
-                # fail open rather than block commands on DB hiccup
-                pass
-            return True
-
-        # --- list all slash commands without crashing on Groups ---
-        def _log_cmd(c: app_commands.Command | app_commands.ContextMenu | app_commands.Group):
-            qname = getattr(c, "qualified_name", getattr(c, "name", "?"))
-            cb = getattr(c, "callback", None)
-            mod = getattr(cb, "__module__", getattr(c, "__module__", "?"))
-            log.info("slash cmd: /%s from %s", qname, mod)
-
-        for top in self.tree.get_commands():
-            if isinstance(top, app_commands.Group):
-                # Walk subcommands inside the group
-                for sub in top.walk_commands():
-                    _log_cmd(sub)
-            else:
-                _log_cmd(top)
-
 
         # --- Custodian schema on boot ---
         try:
@@ -282,7 +241,6 @@ class LowlifeBot(commands.Bot):
             log.info("events schema ensured")
         except Exception as e:
             log.warning("events schema ensure failed: %s", e)
-          
 
         # ---- Resolve ONLY the audit_event decorator via module import (robust) ----
         try:
@@ -291,7 +249,7 @@ class LowlifeBot(commands.Bot):
         except Exception as e:
             log.warning("audit decorator unavailable (%s) — using no-op.", e)
 
-            def audit_event(*_a, **_k):
+            def audit_event(*_a, **_k):  # type: ignore
                 def deco(fn):
                     return fn
                 return deco
@@ -309,25 +267,22 @@ class LowlifeBot(commands.Bot):
 
         # Extra/feature/admin cogs
         for mod in (
-             "src.cogs.events",
-            # "src.features.character_sheet.commands",  # ← disable until ready
+            "src.cogs.events",              # writes to events table
             "src.admin.sync",
             "src.admin.export",
             "src.admin.audit",
             "src.admin.custodian_cog",
-            # "src.admin.freeze_guard",
             "src.admin.custodian_detectors",
             "src.admin.custodian_anchor",
             "src.admin.freeze",
             "src.admin.econ",
             "src.admin.roles",
             "src.admin.backup",
-            "src.cogs.event_listener",
+            "src.cogs.event_listener",      # audit ledger event hooks
             "src.admin.investigate",
-            "src.admin.events_viewer",
+            "src.admin.events_viewer",      # /events group + aliases
         ):
             await try_load(mod)
-
 
         # --- /inspect_full (admin) ---
         @app_commands.command(
@@ -476,35 +431,66 @@ class LowlifeBot(commands.Bot):
             e.add_field(name="Msg Counts", value=f"7d: `{msg7}` • 30d: `{msg30}`", inline=True)
             e.add_field(name="Log DB", value=f"`{str(DB_PATH)}`", inline=True)
 
-            # recent actions
+            # recent actions (from your compact events table)
             try:
                 recents = recent_events(member.id, 50, interaction.guild.id)  # type: ignore[attr-defined]
             except TypeError:
                 recents = recent_events(member.id, 50)
 
             def _recent_line(ts, kind, data):
-                ch = (
-                    _ch_label_from_payload(interaction.guild, data)
-                    if interaction.guild
-                    else "—"
-                )  # type: ignore
+                ch = _ch_label_from_payload(interaction.guild, data) if interaction.guild else "—"  # type: ignore
                 txt = _snippet(_extract_text(data))
+
                 if kind == "message":
-                    prefix = "Msg"
-                    body = txt or "—"
+                    prefix = "Msg";  body = txt or "—"
+
                 elif kind == "message_edit":
-                    prefix = "Edit"
-                    body = txt or (data.get("after") or {}).get("content") or "—"
+                    prefix = "Edit"; body = txt or (data.get("after") or {}).get("content") or "—"
+
                 elif kind == "message_delete":
-                    prefix = "Del"
-                    body = txt or (data.get("before") or {}).get("content") or "unknown"
+                    prefix = "Del";  body = txt or (data.get("before") or {}).get("content") or "unknown"
+
                 elif kind == "message_bulk_delete":
                     prefix = f"BulkDel x{data.get('count', 0)}"
                     cached = data.get("cached_with_text", 0)
                     body = f"{cached} with text" if cached else ""
+
+                elif kind == "presence":
+                    # Presence rows can be legacy (before/after strings) or new (snapshots + text)
+                    prefix = "Presence"
+                    body = data.get("text")
+
+                    if not body:
+                        sb = str(data.get("status_before") or data.get("before") or "").strip()
+                        sa = str(data.get("status_after") or data.get("after") or "").strip()
+
+                        after_snap = data.get("after") if isinstance(data.get("after"), dict) else {}
+                        devbits = []
+                        desk = str(after_snap.get("desktop") or "").strip()
+                        mob = str(after_snap.get("mobile") or "").strip()
+                        web = str(after_snap.get("web") or "").strip()
+                        if desk and desk.lower() != "offline":
+                            devbits.append(f"🖥 {desk}")
+                        if mob and mob.lower() != "offline":
+                            devbits.append(f"📱 {mob}")
+                        if web and web.lower() != "offline":
+                            devbits.append(f"🌐 {web}")
+                        acts = after_snap.get("activities") or []
+                        act_txt = ", ".join([str(a) for a in acts][:2])
+
+                        parts = []
+                        if sb or sa:
+                            parts.append(f"{sb or '—'} → {sa or '—'}")
+                        tail = " • ".join([p for p in (" | ".join(devbits) if devbits else "", act_txt) if p])
+                        if tail:
+                            parts.append(tail)
+
+                        body = " — ".join(parts) if parts else ""
+
                 else:
                     prefix = kind.replace("_", " ").title()
                     body = txt or ""
+
                 return f"{_fmt_ts_local(ts)}  {prefix}@{ch} - {body or '—'}"
 
             pretty = []
@@ -514,15 +500,9 @@ class LowlifeBot(commands.Bot):
                 elif len(row) >= 3:
                     ts, kind, payload = row[0], row[1], row[2]
                 else:
-                    ts, kind, payload = row[0], (row[1] if len(row) > 1 else "event"), (
-                        row[2] if len(row) > 2 else "{}"
-                    )
+                    ts, kind, payload = row[0], (row[1] if len(row) > 1 else "event"), (row[2] if len(row) > 2 else "{}")
                 try:
-                    data = (
-                        json.loads(payload or "{}")
-                        if isinstance(payload, (str, bytes))
-                        else (payload or {})
-                    )
+                    data = json.loads(payload or "{}") if isinstance(payload, (str, bytes)) else (payload or {})
                 except Exception:
                     data = {}
                 line = _recent_line(ts, kind, data)
@@ -530,29 +510,20 @@ class LowlifeBot(commands.Bot):
                     line = line[:117] + "…"
                 pretty.append(line)
 
-            out = (
-                "\n".join(pretty)
-                if pretty
-                else "None recorded yet — start chatting to populate this!"
-            )
+            out = "\n".join(pretty) if pretty else "None recorded yet — start chatting to populate this!"
             while len(out) > 1024 and len(pretty) > 1:
                 pretty.pop()
                 out = "\n".join(pretty)
 
             e.add_field(name="Recent Actions", value=out, inline=False)
-            e.set_footer(
-                text=f"{BUILD_TAG} — Use /note_list to view all, /note_add to add, /note_delete to remove"
-            )
+            e.set_footer(text=f"{BUILD_TAG} — Use /note_list to view all, /note_add to add, /note_delete to remove")
 
             s = io.StringIO()
             w = csv.writer(s)
             w.writerow(["ts_utc", "kind", "payload"])
             for ts, kind, payload in recents:
                 w.writerow([ts, kind, payload])
-            f = discord.File(
-                io.BytesIO(s.getvalue().encode("utf-8")),
-                filename=f"recent_actions_{member.id}.csv",
-            )
+            f = discord.File(io.BytesIO(s.getvalue().encode("utf-8")), filename=f"recent_actions_{member.id}.csv")
             await interaction.followup.send(embed=e, file=f, ephemeral=True)
 
         # ----- register & SYNC with safe guild handling -----
@@ -564,7 +535,6 @@ class LowlifeBot(commands.Bot):
                 if "already registered" not in str(e).lower():
                     log.warning("add_command(global,inspect_full) failed: %s", e)
 
-            # Only add guild-scoped if bot is in that guild
             guild_added = False
             target_guild = None
             if GUILD_ID:
@@ -588,12 +558,8 @@ class LowlifeBot(commands.Bot):
             if GUILD_ID and guild_added and target_guild:
                 try:
                     gcmds = await self.tree.sync(guild=discord.Object(id=GUILD_ID))
-                    log.info(
-                        "startup sync — Guild: %d • Global: %s", len(gcmds), g_count
-                    )
-                    log.info(
-                        "slash commands guild-synced: %d cmds to %s", len(gcmds), GUILD_ID
-                    )
+                    log.info("startup sync — Guild: %d • Global: %s", len(gcmds), g_count)
+                    log.info("slash commands guild-synced: %d cmds to %s", len(gcmds), GUILD_ID)
                 except Exception as e:
                     log.warning("Guild sync failed for %s (%s).", GUILD_ID, e)
                     log.info("startup sync — Guild: failed • Global: %s", g_count)
@@ -604,27 +570,24 @@ class LowlifeBot(commands.Bot):
                     g_count,
                 )
 
+            # Inventory: list what got registered (walk groups safely)
+            def _log_cmd(c: app_commands.Command | app_commands.ContextMenu | app_commands.Group):
+                qname = getattr(c, "qualified_name", getattr(c, "name", "?"))
+                cb = getattr(c, "callback", None)
+                mod = getattr(cb, "__module__", getattr(c, "__module__", "?"))
+                log.info("slash cmd: /%s from %s", qname, mod)
+
+            for top in self.tree.get_commands():
+                if isinstance(top, app_commands.Group):
+                    for sub in top.walk_commands():
+                        _log_cmd(sub)
+                else:
+                    _log_cmd(top)
+
         await register_and_sync()
 
-        # Inventory: list what got registered (works with Groups)
-        def _log_cmd(c: app_commands.Command | app_commands.ContextMenu | app_commands.Group):
-            qname = getattr(c, "qualified_name", getattr(c, "name", "?"))
-            cb = getattr(c, "callback", None)
-            mod = getattr(cb, "__module__", getattr(c, "__module__", "?"))
-            log.info("slash cmd: /%s from %s", qname, mod)
-
-        for top in self.tree.get_commands():
-            if isinstance(top, app_commands.Group):
-                for sub in top.walk_commands():
-                    _log_cmd(sub)
-            else:
-                _log_cmd(top)
-
-
     async def on_ready(self):
-        log.info(
-            "Logged in as %s (%s) — %s", self.user, getattr(self.user, "id", "?"), BUILD_TAG
-        )
+        log.info("Logged in as %s (%s) — %s", self.user, getattr(self.user, "id", "?"), BUILD_TAG)
 
 
 def build_bot() -> LowlifeBot:
