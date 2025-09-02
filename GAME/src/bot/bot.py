@@ -61,6 +61,7 @@ COGS = [
     "src.cogs.duel",
     "src.cogs.inventory",
     "src.cogs.admin_tools",
+    "src.cogs.health",
 ]
 
 log.info("Starting %s", BUILD_TAG)
