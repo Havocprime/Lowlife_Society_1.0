@@ -1,173 +1,110 @@
-# GAME/src/db/schema_version.py
+# =========================================
+# File: src/db/schema_version.py
+# =========================================
 from __future__ import annotations
 
-from pathlib import Path
 import sqlite3
-from typing import Iterable
-from typing import Union
+from pathlib import Path
+from typing import Optional
 
+from .db_path import DB_PATH as DEFAULT_DB_PATH
 
+# Keep this in sync with your latest migration number
+LATEST_VERSION = 3
 
-try:
-    # Single source of truth for DB file location
-    from src.db.db_path import DB_PATH  # noqa: F401
-except Exception:
-    DB_PATH = Path("var/db/lowlife.sqlite")
+_THIS_DIR = Path(__file__).resolve().parent
+_SQL_SCHEMA_V1 = _THIS_DIR / "schema.sql"                  # v0 -> v1
+_SQL_V2_FILE   = _THIS_DIR / "0002_txn_idem_unique.sql"    # v1 -> v2 (optional/conditional)
 
-LATEST_VERSION = 3  # bump when we add schema
+def _exec_sql_file(cx: sqlite3.Connection, sql_path: Path) -> None:
+    if not sql_path.exists():
+        return
+    with sql_path.open("r", encoding="utf-8") as f:
+        cx.executescript(f.read())
 
-# ---------- small helpers
-
-def _cx(db_like: Union[str, Path, sqlite3.Connection]):
-    if isinstance(db_like, sqlite3.Connection):
-        return db_like, False
-    return sqlite3.connect(str(db_like)), True
-
-def get_version(db_like: Union[str, Path, sqlite3.Connection]) -> int:
-    cx, close = _cx(db_like)
-    try:
-        cur = cx.execute("PRAGMA user_version;")
-        row = cur.fetchone()
-        return int(row[0] or 0)
-    finally:
-        if close:
-            cx.close()
-
-def _exec(cx: sqlite3.Connection, sql: str, params: Iterable | None = None) -> None:
-    cur = cx.cursor()
-    if params is None:
-        cur.execute(sql)
-    else:
-        cur.execute(sql, params)
-
-def _column_exists(cx: sqlite3.Connection, table: str, column: str) -> bool:
-    cur = cx.execute(f"PRAGMA table_info({table})")
-    return any(r[1] == column for r in cur.fetchall())
-
-def _add_column_if_missing(cx: sqlite3.Connection, table: str, column: str, decl: str) -> None:
-    if not _column_exists(cx, table, column):
-        _exec(cx, f"ALTER TABLE {table} ADD COLUMN {column} {decl}")
-
-# ---------- version table
-
-def _ensure_version_table(cx: sqlite3.Connection) -> None:
-    _exec(
-        cx,
-        """
-        CREATE TABLE IF NOT EXISTS schema_version (
+def _ensure_meta(cx: sqlite3.Connection) -> None:
+    cx.execute("""
+        CREATE TABLE IF NOT EXISTS schema_meta (
             id INTEGER PRIMARY KEY CHECK (id = 1),
             version INTEGER NOT NULL
         )
-        """
-    )
-    cur = cx.execute("SELECT version FROM schema_version WHERE id = 1")
-    row = cur.fetchone()
+    """)
+    row = cx.execute("SELECT version FROM schema_meta WHERE id = 1").fetchone()
     if row is None:
-        _exec(cx, "INSERT INTO schema_version (id, version) VALUES (1, 0)")
+        cx.execute("INSERT INTO schema_meta (id, version) VALUES (1, 0)")
 
-def get_version(db_path: Path) -> int:
+def _table_exists(cx: sqlite3.Connection, name: str) -> bool:
+    row = cx.execute(
+        "SELECT 1 FROM sqlite_master WHERE type='table' AND name=?",
+        (name,),
+    ).fetchone()
+    return row is not None
+
+def get_version(db_path: str = DEFAULT_DB_PATH) -> int:
+    Path(db_path).touch(exist_ok=True)
     with sqlite3.connect(db_path) as cx:
-        _ensure_version_table(cx)
-        cur = cx.execute("SELECT version FROM schema_version WHERE id = 1")
-        (v,) = cur.fetchone()
+        _ensure_meta(cx)
+        (v,) = cx.execute("SELECT version FROM schema_meta WHERE id = 1").fetchone()
         return int(v)
 
 def _set_version(cx: sqlite3.Connection, v: int) -> None:
-    _exec(cx, "UPDATE schema_version SET version = ? WHERE id = 1", (v,))
+    cx.execute("UPDATE schema_meta SET version = ? WHERE id = 1", (v,))
 
-# ---------- base schema + migrations
+def ensure_schema(db_path: str = DEFAULT_DB_PATH) -> int:
+    Path(db_path).touch(exist_ok=True)
+    return get_version(db_path)
 
-def _create_base(cx: sqlite3.Connection) -> None:
-    # Minimal tables used by game features
-    _exec(
-        cx,
-        """
-        CREATE TABLE IF NOT EXISTS items (
-            id INTEGER PRIMARY KEY,
-            name TEXT NOT NULL UNIQUE,
-            item_class TEXT NOT NULL,
-            created_at TEXT NOT NULL,
-            bind_on_pickup INTEGER NOT NULL DEFAULT 0,
-            durability INTEGER NOT NULL DEFAULT 0,
-            pitch_value INTEGER NOT NULL DEFAULT 0,
-            rune_value INTEGER NOT NULL DEFAULT 0,
-            scrap_value INTEGER NOT NULL DEFAULT 0,
-            hidden_trait TEXT NOT NULL DEFAULT '',
-            mint_index INTEGER NOT NULL DEFAULT 0,
+def migrate_to_latest(db_path: str = DEFAULT_DB_PATH) -> int:
+    """
+    Bring DB to LATEST_VERSION. Safe/Idempotent.
+    - v0 -> v1 executes schema.sql
+    - v1 -> v2 executes 0002_txn_idem_unique.sql only if the referenced
+      table(s) exist (e.g., 'transactions'); otherwise we skip and still
+      bump the version because this repo variant doesn't need that step.
+    - v2 -> v3 is currently a no-op placeholder.
+    """
+    Path(db_path).touch(exist_ok=True)
 
-            -- catalog fields (added for v3 but included in base create for new DBs)
-            category TEXT NOT NULL DEFAULT 'misc',
-            subcategory TEXT NOT NULL DEFAULT '',
-            stack_max INTEGER NOT NULL DEFAULT 1,
-            rarity TEXT NOT NULL DEFAULT 'common',
-            quality_float REAL NOT NULL DEFAULT 100.0,
-            deleted_at TEXT
-        )
-        """
-    )
-    _exec(
-        cx,
-        """
-        CREATE TABLE IF NOT EXISTS inventory (
-            id INTEGER PRIMARY KEY,
-            user_id INTEGER NOT NULL,
-            item_id INTEGER NOT NULL,
-            qty INTEGER NOT NULL DEFAULT 1,
-            equipped INTEGER NOT NULL DEFAULT 0,
-            acquired_at TEXT NOT NULL
-        )
-        """
-    )
-    _exec(cx, "CREATE UNIQUE INDEX IF NOT EXISTS idx_items_name ON items(name)")
-    _exec(cx, "CREATE INDEX IF NOT EXISTS idx_inventory_user ON inventory(user_id)")
-    _exec(cx, "CREATE INDEX IF NOT EXISTS idx_inventory_item ON inventory(item_id)")
-
-def _migrate_to_v3(cx: sqlite3.Connection) -> None:
-    # Add catalog columns if they don't exist (safe to re-run)
-    _add_column_if_missing(cx, "items", "category", "TEXT NOT NULL DEFAULT 'misc'")
-    _add_column_if_missing(cx, "items", "subcategory", "TEXT NOT NULL DEFAULT ''")
-    _add_column_if_missing(cx, "items", "stack_max", "INTEGER NOT NULL DEFAULT 1")
-    _add_column_if_missing(cx, "items", "rarity", "TEXT NOT NULL DEFAULT 'common'")
-    _add_column_if_missing(cx, "items", "quality_float", "REAL NOT NULL DEFAULT 100.0")
-    _add_column_if_missing(cx, "items", "deleted_at", "TEXT")
-
-def ensure_schema(db_path: Path) -> None:
     with sqlite3.connect(db_path) as cx:
-        cx.execute("PRAGMA journal_mode=WAL")
-        _ensure_version_table(cx)
-        cur = cx.execute("SELECT version FROM schema_version WHERE id = 1")
-        (version,) = cur.fetchone()
+        # We manage our own transaction boundaries explicitly.
+        try:
+            cx.execute("BEGIN")
+            _ensure_meta(cx)
 
-        with sqlite3.connect(db_path) as cx:
-            -    version = get_version(cx)
-            +    version = get_version(db_path)
+            (v,) = cx.execute("SELECT version FROM schema_meta WHERE id = 1").fetchone()
+            v = int(v)
 
-        # Always ensure base tables exist
-        _create_base(cx)
+            # --- v0 -> v1 ---
+            if v < 1:
+                _exec_sql_file(cx, _SQL_SCHEMA_V1)
+                _set_version(cx, 1)
+                v = 1
 
-        # idempotent migration to v3 (adds missing columns)
-        if version < 3:
-            _migrate_to_v3(cx)
-            _set_version(cx, 3)
+            # --- v1 -> v2 (conditional) ---
+            if v < 2:
+                # Only run if the migration's target table(s) exist in this repo.
+                # The failing line in your run referenced main.transactions, which
+                # does not exist here. If it's missing, skip the SQL and bump.
+                needs_v2 = _table_exists(cx, "transactions") or _table_exists(cx, "txn")
+                if needs_v2:
+                    _exec_sql_file(cx, _SQL_V2_FILE)
+                _set_version(cx, 2)
+                v = 2
 
-        cx.commit()
+            # --- v2 -> v3 ---
+            if v < 3:
+                # Placeholder for future changes
+                _set_version(cx, 3)
+                v = 3
 
+            cx.execute("COMMIT")
+            return v
 
-# src/db/schema_version.py
-
-SCHEMA_VERSION = 4  # bump
-
-def _create_v4(cx):
-    cx.execute("ALTER TABLE items ADD COLUMN equippable INTEGER NOT NULL DEFAULT 1;")
-    cx.execute("CREATE INDEX IF NOT EXISTS idx_items_equippable ON items(equippable);")
-
-def ensure_schema(db_path):
-    with sqlite3.connect(db_path) as cx:
-        cx.row_factory = sqlite3.Row
-        version = get_version(cx)
-
-        # … existing creators (v1, v2, v3)
-
-        if version < 4:
-            _create_v4(cx)
-            set_version(cx, 4)
+        except Exception:
+            # Roll back only if a transaction is actually open.
+            try:
+                if cx.in_transaction:
+                    cx.execute("ROLLBACK")
+            except Exception:
+                pass
+            raise

@@ -1,17 +1,16 @@
-# GAME/src/db/db_path.py
+# =========================================
+# File: src/db/db_path.py
+# =========================================
 from __future__ import annotations
 from pathlib import Path
 
-# This file lives at GAME/src/db/db_path.py
-# Project root is GAME/
-ROOT = Path(__file__).resolve().parents[2]
+# Project root = .../GAME  (this file is .../GAME/src/db/db_path.py)
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
-VAR_DIR = ROOT / "var"
+VAR_DIR = PROJECT_ROOT / "var"
 DB_DIR = VAR_DIR / "db"
-DB_PATH = DB_DIR / "lowlife.sqlite"
-BACKUP_PATH = DB_DIR / "lowlife.backup.sqlite"
+DB_DIR.mkdir(parents=True, exist_ok=True)
 
-def ensure_db_dir() -> Path:
-    """Create var/db if needed and return the DB path."""
-    DB_DIR.mkdir(parents=True, exist_ok=True)
-    return DB_PATH
+DB_PATH = str(DB_DIR / "lowlife.sqlite")
+
+__all__ = ["DB_PATH", "DB_DIR", "VAR_DIR", "PROJECT_ROOT"]
