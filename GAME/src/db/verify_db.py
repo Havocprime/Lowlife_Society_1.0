@@ -1,15 +1,14 @@
-# =========================================
-# File: src/db/verify_db.py
-# =========================================
+# ===== FILE: GAME/src/db/verify_db.py ========================================
 from __future__ import annotations
 
+from .schema_version import get_version, EXPECTED_VERSION, _connect  # type: ignore
 from .db_path import DB_PATH
-from .schema_version import ensure_schema, get_version, LATEST_VERSION
 
 def main() -> None:
-    ensure_schema(DB_PATH)
-    v = get_version(DB_PATH)
-    print(f"OK - version={v} (expected {LATEST_VERSION}) @ {DB_PATH}")
+    with _connect(DB_PATH) as cx:
+        v = get_version(cx)
+    status = "OK" if v == EXPECTED_VERSION else "WARN"
+    print(f"{status} - version={v} (expected {EXPECTED_VERSION}) @ {DB_PATH}")
 
 if __name__ == "__main__":
     main()

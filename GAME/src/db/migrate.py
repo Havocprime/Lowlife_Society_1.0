@@ -1,15 +1,12 @@
-# =========================================
-# File: src/db/migrate.py
-# =========================================
+# ===== FILE: GAME/src/db/migrate.py ==========================================
 from __future__ import annotations
 
+from .schema_version import migrate_to_latest, EXPECTED_VERSION
 from .db_path import DB_PATH
-from .schema_version import ensure_schema, migrate_to_latest, LATEST_VERSION
 
 def main() -> None:
-    ensure_schema(DB_PATH)
-    final_v = migrate_to_latest(DB_PATH)
-    print(f"OK - migrated to version={final_v} (expected {LATEST_VERSION}) @ {DB_PATH}")
+    final = migrate_to_latest(DB_PATH)
+    print(f"migrated to version={final} (expected {EXPECTED_VERSION}) @ {DB_PATH}")
 
 if __name__ == "__main__":
     main()

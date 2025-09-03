@@ -5,15 +5,17 @@ from dataclasses import asdict
 from datetime import datetime, timezone
 from pathlib import Path
 import sqlite3
-from typing import Optional, Iterable
+from typing import Optional, Any
 
 from src.models.item import Item, ItemClass
+
 try:
-    from src.db.db_path import DB_PATH  # shared path helper
+    from src.db.db_path import DB_PATH
 except Exception:
     DB_PATH = Path("var/db/lowlife.sqlite")
 
-# --------- helpers
+
+# ---------- helpers
 
 def _now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
@@ -25,12 +27,23 @@ def _col_exists(cx: sqlite3.Connection, table: str, col: str) -> bool:
 def _items_has_deleted(cx: sqlite3.Connection) -> bool:
     return _col_exists(cx, "items", "deleted_at")
 
-# --------- catalog CRUD
+def _row_has(row: sqlite3.Row, key: str) -> bool:
+    try:
+        return key in row.keys()
+    except Exception:
+        return False
+
+def _row_or(row: sqlite3.Row, key: str, default: Any) -> Any:
+    return row[key] if _row_has(row, key) and row[key] is not None else default
+
+
+# ---------- catalog CRUD
 
 def create_item(item: Item) -> int:
     """Insert a new catalog item. Returns new id."""
     with sqlite3.connect(DB_PATH) as cx:
         cx.row_factory = sqlite3.Row
+
         # unique-by-name, prevent dupes
         cur = cx.execute("SELECT id FROM items WHERE LOWER(name)=LOWER(?)", (item.name,))
         if cur.fetchone():
@@ -38,65 +51,93 @@ def create_item(item: Item) -> int:
 
         data = {
             **asdict(item),
-            "item_class": item.item_class.value,  # enum -> string
-            "created_at": item.created_at.isoformat(),
-            # optional/catalog fields with safe defaults if missing in dataclass
-            "category": getattr(item, "category", "misc"),
-            "subcategory": getattr(item, "subcategory", ""),
+            "name": item.name,
+            "item_class": getattr(item.item_class, "value", str(item.item_class)),
+            "created_at": getattr(item, "created_at", datetime.now(timezone.utc)).isoformat(),
+            "bind_on_pickup": 1 if getattr(item, "bind_on_pickup", False) else 0,
+            "durability": int(getattr(item, "durability", 0) or 0),
+            "pitch_value": int(getattr(item, "pitch_value", 0) or 0),
+            "rune_value": int(getattr(item, "rune_value", 0) or 0),
+            "scrap_value": int(getattr(item, "scrap_value", 0) or 0),
+            "hidden_trait": getattr(item, "hidden_trait", "") or "",
+            "mint_index": int(getattr(item, "mint_index", 0) or 0),
+            "rarity": (getattr(item, "rarity", "common") or "common").lower(),
             "stack_max": int(getattr(item, "stack_max", 1) or 1),
-            "rarity": getattr(item, "rarity", "common"),
-            "quality_float": float(getattr(item, "quality_float", 100.0) or 100.0),
-            "bind_on_pickup": 1 if item.bind_on_pickup else 0,
+            "equippable": 1 if getattr(item, "equippable", True) else 0,
+            "cash_value": int(getattr(item, "cash_value", getattr(item, "scrap_value", 0)) or 0),
         }
 
-        cx.execute(
-            """
-            INSERT INTO items (
-                id, name, item_class, created_at, bind_on_pickup, durability,
-                pitch_value, rune_value, scrap_value, hidden_trait, mint_index,
-                category, subcategory, stack_max, rarity, quality_float
-            ) VALUES (
-                :id, :name, :item_class, :created_at, :bind_on_pickup, :durability,
-                :pitch_value, :rune_value, :scrap_value, :hidden_trait, :mint_index,
-                :category, :subcategory, :stack_max, :rarity, :quality_float
-            )
-            """,
-            data,
-        )
+        has_cash = _col_exists(cx, "items", "cash_value")
+        has_equippable = _col_exists(cx, "items", "equippable")
+        has_rarity = _col_exists(cx, "items", "rarity")
+        has_stack = _col_exists(cx, "items", "stack_max")
+
+        cols = [
+            "name", "item_class", "created_at", "bind_on_pickup", "durability",
+            "pitch_value", "rune_value", "scrap_value", "hidden_trait", "mint_index",
+        ]
+        if has_rarity: cols.append("rarity")
+        if has_stack: cols.append("stack_max")
+        if has_equippable: cols.append("equippable")
+        if has_cash: cols.append("cash_value")
+
+        sql = f"INSERT INTO items ({', '.join(cols)}) VALUES ({', '.join('?' for _ in cols)})"
+        cx.execute(sql, tuple(data[c] for c in cols))
         new_id = int(cx.execute("SELECT last_insert_rowid()").fetchone()[0])
         cx.commit()
         return new_id
 
+
 def update_item(item: Item) -> None:
     with sqlite3.connect(DB_PATH) as cx:
-        cx.execute(
-            """
-            UPDATE items
-               SET name = ?,
-                   item_class = ?,
-                   bind_on_pickup = ?,
-                   durability = ?,
-                   pitch_value = ?,
-                   rune_value = ?,
-                   scrap_value = ?,
-                   hidden_trait = ?,
-                   mint_index = ?
-             WHERE id = ?
-            """,
-            (
-                item.name,
-                item.item_class.value,
-                1 if item.bind_on_pickup else 0,
-                int(item.durability or 0),
-                int(item.pitch_value or 0),
-                int(item.rune_value or 0),
-                int(item.scrap_value or 0),
-                item.hidden_trait or "",
-                int(item.mint_index or 0),
-                int(item.id),
-            ),
-        )
+        cx.row_factory = sqlite3.Row
+
+        has_cash = _col_exists(cx, "items", "cash_value")
+        has_equippable = _col_exists(cx, "items", "equippable")
+        has_rarity = _col_exists(cx, "items", "rarity")
+        has_stack = _col_exists(cx, "items", "stack_max")
+
+        sets = [
+            "name = ?",
+            "item_class = ?",
+            "bind_on_pickup = ?",
+            "durability = ?",
+            "pitch_value = ?",
+            "rune_value = ?",
+            "scrap_value = ?",
+            "hidden_trait = ?",
+            "mint_index = ?",
+        ]
+        args: list[Any] = [
+            item.name,
+            getattr(item.item_class, "value", str(item.item_class)),
+            1 if getattr(item, "bind_on_pickup", False) else 0,
+            int(getattr(item, "durability", 0) or 0),
+            int(getattr(item, "pitch_value", 0) or 0),
+            int(getattr(item, "rune_value", 0) or 0),
+            int(getattr(item, "scrap_value", 0) or 0),
+            getattr(item, "hidden_trait", "") or "",
+            int(getattr(item, "mint_index", 0) or 0),
+        ]
+
+        if has_rarity:
+            sets.append("rarity = ?")
+            args.append((getattr(item, "rarity", "common") or "common").lower())
+        if has_stack:
+            sets.append("stack_max = ?")
+            args.append(int(getattr(item, "stack_max", 1) or 1))
+        if has_equippable:
+            sets.append("equippable = ?")
+            args.append(1 if getattr(item, "equippable", True) else 0)
+        if has_cash:
+            sets.append("cash_value = ?")
+            args.append(int(getattr(item, "cash_value", getattr(item, "scrap_value", 0)) or 0))
+
+        sql = f"UPDATE items SET {', '.join(sets)} WHERE id = ?"
+        args.append(int(getattr(item, "id", 0)))
+        cx.execute(sql, tuple(args))
         cx.commit()
+
 
 def get_item_by_name(name: str) -> Optional[Item]:
     with sqlite3.connect(DB_PATH) as cx:
@@ -108,25 +149,32 @@ def get_item_by_name(name: str) -> Optional[Item]:
         row = cx.execute(f"SELECT * FROM items {where} LIMIT 1", (name,)).fetchone()
         if not row:
             return None
-        # build minimal Item for grant (fields the dataclass expects)
-        return Item(
+
+        item = Item(
             id=int(row["id"]),
             name=row["name"],
             item_class=ItemClass(row["item_class"]),
             created_at=datetime.fromisoformat(row["created_at"]),
             bind_on_pickup=bool(row["bind_on_pickup"]),
-            durability=int(row["durability"] or 0),
-            pitch_value=int(row["pitch_value"] or 0),
-            rune_value=int(row["rune_value"] or 0),
-            scrap_value=int(row["scrap_value"] or 0),
-            hidden_trait=row["hidden_trait"] or "",
-            mint_index=int(row["mint_index"] or 0),
+            durability=int(_row_or(row, "durability", 0)),
+            scrap_value=int(_row_or(row, "scrap_value", 0)),
+            hidden_trait=_row_or(row, "hidden_trait", ""),
+            mint_index=int(_row_or(row, "mint_index", 0)),
         )
+        setattr(item, "rarity", _row_or(row, "rarity", "common"))
+        setattr(item, "stack_max", int(_row_or(row, "stack_max", 1)))
+        setattr(item, "equippable", bool(_row_or(row, "equippable", 1)))
+        setattr(item, "cash_value", int(_row_or(row, "cash_value", _row_or(row, "scrap_value", 0))))
+        if _row_has(row, "pitch_value"):
+            setattr(item, "pitch_value", int(_row_or(row, "pitch_value", 0)))
+        if _row_has(row, "rune_value"):
+            setattr(item, "rune_value", int(_row_or(row, "rune_value", 0)))
+        return item
+
 
 def soft_delete_item_by_name(name: str) -> bool:
     with sqlite3.connect(DB_PATH) as cx:
         if not _items_has_deleted(cx):
-            # column doesn't exist (older DB) – nothing to do
             return False
         cur = cx.execute(
             "UPDATE items SET deleted_at = ? WHERE LOWER(name)=LOWER(?) AND deleted_at IS NULL",
@@ -134,6 +182,7 @@ def soft_delete_item_by_name(name: str) -> bool:
         )
         cx.commit()
         return cur.rowcount > 0
+
 
 def list_item_names(prefix: str, limit: int = 25) -> list[str]:
     prefix = (prefix or "").lower()
@@ -149,56 +198,69 @@ def list_item_names(prefix: str, limit: int = 25) -> list[str]:
         rows = cx.execute(sql, (like, limit)).fetchall()
         return [r["name"] for r in rows]
 
+
 def catalog_items(
     q: str = "",
     rarity: Optional[str] = None,
     item_class: Optional[str] = None,
+    equippable: Optional[bool] = None,
     page: int = 1,
     page_size: int = 20,
 ) -> list[dict]:
-    q = (q or "").strip().lower()
-    like = f"%{q}%"
+    """Return rows for catalog display, including durability, cash_value, and qty (stack_max)."""
+    q = (q or "").strip()
     offs = max(0, (int(page) - 1) * int(page_size))
+
     with sqlite3.connect(DB_PATH) as cx:
         cx.row_factory = sqlite3.Row
         has_deleted = _items_has_deleted(cx)
+        has_cash = _col_exists(cx, "items", "cash_value")
+
         where_parts: list[str] = []
-        params: list = []
+        params: list[Any] = []
 
         if q:
             where_parts.append("LOWER(name) LIKE ?")
-            params.append(like)
-        if rarity:
-            # tolerate DBs without rarity column
-            if _col_exists(cx, "items", "rarity"):
-                where_parts.append("LOWER(rarity)=LOWER(?)")
-                params.append(rarity)
+            params.append(f"%{q.lower()}%")
+        if rarity and _col_exists(cx, "items", "rarity"):
+            where_parts.append("LOWER(rarity)=LOWER(?)")
+            params.append(rarity)
         if item_class:
             where_parts.append("LOWER(item_class)=LOWER(?)")
             params.append(item_class)
+        if equippable is not None and _col_exists(cx, "items", "equippable"):
+            where_parts.append("equippable = ?")
+            params.append(1 if equippable else 0)
         if has_deleted:
             where_parts.append("deleted_at IS NULL")
 
         where = (" WHERE " + " AND ".join(where_parts)) if where_parts else ""
+
+        cash_select = "cash_value" if has_cash else "scrap_value"
         sql = f"""
-            SELECT id, name, item_class, rarity, stack_max
-              FROM items
-              {where}
-             ORDER BY name
-             LIMIT ? OFFSET ?
+            SELECT
+                id,
+                name,
+                item_class,
+                COALESCE(durability, 0) AS durability,
+                COALESCE({cash_select}, scrap_value, 0) AS cash_value,
+                COALESCE(stack_max, 1) AS qty
+            FROM items
+            {where}
+            ORDER BY id ASC
+            LIMIT ? OFFSET ?
         """
         params.extend([int(page_size), int(offs)])
         rows = cx.execute(sql, tuple(params)).fetchall()
         return [dict(r) for r in rows]
 
-# --------- inventory + grants
+
+# ---------- inventory + grants
 
 def grant_item(user_id: int, item: Item, qty: int = 1, equipped: bool = False) -> int:
-    """Create catalog row if missing (by id), then add inventory entry."""
     with sqlite3.connect(DB_PATH) as cx:
         cur = cx.cursor()
-        # Upsert catalog by id (if the caller built a new Item)
-        cur.execute("SELECT id FROM items WHERE id = ?", (item.id,))
+        cur.execute("SELECT id FROM items WHERE id = ?", (int(getattr(item, "id", 0)),))
         if cur.fetchone() is None:
             cur.execute(
                 """
@@ -208,30 +270,30 @@ def grant_item(user_id: int, item: Item, qty: int = 1, equipped: bool = False) -
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
-                    item.id,
+                    int(getattr(item, "id", 0)),
                     item.name,
-                    item.item_class.value,
-                    item.created_at.isoformat(),
-                    1 if item.bind_on_pickup else 0,
-                    int(item.durability or 0),
-                    int(item.pitch_value or 0),
-                    int(item.rune_value or 0),
-                    int(item.scrap_value or 0),
-                    item.hidden_trait or "",
-                    int(item.mint_index or 0),
+                    getattr(item.item_class, "value", str(item.item_class)),
+                    getattr(item, "created_at", datetime.now(timezone.utc)).isoformat(),
+                    1 if getattr(item, "bind_on_pickup", False) else 0,
+                    int(getattr(item, "durability", 0) or 0),
+                    int(getattr(item, "pitch_value", 0) or 0),
+                    int(getattr(item, "rune_value", 0) or 0),
+                    int(getattr(item, "scrap_value", 0) or 0),
+                    getattr(item, "hidden_trait", "") or "",
+                    int(getattr(item, "mint_index", 0) or 0),
                 ),
             )
-        # Inventory row
         cur.execute(
             """
             INSERT INTO inventory (user_id, item_id, qty, equipped, acquired_at)
             VALUES (?, ?, ?, ?, ?)
             """,
-            (int(user_id), int(item.id), int(qty or 1), 1 if equipped else 0, _now_iso()),
+            (int(user_id), int(getattr(item, "id", 0)), int(qty or 1), 1 if equipped else 0, _now_iso()),
         )
         inv_id = int(cur.lastrowid)
         cx.commit()
         return inv_id
+
 
 def set_equipped(inv_entry_id: int, equipped: bool) -> None:
     with sqlite3.connect(DB_PATH) as cx:
@@ -241,11 +303,11 @@ def set_equipped(inv_entry_id: int, equipped: bool) -> None:
         )
         cx.commit()
 
+
 def inventory_for_user(user_id: int) -> list[dict]:
     with sqlite3.connect(DB_PATH) as cx:
         cx.row_factory = sqlite3.Row
         cur = cx.cursor()
-        # Join onto items to expose class/rarity/stack_max for formatting
         cur.execute(
             """
             SELECT i.id AS inv_id, i.qty, i.equipped,
@@ -261,101 +323,3 @@ def inventory_for_user(user_id: int) -> list[dict]:
             (int(user_id),),
         )
         return [dict(r) for r in cur.fetchall()]
-
-
-def create_item(item: Item) -> int:
-    with sqlite3.connect(DB_PATH) as cx:
-        cur = cx.execute(
-            """
-            INSERT INTO items
-              (name, item_class, created_at, bind_on_pickup, durability,
-               pitch_value, rune_value, scrap_value, hidden_trait, mint_index,
-               rarity, stack_max, equippable)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """,
-            (
-                item.name, item.item_class, item.created_at.isoformat(),
-                int(item.bind_on_pickup), item.durability,
-                item.pitch_value, item.rune_value, item.scrap_value,
-                item.hidden_trait, item.mint_index,
-                item.rarity, item.stack_max, int(item.equippable),
-            ),
-        )
-        return cur.lastrowid
-
-def update_item(item: Item) -> None:
-    with sqlite3.connect(DB_PATH) as cx:
-        cx.execute(
-            """
-            UPDATE items SET
-              name=?,
-              item_class=?,
-              bind_on_pickup=?,
-              durability=?,
-              pitch_value=?,
-              rune_value=?,
-              scrap_value=?,
-              hidden_trait=?,
-              mint_index=?,
-              rarity=?,
-              stack_max=?,
-              equippable=?         -- NEW
-            WHERE id=?
-            """,
-            (
-                item.name, item.item_class,
-                int(item.bind_on_pickup), item.durability,
-                item.pitch_value, item.rune_value, item.scrap_value,
-                item.hidden_trait, item.mint_index,
-                item.rarity, item.stack_max, int(item.equippable),  # NEW
-                item.id,
-            ),
-        )
-
-def catalog_items(q: str = "", rarity: Optional[str] = None,
-                  item_class: Optional[str] = None,
-                  equippable: Optional[bool] = None,
-                  page: int = 1, page_size: int = 20):
-    where = ["1=1"]
-    args: list[Any] = []
-
-    if q:
-        where.append("name LIKE ?")
-        args.append(f"%{q}%")
-    if rarity:
-        where.append("rarity = ?")
-        args.append(rarity.lower())
-    if item_class:
-        where.append("item_class = ?")
-        args.append(item_class.lower())
-    if equippable is not None:
-        where.append("equippable = ?")
-        args.append(1 if equippable else 0)
-
-    sql = f"""
-      SELECT id, name, item_class, rarity, stack_max, equippable
-      FROM items
-      WHERE {" AND ".join(where)}
-      ORDER BY id ASC            -- masterlist by creation/id
-      LIMIT ? OFFSET ?
-    """
-    args.extend([page_size, (max(page,1)-1)*page_size])
-
-    with sqlite3.connect(DB_PATH) as cx:
-        cx.row_factory = sqlite3.Row
-        return [dict(r) for r in cx.execute(sql, args)]
-
-def set_equipped(inv_id: int, on: bool) -> None:
-    with sqlite3.connect(DB_PATH) as cx:
-        cx.row_factory = sqlite3.Row
-        row = cx.execute(
-            """SELECT i.equippable
-               FROM inventory inv JOIN items i ON i.id = inv.item_id
-               WHERE inv.id=?""",
-            (inv_id,)
-        ).fetchone()
-        if not row:
-            raise ValueError("Unknown inventory id")
-        if on and int(row["equippable"]) == 0:
-            raise ValueError("This item cannot be equipped.")
-        cx.execute("UPDATE inventory SET equipped=? WHERE id=?", (1 if on else 0, inv_id))

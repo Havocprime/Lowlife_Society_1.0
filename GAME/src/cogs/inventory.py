@@ -39,28 +39,37 @@ def _quality_word(q: float) -> str:
         return "Damaged"
     return "Broken"
 
-
 def _ellipsis(s: str, max_len: int) -> str:
     s = str(s)
     return (s[: max_len - 1] + "…") if len(s) > max_len else s
 
+def _emoji_for(row: dict) -> str:
+    """Pick a simple emoji by class/name for catalog prettiness."""
+    cls = str(row.get("item_class", "")).lower()
+    name = str(row.get("name", "")).lower()
+    if any(w in name for w in ("bill", "coin", "quarters", "quarter", "dollar", "cash")):
+        return "💵"
+    if cls in ("currency", "money", "cash"):
+        return "💵"
+    if cls in ("weapon", "melee", "ranged"):
+        return "⚔️"
+    if cls in ("gear", "armor", "clothing"):
+        return "🧥"
+    if cls in ("tool",):
+        return "🧰"
+    if cls in ("food", "consumable"):
+        return "🍖"
+    if cls in ("drink", "beverage"):
+        return "🥤"
+    if cls in ("medical", "medicine", "med"):
+        return "💊"
+    return "📦"  # misc / default
 
-def _render_inventory_table(
-    rows: List[dict],
-    page: int = 1,
-    page_size: int = 20,
-) -> str:
-    """
-    Monospace table with ✓ (equipped) shown immediately to the right of ID.
-
-      ID  EQ  NAME                 QTY   RARITY   QUAL
-      12   ✓  Sledge                 –   Common   Perfect
-    """
+def _render_inventory_table(rows: List[dict], page: int = 1, page_size: int = 20) -> str:
     total = len(rows)
     if total == 0:
         return "Empty."
 
-    # Pagination
     page = max(1, int(page))
     page_size = max(1, int(page_size))
     pages = max(1, (total + page_size - 1) // page_size)
@@ -68,11 +77,10 @@ def _render_inventory_table(
     start = (page - 1) * page_size
     chunk = rows[start : start + page_size]
 
-    # Column widths
-    w_id = 3     # right aligned
-    w_eq = 1     # ✓ or blank
-    w_name = 20  # clip with ellipsis
-    w_qty = 3    # number or "–"
+    w_id = 3
+    w_eq = 1
+    w_name = 20
+    w_qty = 3
     w_rar = 7
     w_qual = 7
 
@@ -81,7 +89,6 @@ def _render_inventory_table(
         stack_max = int(r.get("stack_max") or 1)
         return "–" if stack_max <= 1 else str(qty)
 
-    # Header
     header = (
         f"{'ID':>{w_id}}  {'':>{w_eq}}  "
         f"{'NAME':<{w_name}}  "
@@ -90,9 +97,8 @@ def _render_inventory_table(
         f"{'QUAL':<{w_qual}}"
     )
     hr = "─" * len(header)
-
-    # Rows
     lines = [header, hr]
+
     for r in chunk:
         inv_id = int(r["inv_id"])
         name = _ellipsis(r["name"], w_name)
@@ -108,7 +114,6 @@ def _render_inventory_table(
         )
         lines.append(line)
 
-    # Footer
     if pages > 1:
         lines.append("")
         lines.append(
@@ -116,15 +121,57 @@ def _render_inventory_table(
             f"{sum(1 for r in chunk if int(r.get('equipped') or 0))}"
         )
 
-    # Monospace block
-    body = "\n".join(lines)
-    return f"```\n{body}\n```"
+    return f"```\n{'\n'.join(lines)}\n```"
+
+
+def _render_catalog_table(rows: List[dict]) -> str:
+    """
+    Catalog monospace table:
+      EMOJI  ID   $   NAME                 CLASS      DURA  QTY
+    """
+    if not rows:
+        return "No matches."
+
+    w_emo = 2
+    w_id = 3
+    w_cash = 4
+    w_name = 20
+    w_class = 8
+    w_dura = 4
+    w_qty = 3
+
+    header = (
+        f"{'':<{w_emo}}  "
+        f"{'ID':>{w_id}}  "
+        f"{'$':>{w_cash}}  "
+        f"{'NAME':<{w_name}}  "
+        f"{'CLASS':<{w_class}}  "
+        f"{'DURA':>{w_dura}}  "
+        f"{'QTY':>{w_qty}}"
+    )
+    hr = "─" * len(header)
+    lines = [header, hr]
+
+    for r in rows:
+        emoji = _emoji_for(r)
+        cash = int(r.get("cash_value") or 0)
+        line = (
+            f"{emoji:<{w_emo}}  "
+            f"{int(r['id']):>{w_id}}  "
+            f"{cash:>{w_cash}}  "
+            f"{_ellipsis(r['name'], w_name):<{w_name}}  "
+            f"{str(r['item_class']).lower():<{w_class}}  "
+            f"{int(r.get('durability') or 0):>{w_dura}}  "
+            f"{int(r.get('qty') or 1):>{w_qty}}"
+        )
+        lines.append(line)
+
+    return f"```\n{'\n'.join(lines)}\n```"
 
 
 async def _ac_item_name(
     interaction: discord.Interaction, current: str
 ) -> List[app_commands.Choice[str]]:
-    """Autocomplete strictly from the active catalog (case-insensitive)."""
     try:
         names = list_item_names(current or "", limit=25)
     except Exception as e:
@@ -139,9 +186,7 @@ class InventoryCog(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-    # --------------------------
-    # Admin: grant existing item
-    # --------------------------
+    # -------------------------- grant --------------------------
     @app_commands.command(
         name="giveitem", description="Admin: grant an existing catalog item to a member"
     )
@@ -177,12 +222,7 @@ class InventoryCog(commands.Cog):
             inv_id = grant_item(member.id, item, qty=max(1, qty), equipped=equipped)
             log.info(
                 "/giveitem invoked by %s for %s name=%r qty=%s equipped=%s -> inv_id=%s",
-                interaction.user,
-                member,
-                name,
-                qty,
-                equipped,
-                inv_id,
+                interaction.user, member, name, qty, equipped, inv_id,
             )
             await interaction.followup.send(
                 f"✅ Gave **{item.name}** x{qty} to {member.mention} (inv_id **{inv_id}**)",
@@ -194,45 +234,19 @@ class InventoryCog(commands.Cog):
                 f"Grant failed: `{type(e).__name__}: {e}`", ephemeral=True
             )
 
-    # Back-compat alias for older slash name
-    @app_commands.command(
-        name="inv_grant", description="(alias) Admin: grant a catalog item to a member"
-    )
-    @app_commands.describe(
-        member="Target member",
-        name="Item name (from catalog)",
-        qty="Quantity (default 1)",
-        equipped="Equip immediately",
-    )
-    @app_commands.autocomplete(name=_ac_item_name)
-    async def inv_grant_alias(
-        self,
-        interaction: discord.Interaction,
-        member: discord.Member,
-        name: str,
-        qty: int = 1,
-        equipped: bool = False,
-    ):
-        await self.giveitem.callback(  # type: ignore
-            self, interaction, member, name, qty, equipped
-        )
-
-    # --------------------------------------
-    # Admin: create item (/item_add → /createitem)
-    # --------------------------------------
-    @app_commands.command(
-        name="createitem", description="Admin: add a new item to the catalog"
-    )
+    # -------------------------- create --------------------------
+    @app_commands.command(name="createitem", description="Admin: add a new item to the catalog")
     @app_commands.describe(
         name="Unique item name",
         item_class="Item class enum (e.g., misc, weapon, gear...)",
         durability="Base durability (0-100)",
         bop="Bind on pickup?",
-        pitch="Pitch value",
-        rune="Rune value",
-        scrap="Scrap value",
+        cash="Cash value at a typical vendor",
         hidden="Hidden trait (free text)",
         mint="Mint index / serial number",
+        rarity="Rarity (text, e.g. common)",
+        stack_max="Max stack size (default 1)",
+        equippable="Can be equipped / worn / held?",
     )
     async def createitem(
         self,
@@ -241,11 +255,12 @@ class InventoryCog(commands.Cog):
         item_class: ItemClass,
         durability: int = 0,
         bop: bool = False,
-        pitch: int = 0,
-        rune: int = 0,
-        scrap: int = 0,
+        cash: int = 0,
         hidden: str = "",
         mint: int = 0,
+        rarity: str = "common",
+        stack_max: int = 1,
+        equippable: bool = True,
     ):
         if not interaction.user.guild_permissions.manage_guild:
             await interaction.response.send_message("Nope.", ephemeral=True)
@@ -254,18 +269,20 @@ class InventoryCog(commands.Cog):
         await interaction.response.defer(ephemeral=True, thinking=True)
         try:
             item = Item(
-                id=0,  # manager.create_item will allocate a real id
+                id=0,
                 name=name,
                 item_class=item_class,
                 created_at=datetime.now(timezone.utc),
                 bind_on_pickup=bop,
                 durability=durability,
-                pitch_value=pitch,
-                rune_value=rune,
-                scrap_value=scrap,
+                scrap_value=cash,
                 hidden_trait=hidden,
                 mint_index=mint,
             )
+            setattr(item, "rarity", rarity)
+            setattr(item, "stack_max", stack_max)
+            setattr(item, "equippable", equippable)
+
             iid = create_item(item)
             log.info("/createitem by %s -> %s (id=%s)", interaction.user, name, iid)
             await interaction.followup.send(
@@ -277,20 +294,19 @@ class InventoryCog(commands.Cog):
                 f"Create failed: `{type(e).__name__}: {e}`", ephemeral=True
             )
 
-    # --------------------------------------
-    # Admin: edit an existing catalog item
-    # --------------------------------------
+    # --------------------------- edit ---------------------------
     @app_commands.command(name="item_edit", description="Admin: edit a catalog item")
     @app_commands.describe(
         name="Existing item name (from catalog)",
         new_name="New name (optional)",
         durability="New durability",
         bop="Bind on pickup?",
-        pitch="Pitch value",
-        rune="Rune value",
-        scrap="Scrap value",
+        cash="New cash value",
         hidden="Hidden trait",
         mint="Mint index / serial",
+        rarity="Rarity (text)",
+        stack_max="Max stack size",
+        equippable="Can be equipped / worn / held?",
     )
     @app_commands.autocomplete(name=_ac_item_name)
     async def item_edit(
@@ -300,11 +316,12 @@ class InventoryCog(commands.Cog):
         new_name: Optional[str] = None,
         durability: Optional[int] = None,
         bop: Optional[bool] = None,
-        pitch: Optional[int] = None,
-        rune: Optional[int] = None,
-        scrap: Optional[int] = None,
+        cash: Optional[int] = None,
         hidden: Optional[str] = None,
         mint: Optional[int] = None,
+        rarity: Optional[str] = None,
+        stack_max: Optional[int] = None,
+        equippable: Optional[bool] = None,
     ):
         if not interaction.user.guild_permissions.manage_guild:
             await interaction.response.send_message("Nope.", ephemeral=True)
@@ -314,9 +331,7 @@ class InventoryCog(commands.Cog):
         try:
             item = get_item_by_name(name)
             if not item:
-                await interaction.followup.send(
-                    f"❌ Unknown item **{name}**.", ephemeral=True
-                )
+                await interaction.followup.send(f"❌ Unknown item **{name}**.", ephemeral=True)
                 return
 
             if new_name:
@@ -325,36 +340,61 @@ class InventoryCog(commands.Cog):
                 item.durability = durability
             if bop is not None:
                 item.bind_on_pickup = bool(bop)
-            if pitch is not None:
-                item.pitch_value = pitch
-            if rune is not None:
-                item.rune_value = rune
-            if scrap is not None:
-                item.scrap_value = scrap
+            if cash is not None:
+                item.scrap_value = int(cash)
+                setattr(item, "cash_value", int(cash))
             if hidden is not None:
                 item.hidden_trait = hidden
             if mint is not None:
                 item.mint_index = mint
+            if rarity is not None:
+                setattr(item, "rarity", rarity)
+            if stack_max is not None:
+                setattr(item, "stack_max", int(stack_max))
+            if equippable is not None:
+                setattr(item, "equippable", bool(equippable))
 
             update_item(item)
             log.info("/item_edit by %s -> %s", interaction.user, name)
-            await interaction.followup.send(
-                f"✏️ Item **{name}** updated.", ephemeral=True
-            )
+            await interaction.followup.send(f"✏️ Item **{item.name}** updated.", ephemeral=True)
         except Exception as e:
             log.exception("item_edit failed")
             await interaction.followup.send(
                 f"Edit failed: `{type(e).__name__}: {e}`", ephemeral=True
             )
 
-    # --------------------------------------
-    # Admin: catalog utilities
-    # --------------------------------------
+    # -------------------------- delete --------------------------
+    @app_commands.command(name="item_delete", description="Admin: soft-delete a catalog item by name")
+    @app_commands.describe(name="Name of the item to delete")
+    @app_commands.autocomplete(name=_ac_item_name)
+    async def item_delete(
+        self,
+        interaction: discord.Interaction,
+        name: str,
+    ):
+        if not interaction.user.guild_permissions.manage_guild:
+            await interaction.response.send_message("Nope.", ephemeral=True)
+            return
+
+        await interaction.response.defer(ephemeral=True, thinking=True)
+        try:
+            ok = soft_delete_item_by_name(name)
+            if ok:
+                await interaction.followup.send(f"✅ Item **{name}** deleted.", ephemeral=True)
+            else:
+                await interaction.followup.send(f"⚠️ Item **{name}** not found.", ephemeral=True)
+        except Exception as e:
+            await interaction.followup.send(f"❌ Error: `{type(e).__name__}: {e}`", ephemeral=True)
+
+
+
+    # -------------------------- catalog -------------------------
     @app_commands.command(name="catalog", description="Browse item catalog")
     @app_commands.describe(
         q="Search text",
         rarity="Filter by rarity (e.g., common, rare)",
         item_class="Filter by item_class (e.g., misc, weapon)",
+        equippable="Filter equippable yes/no",
         page="Page number (1-based)",
     )
     async def catalog_cmd(
@@ -363,78 +403,48 @@ class InventoryCog(commands.Cog):
         q: Optional[str] = None,
         rarity: Optional[str] = None,
         item_class: Optional[str] = None,
+        equippable: Optional[bool] = None,
         page: int = 1,
     ):
         await interaction.response.defer(ephemeral=True, thinking=True)
         try:
-            rows = catalog_items(q or "", rarity, item_class, page=page, page_size=20)
+            rows = catalog_items(q or "", rarity, item_class, equippable, page=page, page_size=20)
             if not rows:
                 await interaction.followup.send("No matches.", ephemeral=True)
                 return
-            lines = [
-                f"{r['name']} · class={r['item_class']} · rarity={r['rarity']} · stack_max={r['stack_max']}"
-                for r in rows
-            ]
-            await interaction.followup.send("\n".join(lines)[:1900], ephemeral=True)
+
+            table = _render_catalog_table(rows)
+
+            view = discord.ui.View()
+            prev_btn = discord.ui.Button(label="◀ Prev", style=discord.ButtonStyle.secondary)
+            next_btn = discord.ui.Button(label="Next ▶", style=discord.ButtonStyle.secondary)
+
+            async def _turn(i: discord.Interaction, delta: int):
+                new_page = max(1, page + delta)
+                r2 = catalog_items(q or "", rarity, item_class, equippable, page=new_page, page_size=20)
+                await i.response.edit_message(content=_render_catalog_table(r2), view=view)
+
+            async def _prev_cb(i: discord.Interaction):
+                await _turn(i, -1)
+
+            async def _next_cb(i: discord.Interaction):
+                await _turn(i, +1)
+
+            prev_btn.callback = _prev_cb  # type: ignore
+            next_btn.callback = _next_cb  # type: ignore
+            view.add_item(prev_btn)
+            view.add_item(next_btn)
+
+            await interaction.followup.send(table, view=view, ephemeral=True)
         except Exception as e:
             log.exception("catalog failed")
             await interaction.followup.send(
                 f"Catalog error: `{type(e).__name__}: {e}`", ephemeral=True
             )
 
-    @app_commands.command(name="item_info", description="Show details for a catalog item")
-    @app_commands.autocomplete(name=_ac_item_name)
-    async def item_info_cmd(self, interaction: discord.Interaction, name: str):
-        await interaction.response.defer(ephemeral=True, thinking=True)
-        try:
-            item = get_item_by_name(name)
-            if not item:
-                await interaction.followup.send("Not found.", ephemeral=True)
-                return
-            desc = (
-                f"**{item.name}**\n"
-                f"class: `{item.item_class}` • bop: `{item.bind_on_pickup}` • dura: `{item.durability}`\n"
-                f"pitch: `{item.pitch_value}` • rune: `{item.rune_value}` • scrap: `{item.scrap_value}`\n"
-                f"hidden: `{item.hidden_trait}` • mint: `{item.mint_index}`"
-            )
-            await interaction.followup.send(desc[:1900], ephemeral=True)
-        except Exception as e:
-            log.exception("item_info failed")
-            await interaction.followup.send(
-                f"Info error: `{type(e).__name__}: {e}`", ephemeral=True
-            )
-
-    @app_commands.command(name="item_delete", description="Soft-delete a catalog item")
-    @app_commands.autocomplete(name=_ac_item_name)
-    async def item_delete_cmd(self, interaction: discord.Interaction, name: str):
-        if not interaction.user.guild_permissions.manage_guild:
-            await interaction.response.send_message("Nope.", ephemeral=True)
-            return
-
-        await interaction.response.defer(ephemeral=True, thinking=True)
-        try:
-            ok = soft_delete_item_by_name(name)
-            if not ok:
-                await interaction.followup.send("Nothing deleted.", ephemeral=True)
-                return
-            await interaction.followup.send(f"🗑️ Soft-deleted **{name}**.", ephemeral=True)
-        except Exception as e:
-            log.exception("item_delete failed")
-            await interaction.followup.send(
-                f"Delete error: `{type(e).__name__}: {e}`", ephemeral=True
-            )
-
-    # --------------------------------------
-    # Player-facing: inventory & equip/unequip
-    # --------------------------------------
-    @app_commands.command(
-        name="inventory",
-        description="View your inventory (or a member’s).",
-    )
-    @app_commands.describe(
-        member="Optional member to inspect",
-        page="Optional page number (1-based)",
-    )
+    # -------------------------- inventory -----------------------
+    @app_commands.command(name="inventory", description="View your inventory (or a member’s).")
+    @app_commands.describe(member="Optional member to inspect", page="Optional page number (1-based)")
     async def inventory_cmd(
         self,
         interaction: discord.Interaction,
@@ -449,7 +459,6 @@ class InventoryCog(commands.Cog):
                 await interaction.followup.send("Empty.", ephemeral=True)
                 return
             table = _render_inventory_table(rows, page=page, page_size=20)
-            # Keep Discord-safe; if we ever exceed the limit, trim and close the block.
             if len(table) > 1990:
                 table = table[:1987] + "```"
             await interaction.followup.send(table, ephemeral=True)
@@ -459,12 +468,33 @@ class InventoryCog(commands.Cog):
                 f"Inventory error: `{type(e).__name__}: {e}`", ephemeral=True
             )
 
+    @inventory_group.command(name="delete", description="Soft-delete an item by name")
+    @app_commands.describe(name="Name of the item to delete")
+    async def item_delete(self, interaction: discord.Interaction, name: str):
+        try:
+            ok = soft_delete_item_by_name(name)
+            if ok:
+                await interaction.response.send_message(
+                    f"✅ Item **{name}** deleted.", ephemeral=True
+                )
+            else:
+                await interaction.response.send_message(
+                    f"⚠️ Item **{name}** not found.", ephemeral=True
+                )
+        except Exception as e:
+            await interaction.response.send_message(
+                f"❌ Error: {e}", ephemeral=True
+            )
+
+
     @app_commands.command(name="equip", description="Equip an inventory item by id.")
     async def equip_cmd(self, interaction: discord.Interaction, inv_id: int):
         await interaction.response.defer(ephemeral=True, thinking=True)
         try:
             set_equipped(inv_id, True)
             await interaction.followup.send("✅ Equipped", ephemeral=True)
+        except ValueError as e:
+            await interaction.followup.send(f"❌ {e}", ephemeral=True)
         except Exception as e:
             log.exception("equip failed")
             await interaction.followup.send(
@@ -486,67 +516,3 @@ class InventoryCog(commands.Cog):
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(InventoryCog(bot))
-
-    @app_commands.command(name="createitem", description="Admin: add a new item to the catalog")
-@app_commands.describe(
-    name="Unique item name",
-    item_class="Item class enum (e.g., misc, weapon, gear...)",
-    durability="Base durability (0-100)",
-    bop="Bind on pickup?",
-    pitch="Pitch value",
-    rune="Rune value",
-    scrap="Scrap value",
-    hidden="Hidden trait (free text)",
-    mint="Mint index / serial number",
-    equippable="Can be equipped/ worn/ held?",   # NEW
-)
-async def createitem(..., equippable: bool = True):
-    ...
-    item = Item(
-        id=0, name=name, item_class=item_class,
-        created_at=datetime.now(timezone.utc),
-        bind_on_pickup=bop, durability=durability,
-        pitch_value=pitch, rune_value=rune, scrap_value=scrap,
-        hidden_trait=hidden, mint_index=mint,
-        equippable=equippable,            # NEW
-    )
-    iid = create_item(item)
-    ...
-
-@app_commands.command(name="item_edit", description="Admin: edit a catalog item")
-@app_commands.describe(
-    ...,
-    equippable="Can be equipped/ worn/ held?"   # NEW
-)
-async def item_edit(..., equippable: Optional[bool] = None):
-    ...
-    if equippable is not None:
-        item.equippable = bool(equippable)
-    update_item(item)
-    ...
-
-@app_commands.command(name="catalog", description="Browse item catalog")
-@app_commands.describe(
-    q="Search text",
-    rarity="Filter by rarity (e.g., common, rare)",
-    item_class="Filter by item_class (e.g., misc, weapon)",
-    equippable="Filter equippable yes/no",      # NEW
-    page="Page number (1-based)",
-)
-async def catalog_cmd(..., equippable: Optional[bool] = None, page: int = 1):
-    ...
-    rows = catalog_items(q or "", rarity, item_class, equippable, page=page, page_size=20)
-    ...
-
-@app_commands.command(name="equip", description="Equip an inventory item by id.")
-async def equip_cmd(self, interaction: discord.Interaction, inv_id: int):
-    await interaction.response.defer(ephemeral=True, thinking=True)
-    try:
-        set_equipped(inv_id, True)
-        await interaction.followup.send("✅ Equipped", ephemeral=True)
-    except ValueError as e:
-        await interaction.followup.send(f"❌ {e}", ephemeral=True)
-    except Exception as e:
-        log.exception("equip failed")
-        await interaction.followup.send(f"Equip error: `{type(e).__name__}: {e}`", ephemeral=True)
-
