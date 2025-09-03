@@ -82,3 +82,23 @@ CREATE TABLE IF NOT EXISTS events(
   payload_json TEXT,
   created_at TEXT NOT NULL
 );
+
+
+CREATE TABLE IF NOT EXISTS items (
+  id            INTEGER PRIMARY KEY,
+  name          TEXT UNIQUE NOT NULL,
+  item_class    TEXT NOT NULL,
+  created_at    TEXT NOT NULL,
+  durability    INTEGER NOT NULL DEFAULT 0,
+  bind_on_pickup INTEGER NOT NULL DEFAULT 0,
+  pitch_value   INTEGER NOT NULL DEFAULT 0,
+  rune_value    INTEGER NOT NULL DEFAULT 0,
+  scrap_value   INTEGER NOT NULL DEFAULT 0,
+  hidden_trait  TEXT NOT NULL DEFAULT '',
+  mint_index    INTEGER NOT NULL DEFAULT 0,
+  rarity        TEXT NOT NULL DEFAULT 'common',
+  stack_max     INTEGER NOT NULL DEFAULT 1,
+  equippable    INTEGER NOT NULL DEFAULT 1    -- NEW
+);
+CREATE INDEX IF NOT EXISTS idx_items_name ON items(name);
+CREATE INDEX IF NOT EXISTS idx_items_equippable ON items(equippable);

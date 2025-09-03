@@ -36,3 +36,21 @@ class Item:
     stack_max: int = 1
     rarity: str = "common"            # one of RARITIES
     quality_float: float = 100.0      # e.g., 0.0–100.0 “condition”
+
+
+@dataclass
+class Item:
+    id: int
+    name: str
+    item_class: ItemClass
+    created_at: datetime
+    bind_on_pickup: bool = False
+    durability: int = 0
+    pitch_value: int = 0
+    rune_value: int = 0
+    scrap_value: int = 0
+    hidden_trait: str = ""
+    mint_index: int = 0
+    rarity: str = "common"
+    stack_max: int = 1
+    equippable: bool = True      # NEW
