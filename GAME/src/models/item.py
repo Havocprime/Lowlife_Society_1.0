@@ -1,10 +1,8 @@
-# === GAME/src/models/item.py  (FULL REPLACEMENT) ===
 from __future__ import annotations
-
 from dataclasses import dataclass
 from datetime import datetime
+from typing import Optional
 from enum import Enum
-
 
 class ItemClass(str, Enum):
     misc = "misc"
@@ -17,7 +15,6 @@ class ItemClass(str, Enum):
     quest = "quest"
     junk = "junk"
 
-
 @dataclass
 class Item:
     id: int
@@ -28,10 +25,10 @@ class Item:
     bind_on_pickup: bool = False
     durability: int = 0
 
-    # Canonical value column
+    # Canonical cash value; manager falls back to scrap_value if DB lacks this column
     cash_value: int = 0
 
-    # Optional/legacy/extra
+    # Legacy/extra
     scrap_value: int = 0
     hidden_trait: str = ""
     mint_index: int = 0
@@ -40,3 +37,6 @@ class Item:
     stack_max: int = 1
     quality_float: float = 100.0
     equippable: bool = True
+
+    # NEW: fine-grained subcategory (e.g. weapon->melee/firearm, currency->usd/bitcoin)
+    subcategory: Optional[str] = None

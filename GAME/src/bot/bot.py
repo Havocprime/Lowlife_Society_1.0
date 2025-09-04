@@ -17,6 +17,7 @@ from discord.ext import commands
 
 # ---------- boot logging ----------
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
+logging.getLogger("discord.gateway").setLevel(logging.ERROR)
 log = logging.getLogger("boot")
 
 BUILD_TAG = "bot.py:v6f-full-inspector+module-audit+safe-sync"
@@ -34,6 +35,14 @@ for p in (GAME_DIR, SRC_DIR, REPO_DIR):
 # --- settings (after sys.path is set) ---
 from src.core.settings import SETTINGS  # noqa: E402
 
+# TEMP: verify token is being read from env correctly
+tok = SETTINGS.discord_token or ""
+masked = (tok[:8] + "…" + tok[-6:]) if len(tok) > 16 else "(too short)"
+log.info("Token loaded (len=%d): %s", len(tok), masked)
+if len(tok) < 40 or (" " in tok) or ("\n" in tok) or ("\r" in tok):
+    log.error("Token looks malformed. Check GAME/.env DISCORD_TOKEN.")
+
+
 TOKEN = SETTINGS.discord_token
 GUILD_ID = SETTINGS.guild_id
 
@@ -46,26 +55,6 @@ from src.core.events import (  # noqa: E402
     recent_events,
 )
 from src.core.errors import setup_error_reporting  # noqa: E402
-
-# Base cogs always loaded (as STRINGS ONLY — load in setup_hook)
-COGS = [
-    "src.cogs.activity_logger",
-    "src.cogs.admin_inspector",
-    "src.cogs.admin_notes",
-    "src.cogs.analytics",
-    "src.cogs.audit_log",
-    "src.cogs.invite_tracker",
-    "src.cogs.member_intake",
-    "src.cogs.welcome",
-    # New feature cogs:
-    "src.cogs.duel",
-    "src.cogs.inventory",
-    "src.cogs.admin_tools",
-    "src.cogs.health",
-    "src.cogs.composer"
-]
-
-log.info("Starting %s", BUILD_TAG)
 
 DANGEROUS_PERMS = {
     "administrator",
@@ -228,6 +217,9 @@ class LowlifeTree(app_commands.CommandTree):
 
 # ---------- Bot ----------
 class LowlifeBot(commands.Bot):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
     async def setup_hook(self):
         # global crash/error capture
         setup_error_reporting(self)
@@ -259,19 +251,33 @@ class LowlifeBot(commands.Bot):
                     return fn
                 return deco
 
-        async def try_load(mod: str):
-            try:
-                await self.load_extension(mod)
-                log.info("loaded extension: %s", mod)
-            except Exception:
-                log.exception("failed to load %s", mod)
+        # Base cogs to load
+        COGS = [
+            "src.cogs.activity_logger",
+            "src.cogs.admin_inspector",
+            "src.cogs.analytics",
+            "src.cogs.audit_log",
+            "src.cogs.invite_tracker",
+            "src.cogs.member_intake",
+            "src.cogs.welcome",
+            "src.cogs.duel",
+            "src.cogs.inventory",
+            "src.cogs.admin_tools",
+            "src.cogs.health",
+        ]
 
-        # Base cogs
-        for mod in COGS:
-            await try_load(mod)
+        async def try_load(module: str):
+            try:
+                await self.load_extension(module)
+                log.info("loaded extension: %s", module)
+            except Exception:
+                log.exception("failed to load %s", module)
+
+        for module in COGS:
+            await try_load(module)
 
         # Extra/feature/admin cogs (best-effort)
-        for mod in (
+        for module in (
             "src.cogs.events",              # writes to events table
             "src.admin.sync",
             "src.admin.export",
@@ -287,7 +293,7 @@ class LowlifeBot(commands.Bot):
             "src.admin.investigate",
             "src.admin.events_viewer",      # /events group + aliases
         ):
-            await try_load(mod)
+            await try_load(module)
 
         # --- /inspect_full (admin) ---
         @app_commands.command(
@@ -448,23 +454,17 @@ class LowlifeBot(commands.Bot):
 
                 if kind == "message":
                     prefix = "Msg";  body = txt or "—"
-
                 elif kind == "message_edit":
                     prefix = "Edit"; body = txt or (data.get("after") or {}).get("content") or "—"
-
                 elif kind == "message_delete":
                     prefix = "Del";  body = txt or (data.get("before") or {}).get("content") or "unknown"
-
                 elif kind == "message_bulk_delete":
                     prefix = f"BulkDel x{data.get('count', 0)}"
                     cached = data.get("cached_with_text", 0)
                     body = f"{cached} with text" if cached else ""
-
                 elif kind == "presence":
-                    # Presence rows can be legacy (before/after strings) or new (snapshots + text)
                     prefix = "Presence"
                     body = data.get("text")
-
                     if not body:
                         sb = str(data.get("status_before") or data.get("before") or "").strip()
                         sa = str(data.get("status_after") or data.get("after") or "").strip()
@@ -489,9 +489,7 @@ class LowlifeBot(commands.Bot):
                         tail = " • ".join([p for p in (" | ".join(devbits) if devbits else "", act_txt) if p])
                         if tail:
                             parts.append(tail)
-
                         body = " — ".join(parts) if parts else ""
-
                 else:
                     prefix = kind.replace("_", " ").title()
                     body = txt or ""
@@ -533,7 +531,6 @@ class LowlifeBot(commands.Bot):
 
         # ----- register & SYNC with safe guild handling -----
         async def register_and_sync():
-            # add GLOBAL handler for /inspect_full
             try:
                 self.tree.add_command(inspect_full)
             except Exception as e:
@@ -597,7 +594,8 @@ class LowlifeBot(commands.Bot):
 
 def build_bot() -> LowlifeBot:
     intents = discord.Intents.default()
-    intents.members = True
+    intents.guilds = True
+    intents.members = True         # required for on_member_join
     intents.presences = True
     intents.message_content = True
     return LowlifeBot(command_prefix="!", intents=intents, tree_cls=LowlifeTree)

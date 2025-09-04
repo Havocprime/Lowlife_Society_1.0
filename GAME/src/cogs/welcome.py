@@ -1,6 +1,7 @@
 # GAME/src/cogs/welcome.py
 from __future__ import annotations
 
+import logging
 import os
 import random
 from pathlib import Path
@@ -23,27 +24,25 @@ except Exception:  # pragma: no cover
         def deco(fn): return fn
         return deco
 
+log = logging.getLogger("welcome.cog")
+
 IMG_EXTS = {".png", ".jpg", ".jpeg", ".gif", ".webp"}
 Gender = Literal["male", "female"]
 
-GUILD_ID = getattr(SETTINGS, "guild_id", None)
+GUILD_ID: int | None = SETTINGS.guild_id
 
 
 def _folder_from_config() -> Path:
-    env = os.getenv("WELCOME_IMAGES_DIR")
+    """Resolve the mugshot/images folder:
+       1) WELCOME_IMAGES_DIR (or legacy MUGSHOT_DIR)
+       2) GAME/assets/mugshots
+    """
+    env = os.getenv("WELCOME_IMAGES_DIR") or os.getenv("MUGSHOT_DIR")
     if env:
         return Path(env).expanduser().resolve()
     here = Path(__file__).resolve()
     game_dir = here.parents[2]
     return (game_dir / "assets" / "mugshots").resolve()
-
-
-def _welcome_channel_id() -> Optional[int]:
-    raw = os.getenv("WELCOME_CHANNEL_ID") or getattr(SETTINGS, "welcome_channel_id", None)
-    try:
-        return int(raw) if raw else None
-    except Exception:
-        return None
 
 
 def _pick_random_image(base: Path, gender: Gender | None) -> Path:
@@ -57,7 +56,7 @@ def _pick_random_image(base: Path, gender: Gender | None) -> Path:
 
 
 class WelcomeCog(commands.Cog):
-    """Welcome system: random mugshot + NPC name + gritty intro w/ hand-off."""
+    """Welcome system: random mugshot + NPC name + gritty intro."""
 
     def __init__(self, bot: commands.Bot):
         self.bot = bot
@@ -68,31 +67,50 @@ class WelcomeCog(commands.Cog):
         except Exception:
             pass
 
+    # ------------- helpers -------------
+    def _resolve_welcome_channel(self, guild: discord.Guild) -> Optional[discord.TextChannel]:
+        """Prefer explicit channel id; fall back to common names."""
+        if SETTINGS.welcome_channel_id:
+            ch = guild.get_channel(SETTINGS.welcome_channel_id)
+            if isinstance(ch, discord.TextChannel):
+                return ch
+        for name in ("welcome", "introductions", "start-here"):
+            ch = discord.utils.get(guild.text_channels, name=name)
+            if isinstance(ch, discord.TextChannel):
+                return ch
+        return None
+
     async def _send_welcome(
         self,
         member: discord.Member,
         channel: discord.abc.Messageable,
         gender: Gender | None = None,
     ) -> None:
+        # Decide gender bucket from available subfolders if not forced
         if gender is None and (self.folder / "male").exists() and (self.folder / "female").exists():
             gender = random.choice(["male", "female"])  # type: ignore
 
         img_path = _pick_random_image(self.folder, gender)
         filename = img_path.name
 
-        title = f"Welcome to The City: {member.display_name}"
-        file = discord.File(img_path, filename=filename)
-
+        # NPC + intro text
         npc_name = random_name(gender=gender or "any")
+
+        # Your intro builder — assumes it returns (intro_text, handoff_type, contact, extra_json)
         intro_text, handoff_type, contact_value, extra = build_intro(gender)
 
+        # Compose embed
+        title = f"Welcome to The City: {member.display_name}"
         embed = discord.Embed(title=title, colour=discord.Color.gold())
         embed.description = intro_text
-        embed.set_image(url=f"attachment://{filename}")
         embed.set_footer(text=f"– {npc_name}.\nLowlife Society")
+
+        file = discord.File(img_path, filename=filename)
+        embed.set_image(url=f"attachment://{filename}")
 
         msg = await channel.send(embed=embed, file=file)
 
+        # Persist the generated intro (best-effort)
         try:
             await log_npc_intro(
                 guild_id=getattr(getattr(channel, "guild", None), "id", None),
@@ -110,8 +128,63 @@ class WelcomeCog(commands.Cog):
         except Exception:
             pass
 
-    # -------- shared handler for both command variants (safe against double-acks) --------
-    async def _handle_welcome_preview(
+    # ------------- slash commands -------------
+    @app_commands.command(name="welcome_status", description="Show Welcome wiring and readiness")
+    async def welcome_status(self, interaction: discord.Interaction):
+        g = interaction.guild
+        ch = self._resolve_welcome_channel(g) if g else None
+        await interaction.response.send_message(
+            f"Guild: {g.name if g else 'N/A'} ({g.id if g else 'N/A'})\n"
+            f"Configured GUILD_ID: {GUILD_ID}\n"
+            f"Resolved Welcome Channel: {ch.mention if ch else 'None'}\n"
+            f"Members intent: {'ON' if interaction.client.intents.members else 'OFF'}",
+            ephemeral=True
+        )
+
+    # Scope to the configured guild (faster command updates) when available
+    if GUILD_ID:
+        @app_commands.guilds(discord.Object(id=GUILD_ID))
+        @app_commands.command(name="welcome_preview", description="Preview the welcome post (random mugshot + NPC)")
+        @app_commands.describe(
+            user="Preview as if this user joined (default: you)",
+            channel="Where to send the preview (default: here)",
+            gender="Force a gender bucket for the mugshot/name",
+        )
+        @app_commands.choices(gender=[
+            app_commands.Choice(name="male", value="male"),
+            app_commands.Choice(name="female", value="female"),
+        ])
+        @audit_event(action_type="admin.welcome_preview")
+        async def welcome_preview(  # type: ignore[no-redef]
+            self,
+            interaction: discord.Interaction,
+            user: Optional[discord.Member] = None,
+            channel: Optional[discord.abc.GuildChannel] = None,
+            gender: Optional[app_commands.Choice[str]] = None,
+        ):
+            await self._handle_preview(interaction, user, channel, gender, "(guild-scoped)")
+    else:
+        @app_commands.command(name="welcome_preview", description="Preview the welcome post (random mugshot + NPC)")
+        @app_commands.describe(
+            user="Preview as if this user joined (default: you)",
+            channel="Where to send the preview (default: here)",
+            gender="Force a gender bucket for the mugshot/name",
+        )
+        @app_commands.choices(gender=[
+            app_commands.Choice(name="male", value="male"),
+            app_commands.Choice(name="female", value="female"),
+        ])
+        @audit_event(action_type="admin.welcome_preview")
+        async def welcome_preview(  # type: ignore[no-redef]
+            self,
+            interaction: discord.Interaction,
+            user: Optional[discord.Member] = None,
+            channel: Optional[discord.abc.GuildChannel] = None,
+            gender: Optional[app_commands.Choice[str]] = None,
+        ):
+            await self._handle_preview(interaction, user, channel, gender, "(global scope)")
+
+    async def _handle_preview(
         self,
         interaction: discord.Interaction,
         user: Optional[discord.Member],
@@ -119,7 +192,8 @@ class WelcomeCog(commands.Cog):
         gender_choice: Optional[app_commands.Choice[str]],
         suffix: str,
     ) -> None:
-        # De-dupe by interaction id (covers rare double dispatch)
+        # De-dupe rare double-dispatches by interaction id
+        iid: int | None
         try:
             iid = int(interaction.id)  # type: ignore[attr-defined]
         except Exception:
@@ -134,19 +208,25 @@ class WelcomeCog(commands.Cog):
             if not interaction.response.is_done():
                 await interaction.response.defer(ephemeral=True)
 
+            if GUILD_ID and interaction.guild and interaction.guild.id != GUILD_ID:
+                await interaction.followup.send("This isn’t the configured Welcome guild.", ephemeral=True)
+                return
+
             target_user = user or interaction.user  # type: ignore
             target_channel = channel or interaction.channel  # type: ignore
             forced_gender: Gender | None = (gender_choice.value if gender_choice else None)  # type: ignore
 
+            if not target_channel:
+                await interaction.followup.send("No channel to send to.", ephemeral=True)
+                return
+
             await self._send_welcome(target_user, target_channel, forced_gender)
 
-            # Followup is safe even if something already responded; swallow errors
             try:
-                await interaction.followup.send(f"Sent ✅ {suffix}", ephemeral=True)
+                await interaction.followup.send(f"Preview sent ✅ {suffix}", ephemeral=True)
             except discord.HTTPException:
                 pass
-
-        except Exception as e:
+        except Exception as e:  # best-effort error reporting
             try:
                 if not interaction.response.is_done():
                     await interaction.response.defer(ephemeral=True)
@@ -162,64 +242,23 @@ class WelcomeCog(commands.Cog):
             if iid is not None:
                 self._inflight.discard(iid)
 
-    # ----- Commands -----
-    # Make the command guild-scoped when GUILD_ID is present (instant updates).
-    if GUILD_ID:
-        @app_commands.guilds(discord.Object(id=GUILD_ID))
-        @app_commands.command(name="welcome_preview", description="Preview the welcome post (random mugshot + NPC).")
-        @app_commands.describe(
-            user="Preview as if this user joined (default: you)",
-            channel="Where to send the preview (default: here)",
-            gender="Force a gender bucket for the mugshot/name",
-        )
-        @app_commands.choices(gender=[
-            app_commands.Choice(name="male", value="male"),
-            app_commands.Choice(name="female", value="female"),
-        ])
-        @audit_event(action_type="admin.welcome_preview")
-        async def welcome_preview(  # type: ignore[no-redef]
-            self,
-            interaction: discord.Interaction,
-            user: Optional[discord.Member] = None,
-            channel: Optional[discord.abc.GuildChannel] = None,
-            gender: Optional[app_commands.Choice[str]] = None,
-        ):
-            await self._handle_welcome_preview(interaction, user, channel, gender, "(guild-scoped)")
-    else:
-        @app_commands.command(name="welcome_preview", description="Preview the welcome post (random mugshot + NPC).")
-        @app_commands.describe(
-            user="Preview as if this user joined (default: you)",
-            channel="Where to send the preview (default: here)",
-            gender="Force a gender bucket for the mugshot/name",
-        )
-        @app_commands.choices(gender=[
-            app_commands.Choice(name="male", value="male"),
-            app_commands.Choice(name="female", value="female"),
-        ])
-        @audit_event(action_type="admin.welcome_preview")
-        async def welcome_preview(  # type: ignore[no-redef]
-            self,
-            interaction: discord.Interaction,
-            user: Optional[discord.Member] = None,
-            channel: Optional[discord.abc.GuildChannel] = None,
-            gender: Optional[app_commands.Choice[str]] = None,
-        ):
-            note = "(global — if you ever see **Unknown Integration**, set `guild_id` in .env and /sync)"
-            await self._handle_welcome_preview(interaction, user, channel, gender, note)
-
-    # ----- Events -----
+    # ------------- events -------------
     @commands.Cog.listener()
     async def on_member_join(self, member: discord.Member):
-        channel_id = _welcome_channel_id()
-        if not channel_id:
+        if GUILD_ID and member.guild.id != GUILD_ID:
             return
-        ch = member.guild.get_channel(channel_id)
-        if not ch:
+
+        channel = self._resolve_welcome_channel(member.guild)
+        if not channel:
+            log.warning("Welcome: no channel found in %s (%s)", member.guild.name, member.guild.id)
             return
+
         try:
-            await self._send_welcome(member, ch, None)
+            await self._send_welcome(member, channel, None)
+        except discord.Forbidden:
+            log.error("Welcome: missing permissions to post in #%s", channel.name)
         except Exception:
-            pass
+            log.exception("Welcome: failed to send embed")
 
 
 async def setup(bot: commands.Bot):

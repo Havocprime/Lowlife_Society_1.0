@@ -1,4 +1,3 @@
-# GAME/src/inventory/manager.py
 from __future__ import annotations
 
 from dataclasses import asdict
@@ -36,6 +35,70 @@ def _row_has(row: sqlite3.Row, key: str) -> bool:
 def _row_or(row: sqlite3.Row, key: str, default: Any) -> Any:
     return row[key] if _row_has(row, key) and row[key] is not None else default
 
+def _ensure_unique_name(cx: sqlite3.Connection, name: str, exclude_id: Optional[int] = None) -> None:
+    """Raise if an *active* item already uses this name (ignores soft-deleted rows)."""
+    where = ["LOWER(name)=LOWER(?)"]
+    params: list[Any] = [name]
+    if _items_has_deleted(cx):
+        where.append("deleted_at IS NULL")
+    if exclude_id is not None:
+        where.append("id <> ?")
+        params.append(int(exclude_id))
+    sql = f"SELECT 1 FROM items WHERE {' AND '.join(where)} LIMIT 1"
+    cur = cx.execute(sql, tuple(params))
+    if cur.fetchone():
+        raise ValueError(f"Item with name '{name}' already exists")
+
+
+# --- add back into src/inventory/manager.py ---
+
+def list_item_names(prefix: str, limit: int = 25) -> list[str]:
+    """Autocomplete helper: return up to `limit` item names matching `prefix` (case-insensitive).
+       Ignores soft-deleted rows when `items.deleted_at` exists.
+    """
+    prefix = (prefix or "").strip().lower()
+    like = f"%{prefix}%"
+
+    with sqlite3.connect(DB_PATH) as cx:
+        cx.row_factory = sqlite3.Row
+
+        # build WHERE
+        where_parts: list[str] = []
+        params: list[Any] = []
+
+        if prefix:
+            where_parts.append("LOWER(name) LIKE ?")
+            params.append(like)
+
+        if _items_has_deleted(cx):
+            where_parts.append("deleted_at IS NULL")
+
+        where = (" WHERE " + " AND ".join(where_parts)) if where_parts else ""
+
+        sql = f"SELECT name FROM items{where} ORDER BY name ASC LIMIT ?"
+        params.append(int(limit))
+
+        rows = cx.execute(sql, tuple(params)).fetchall()
+        return [r["name"] for r in rows]
+
+# ---------- soft delete ----------
+
+def soft_delete_item_by_name(name: str) -> bool:
+    """Soft-delete an item by name if the items.deleted_at column exists.
+    Returns True if a row was updated.
+    """
+    with sqlite3.connect(DB_PATH) as cx:
+        if not _items_has_deleted(cx):
+            return False  # keep behavior: no soft-delete column -> do nothing
+
+        cur = cx.execute(
+            "UPDATE items SET deleted_at = ? "
+            "WHERE LOWER(name)=LOWER(?) AND deleted_at IS NULL",
+            (_now_iso(), name),
+        )
+        cx.commit()
+        return cur.rowcount > 0
+
 
 # ---------- catalog CRUD
 
@@ -44,10 +107,21 @@ def create_item(item: Item) -> int:
     with sqlite3.connect(DB_PATH) as cx:
         cx.row_factory = sqlite3.Row
 
-        # unique-by-name, prevent dupes
-        cur = cx.execute("SELECT id FROM items WHERE LOWER(name)=LOWER(?)", (item.name,))
+        # unique-by-name, prevent dupes (ignore soft-deleted names)
+        has_deleted = _items_has_deleted(cx)
+        if has_deleted:
+            cur = cx.execute(
+                "SELECT id FROM items WHERE LOWER(name)=LOWER(?) AND deleted_at IS NULL", (item.name,)
+            )
+        else:
+            cur = cx.execute("SELECT id FROM items WHERE LOWER(name)=LOWER(?)", (item.name,))
         if cur.fetchone():
             raise ValueError(f"Item with name '{item.name}' already exists")
+
+        # prefer explicit cash_value if non-zero, else fall back to scrap_value
+        cv = getattr(item, "cash_value", None)
+        if not cv:  # None or 0 -> fall back
+            cv = getattr(item, "scrap_value", 0)
 
         data = {
             **asdict(item),
@@ -64,22 +138,25 @@ def create_item(item: Item) -> int:
             "rarity": (getattr(item, "rarity", "common") or "common").lower(),
             "stack_max": int(getattr(item, "stack_max", 1) or 1),
             "equippable": 1 if getattr(item, "equippable", True) else 0,
-            "cash_value": int(getattr(item, "cash_value", getattr(item, "scrap_value", 0)) or 0),
+            "cash_value": int(cv or 0),
+            "subcategory": getattr(item, "subcategory", None),
         }
 
-        has_cash = _col_exists(cx, "items", "cash_value")
+        has_cash       = _col_exists(cx, "items", "cash_value")
         has_equippable = _col_exists(cx, "items", "equippable")
-        has_rarity = _col_exists(cx, "items", "rarity")
-        has_stack = _col_exists(cx, "items", "stack_max")
+        has_rarity     = _col_exists(cx, "items", "rarity")
+        has_stack      = _col_exists(cx, "items", "stack_max")
+        has_subcat     = _col_exists(cx, "items", "subcategory")
 
         cols = [
             "name", "item_class", "created_at", "bind_on_pickup", "durability",
             "pitch_value", "rune_value", "scrap_value", "hidden_trait", "mint_index",
         ]
-        if has_rarity: cols.append("rarity")
-        if has_stack: cols.append("stack_max")
+        if has_rarity:     cols.append("rarity")
+        if has_stack:      cols.append("stack_max")
         if has_equippable: cols.append("equippable")
-        if has_cash: cols.append("cash_value")
+        if has_cash:       cols.append("cash_value")
+        if has_subcat:     cols.append("subcategory")
 
         sql = f"INSERT INTO items ({', '.join(cols)}) VALUES ({', '.join('?' for _ in cols)})"
         cx.execute(sql, tuple(data[c] for c in cols))
@@ -92,10 +169,11 @@ def update_item(item: Item) -> None:
     with sqlite3.connect(DB_PATH) as cx:
         cx.row_factory = sqlite3.Row
 
-        has_cash = _col_exists(cx, "items", "cash_value")
+        has_cash       = _col_exists(cx, "items", "cash_value")
         has_equippable = _col_exists(cx, "items", "equippable")
-        has_rarity = _col_exists(cx, "items", "rarity")
-        has_stack = _col_exists(cx, "items", "stack_max")
+        has_rarity     = _col_exists(cx, "items", "rarity")
+        has_stack      = _col_exists(cx, "items", "stack_max")
+        has_subcat     = _col_exists(cx, "items", "subcategory")
 
         sets = [
             "name = ?",
@@ -130,8 +208,15 @@ def update_item(item: Item) -> None:
             sets.append("equippable = ?")
             args.append(1 if getattr(item, "equippable", True) else 0)
         if has_cash:
+            # prefer explicit cash_value if non-zero, else use scrap_value
+            cv = getattr(item, "cash_value", None)
+            if not cv:
+                cv = getattr(item, "scrap_value", 0)
             sets.append("cash_value = ?")
-            args.append(int(getattr(item, "cash_value", getattr(item, "scrap_value", 0)) or 0))
+            args.append(int(cv or 0))
+        if has_subcat:
+            sets.append("subcategory = ?")
+            args.append(getattr(item, "subcategory", None))
 
         sql = f"UPDATE items SET {', '.join(sets)} WHERE id = ?"
         args.append(int(getattr(item, "id", 0)))
@@ -169,34 +254,9 @@ def get_item_by_name(name: str) -> Optional[Item]:
             setattr(item, "pitch_value", int(_row_or(row, "pitch_value", 0)))
         if _row_has(row, "rune_value"):
             setattr(item, "rune_value", int(_row_or(row, "rune_value", 0)))
+        if _row_has(row, "subcategory"):
+            setattr(item, "subcategory", _row_or(row, "subcategory", None))
         return item
-
-
-def soft_delete_item_by_name(name: str) -> bool:
-    with sqlite3.connect(DB_PATH) as cx:
-        if not _items_has_deleted(cx):
-            return False
-        cur = cx.execute(
-            "UPDATE items SET deleted_at = ? WHERE LOWER(name)=LOWER(?) AND deleted_at IS NULL",
-            (_now_iso(), name),
-        )
-        cx.commit()
-        return cur.rowcount > 0
-
-
-def list_item_names(prefix: str, limit: int = 25) -> list[str]:
-    prefix = (prefix or "").lower()
-    like = f"%{prefix}%"
-    with sqlite3.connect(DB_PATH) as cx:
-        cx.row_factory = sqlite3.Row
-        has_deleted = _items_has_deleted(cx)
-        sql = "SELECT DISTINCT name FROM items"
-        where = " WHERE LOWER(name) LIKE ?"
-        if has_deleted:
-            where += " AND deleted_at IS NULL"
-        sql += where + " ORDER BY name LIMIT ?"
-        rows = cx.execute(sql, (like, limit)).fetchall()
-        return [r["name"] for r in rows]
 
 
 def catalog_items(
@@ -207,7 +267,7 @@ def catalog_items(
     page: int = 1,
     page_size: int = 20,
 ) -> list[dict]:
-    """Return rows for catalog display, including durability, cash_value, and qty (stack_max)."""
+    """Return rows for catalog display, including durability, cash_value, stack_max and subcategory."""
     q = (q or "").strip()
     offs = max(0, (int(page) - 1) * int(page_size))
 
@@ -215,6 +275,8 @@ def catalog_items(
         cx.row_factory = sqlite3.Row
         has_deleted = _items_has_deleted(cx)
         has_cash = _col_exists(cx, "items", "cash_value")
+        has_equippable = _col_exists(cx, "items", "equippable")
+        has_subcat = _col_exists(cx, "items", "subcategory")
 
         where_parts: list[str] = []
         params: list[Any] = []
@@ -228,7 +290,7 @@ def catalog_items(
         if item_class:
             where_parts.append("LOWER(item_class)=LOWER(?)")
             params.append(item_class)
-        if equippable is not None and _col_exists(cx, "items", "equippable"):
+        if equippable is not None and has_equippable:
             where_parts.append("equippable = ?")
             params.append(1 if equippable else 0)
         if has_deleted:
@@ -237,14 +299,17 @@ def catalog_items(
         where = (" WHERE " + " AND ".join(where_parts)) if where_parts else ""
 
         cash_select = "cash_value" if has_cash else "scrap_value"
+        sub_select = "subcategory" if has_subcat else "NULL as subcategory"
+
         sql = f"""
             SELECT
                 id,
                 name,
                 item_class,
+                {sub_select},
                 COALESCE(durability, 0) AS durability,
                 COALESCE({cash_select}, scrap_value, 0) AS cash_value,
-                COALESCE(stack_max, 1) AS qty
+                COALESCE(stack_max, 1) AS stack_max
             FROM items
             {where}
             ORDER BY id ASC
