@@ -28,6 +28,9 @@ COOLDOWN_SECONDS = int(os.getenv("SUGGESTIONS_COOLDOWN_S", "60"))  # (3) cooldow
 DUP_SIM_THRESHOLD = 0.80  # (6) duplicate hint threshold
 CONSUMABLE_SUBCATS = {"food", "drink", "medical", "other"}  # NEW: subcategories for Consumables
 
+# Control whether THIS cog runs tree.sync (default off; let src/admin/sync.py do it)
+SYNC_FROM_SUGGESTIONS = os.getenv("SYNC_FROM_SUGGESTIONS", "0") == "1"
+
 # ---------- Status Enum ----------
 class TicketStatus(str, Enum):
     NEW = "NEW"
@@ -328,6 +331,17 @@ class SuggestionsCog(commands.Cog):
         self._cooldowns: dict[int, float] = {}  # (3) per-user cooldown map
 
     async def cog_load(self):
+        """
+        Previously this cog always synced app commands here, which can collide with other cogs.
+        Now it only syncs if SYNC_FROM_SUGGESTIONS=1 and no other cog has synced yet.
+        Prefer using src/admin/sync.py to own syncing.
+        """
+        if not SYNC_FROM_SUGGESTIONS:
+            log.info("SuggestionsCog: skipping slash sync (SYNC_FROM_SUGGESTIONS=0).")
+            return
+        if getattr(self.bot, "_synced_once", False):
+            log.info("SuggestionsCog: sync skipped (already synced elsewhere).")
+            return
         try:
             if PRIMARY_GUILD_ID:
                 guild_obj = discord.Object(id=int(PRIMARY_GUILD_ID))
@@ -339,6 +353,8 @@ class SuggestionsCog(commands.Cog):
                 log.info("SuggestionsCog: globally synced %d commands", len(synced))
         except Exception as e:
             log.exception("SuggestionsCog: app command sync failed: %r", e)
+        finally:
+            self.bot._synced_once = True  # mark so other cogs skip
 
     # ====== USER-FACING ======
     @app_commands.command(name="tickets_panel", description="Post the Suggestions panel (Submit a Ticket button).")

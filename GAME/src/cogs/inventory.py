@@ -14,6 +14,7 @@ from discord.ext import commands
 from src.models.item import Item, ItemClass
 from src.inventory.manager import (
     list_item_names,
+    list_item_name_status,  # NEW: includes deleted status
     get_item_by_name,
     create_item,
     update_item,
@@ -26,8 +27,38 @@ from src.inventory.manager import (
 
 log = logging.getLogger("inventory.cog")
 
+# Optional central registry (safe if not present)
+try:
+    from src.models.item import ALLOWED_SUBCATEGORIES  # if you added it in models.item
+except Exception:
+    ALLOWED_SUBCATEGORIES = {
+        ItemClass.currency: ["USD", "$", "Cash", "Bitcoin", "BTC", "Crypto"],
+        ItemClass.misc: ["Collectible", "Quest", "Junk"],
+        ItemClass.tool: ["Lockpick", "Repair", "Utility", "Improvised"],
+        ItemClass.weapon: ["Melee", "Firearm", "Thrown", "Tool"],
+        ItemClass.gear: ["Clothing", "Armor", "Utility"],
+        # NEW sets:
+        ItemClass.consumable: ["Food", "Drink", "Medical", "Other"],
+        ItemClass.ammo: ["Pistol", "Rifle", "Shotgun", "Other"],
+    }
+
+def _subcategories_for(item_class_value) -> list[str]:
+    """Return canonical subcategories for a selected ItemClass (case-insensitive)."""
+    try:
+        ic = ItemClass(item_class_value)  # handles Enum('consumable') or raw "consumable"
+    except Exception:
+        ic = item_class_value
+    return ALLOWED_SUBCATEGORIES.get(ic, [])
+
+def _filter_choices(options: list[str], query: str) -> list[app_commands.Choice[str]]:
+    q = (query or "").strip().lower()
+    # Discord returns up to 25 suggestions
+    filtered = [o for o in options if q in o.lower()] if q else options
+    return [app_commands.Choice(name=o, value=o) for o in filtered[:25]]
+
 # -----------------------------------------------------------------------------
 # Subcategory suggestions (used for autocomplete; free-form still allowed)
+# NOTE: _ac_subcategory uses SUBCATS, so it must include consumable/ammo here.
 # -----------------------------------------------------------------------------
 SUBCATS: dict[str, list[str]] = {
     "weapon": ["melee", "firearm", "thrown", "tool"],
@@ -35,6 +66,9 @@ SUBCATS: dict[str, list[str]] = {
     "tool": ["lockpick", "repair", "utility", "improvised"],
     "gear": ["clothing", "armor", "utility"],
     "misc": ["collectible", "quest", "junk"],
+    # NEW:
+    "consumable": ["food", "drink", "medical", "other"],
+    "ammo": ["pistol", "rifle", "shotgun", "other"],
 }
 
 def _normalize_class(cls: ItemClass | str | None) -> str:
@@ -274,15 +308,51 @@ def _render_catalog_table(rows: List[dict]) -> str:
 
     return f"```\n{'\n'.join(lines)}\n```"
 
+# =============================================================================
+# Autocompletes
+# =============================================================================
+
 async def _ac_item_name(
     interaction: Interaction, current: str
 ) -> List[app_commands.Choice[str]]:
+    """
+    Robust autocomplete for catalog item names:
+      1) Prefer manager status lookup (includes deleted and marks them).
+      2) Fallback to active-only prefix search.
+      3) Fallback to substring match via catalog_items.
+    """
+    query = (current or "").strip()
+    choices: List[app_commands.Choice[str]] = []
+
+    # 1) Preferred: include deleted status
     try:
-        names = list_item_names(current or "", limit=25)
+        rows = list_item_name_status(query, limit=25)
+        if rows:
+            for r in rows:
+                label = r["name"] + ("  (deleted)" if r.get("deleted") else "")
+                choices.append(app_commands.Choice(name=label, value=r["name"]))
+            return choices
     except Exception as e:
-        log.warning("name autocomplete failed: %s", e)
-        names = []
-    return [app_commands.Choice(name=n, value=n) for n in names]
+        log.warning("name autocomplete (status) failed: %s", e)
+
+    # 2) Active-only prefix
+    try:
+        names = list_item_names(query, limit=25, include_deleted=False) if query \
+                else list_item_names("", limit=25, include_deleted=False)
+        if names:
+            return [app_commands.Choice(name=n, value=n) for n in names[:25]]
+    except Exception as e:
+        log.warning("name autocomplete (primary) failed: %s", e)
+
+    # 3) Substring fallback via catalog
+    try:
+        rows = catalog_items(query, None, None, None, page=1, page_size=25) if query \
+               else catalog_items("", None, None, None, page=1, page_size=25)
+        names = sorted({str(r.get("name")) for r in rows if r.get("name")})[:25]
+        return [app_commands.Choice(name=n, value=n) for n in names]
+    except Exception as e:
+        log.warning("name autocomplete (fallback) failed: %s", e)
+        return []
 
 # NOTE: this is a plain helper (no decorator on it directly)
 async def _ac_subcategory(interaction: Interaction, current: str) -> List[app_commands.Choice[str]]:
@@ -383,6 +453,22 @@ class InventoryCog(commands.Cog):
             return
 
         await interaction.response.defer(thinking=True)
+
+        # ---- Preflight duplicate name check (active only) ----
+        try:
+            existing = get_item_by_name(name)  # returns active items
+        except Exception:
+            existing = None
+        if existing:
+            await interaction.followup.send(
+                f"❌ The name **{name}** is already in use (id **{getattr(existing, 'id', '—')}**). "
+                f"Use `/item_edit name:{name}` to modify it, `/item_delete name:{name}` to remove it, "
+                f"or choose a different name.",
+                ephemeral=True,
+            )
+            return
+        # ------------------------------------------------------
+
         try:
             item = Item(
                 id=0,
@@ -400,7 +486,7 @@ class InventoryCog(commands.Cog):
             setattr(item, "stack_max", stack_max)
             setattr(item, "equippable", equippable)
 
-            iid = create_item(item)
+            iid = create_item(item)  # now resurrects soft-deleted if same name exists
             item.id = iid
             log.info("/createitem by %s -> %s (id=%s)", interaction.user, name, iid)
 
@@ -423,6 +509,15 @@ class InventoryCog(commands.Cog):
             )
 
         except Exception as e:
+            # Friendlier message for UNIQUE violations
+            msg = str(e)
+            if "UNIQUE constraint failed: items.name" in msg:
+                await interaction.followup.send(
+                    f"❌ Create failed: an item named **{name}** already exists. "
+                    f"Use `/item_edit name:{name}` or choose a different name.",
+                    ephemeral=True,
+                )
+                return
             log.exception("createitem failed")
             await interaction.followup.send(
                 f"Create failed: `{type(e).__name__}: {e}`", ephemeral=False

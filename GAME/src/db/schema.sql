@@ -83,22 +83,33 @@ CREATE TABLE IF NOT EXISTS events(
   created_at TEXT NOT NULL
 );
 
-
+-- items (FINAL desired shape)
 CREATE TABLE IF NOT EXISTS items (
-  id            INTEGER PRIMARY KEY,
-  name          TEXT UNIQUE NOT NULL,
-  item_class    TEXT NOT NULL,
-  created_at    TEXT NOT NULL,
-  durability    INTEGER NOT NULL DEFAULT 0,
+  id             INTEGER PRIMARY KEY,
+  name           TEXT NOT NULL,                 -- no table-level UNIQUE; use partial index below
+  item_class     TEXT NOT NULL,
+  created_at     TEXT NOT NULL,
+  durability     INTEGER NOT NULL DEFAULT 0,
   bind_on_pickup INTEGER NOT NULL DEFAULT 0,
-  pitch_value   INTEGER NOT NULL DEFAULT 0,
-  rune_value    INTEGER NOT NULL DEFAULT 0,
-  scrap_value   INTEGER NOT NULL DEFAULT 0,
-  hidden_trait  TEXT NOT NULL DEFAULT '',
-  mint_index    INTEGER NOT NULL DEFAULT 0,
-  rarity        TEXT NOT NULL DEFAULT 'common',
-  stack_max     INTEGER NOT NULL DEFAULT 1,
-  equippable    INTEGER NOT NULL DEFAULT 1    -- NEW
+  pitch_value    INTEGER NOT NULL DEFAULT 0,
+  rune_value     INTEGER NOT NULL DEFAULT 0,
+  scrap_value    INTEGER NOT NULL DEFAULT 0,
+  hidden_trait   TEXT NOT NULL DEFAULT '',
+  mint_index     INTEGER NOT NULL DEFAULT 0,
+  rarity         TEXT NOT NULL DEFAULT 'common',
+  stack_max      INTEGER NOT NULL DEFAULT 1,
+  equippable     INTEGER NOT NULL DEFAULT 1,
+  cash_value     INTEGER,                       -- optional; manager mirrors from scrap_value
+  subcategory    TEXT,
+  deleted_at     TEXT                           -- soft-delete flag (NULL = active)
 );
+
+-- Helpful indexes
 CREATE INDEX IF NOT EXISTS idx_items_name ON items(name);
 CREATE INDEX IF NOT EXISTS idx_items_equippable ON items(equippable);
+
+-- Enforce name uniqueness only for *active* rows
+CREATE UNIQUE INDEX IF NOT EXISTS idx_items_name_unique_active
+ON items(name COLLATE NOCASE)
+WHERE deleted_at IS NULL;
+

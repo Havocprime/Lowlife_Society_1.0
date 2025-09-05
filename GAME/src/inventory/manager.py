@@ -4,7 +4,7 @@ from dataclasses import asdict
 from datetime import datetime, timezone
 from pathlib import Path
 import sqlite3
-from typing import Optional, Any
+from typing import Optional, Any, List, Dict
 
 from src.models.item import Item, ItemClass
 
@@ -18,6 +18,9 @@ except Exception:
 
 def _now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
+
+def _norm(s: str) -> str:
+    return " ".join(str(s or "").split()).strip()
 
 def _col_exists(cx: sqlite3.Connection, table: str, col: str) -> bool:
     cur = cx.execute(f"PRAGMA table_info({table})")
@@ -50,19 +53,21 @@ def _ensure_unique_name(cx: sqlite3.Connection, name: str, exclude_id: Optional[
         raise ValueError(f"Item with name '{name}' already exists")
 
 
-# --- add back into src/inventory/manager.py ---
+# ---------- lookups / autocomplete ----------
 
-def list_item_names(prefix: str, limit: int = 25) -> list[str]:
-    """Autocomplete helper: return up to `limit` item names matching `prefix` (case-insensitive).
-       Ignores soft-deleted rows when `items.deleted_at` exists.
+def list_item_names(prefix: str, limit: int = 25, include_deleted: bool = False) -> List[str]:
     """
-    prefix = (prefix or "").strip().lower()
+    Return up to `limit` item names matching `prefix` (case-insensitive).
+    When `include_deleted` is False (default), soft-deleted rows are filtered out
+    if the items.deleted_at column exists.
+    """
+    prefix = _norm(prefix).lower()
     like = f"%{prefix}%"
 
     with sqlite3.connect(DB_PATH) as cx:
         cx.row_factory = sqlite3.Row
+        has_deleted = _items_has_deleted(cx)
 
-        # build WHERE
         where_parts: list[str] = []
         params: list[Any] = []
 
@@ -70,23 +75,40 @@ def list_item_names(prefix: str, limit: int = 25) -> list[str]:
             where_parts.append("LOWER(name) LIKE ?")
             params.append(like)
 
-        if _items_has_deleted(cx):
+        if has_deleted and not include_deleted:
             where_parts.append("deleted_at IS NULL")
 
         where = (" WHERE " + " AND ".join(where_parts)) if where_parts else ""
-
         sql = f"SELECT name FROM items{where} ORDER BY name ASC LIMIT ?"
         params.append(int(limit))
-
         rows = cx.execute(sql, tuple(params)).fetchall()
         return [r["name"] for r in rows]
 
-# ---------- soft delete ----------
+def list_item_name_status(prefix: str, limit: int = 25) -> List[Dict[str, Any]]:
+    """
+    Like list_item_names, but always includes soft-deleted rows and returns
+    [{'name': 'Bandage Roll', 'deleted': True}, ...] when items.deleted_at exists.
+    """
+    prefix = _norm(prefix).lower()
+    like = f"%{prefix}%"
+
+    with sqlite3.connect(DB_PATH) as cx:
+        cx.row_factory = sqlite3.Row
+        has_deleted = _items_has_deleted(cx)
+
+        where = "WHERE LOWER(name) LIKE ?" if prefix else ""
+        params: list[Any] = [like] if prefix else []
+        select = "name, (deleted_at IS NOT NULL) AS deleted" if has_deleted else "name, 0 AS deleted"
+        sql = f"SELECT {select} FROM items {where} ORDER BY name ASC LIMIT ?"
+        params.append(int(limit))
+        rows = cx.execute(sql, tuple(params)).fetchall()
+        return [{"name": r["name"], "deleted": bool(r["deleted"])} for r in rows]
+
+
+# ---------- soft delete / restore / purge ----------
 
 def soft_delete_item_by_name(name: str) -> bool:
-    """Soft-delete an item by name if the items.deleted_at column exists.
-    Returns True if a row was updated.
-    """
+    """Soft-delete an item by name if the items.deleted_at column exists. Returns True if a row was updated."""
     with sqlite3.connect(DB_PATH) as cx:
         if not _items_has_deleted(cx):
             return False  # keep behavior: no soft-delete column -> do nothing
@@ -94,29 +116,50 @@ def soft_delete_item_by_name(name: str) -> bool:
         cur = cx.execute(
             "UPDATE items SET deleted_at = ? "
             "WHERE LOWER(name)=LOWER(?) AND deleted_at IS NULL",
-            (_now_iso(), name),
+            (_now_iso(), _norm(name)),
         )
         cx.commit()
         return cur.rowcount > 0
 
+def restore_item_by_name(name: str) -> bool:
+    """If soft-deleted, set deleted_at = NULL. Returns True if restored."""
+    with sqlite3.connect(DB_PATH) as cx:
+        if not _items_has_deleted(cx):
+            return False
+        cur = cx.execute(
+            "UPDATE items SET deleted_at = NULL WHERE LOWER(name)=LOWER(?) AND deleted_at IS NOT NULL",
+            (_norm(name),),
+        )
+        cx.commit()
+        return cur.rowcount > 0
 
-# ---------- catalog CRUD
+def purge_item_by_name(name: str) -> int:
+    """Hard delete by (case-insensitive) name. Returns number of rows deleted."""
+    with sqlite3.connect(DB_PATH) as cx:
+        cur = cx.execute("DELETE FROM items WHERE LOWER(name)=LOWER(?)", (_norm(name),))
+        cx.commit()
+        return int(cur.rowcount)
+
+
+# ---------- catalog CRUD ----------
 
 def create_item(item: Item) -> int:
-    """Insert a new catalog item. Returns new id."""
+    """
+    Insert a new catalog item. If a *soft-deleted* row with the same name exists,
+    we **resurrect** it (clear deleted_at and update fields) instead of inserting.
+    Returns the id of the active row.
+    """
+    name = _norm(item.name)
+
     with sqlite3.connect(DB_PATH) as cx:
         cx.row_factory = sqlite3.Row
-
-        # unique-by-name, prevent dupes (ignore soft-deleted names)
         has_deleted = _items_has_deleted(cx)
-        if has_deleted:
-            cur = cx.execute(
-                "SELECT id FROM items WHERE LOWER(name)=LOWER(?) AND deleted_at IS NULL", (item.name,)
-            )
-        else:
-            cur = cx.execute("SELECT id FROM items WHERE LOWER(name)=LOWER(?)", (item.name,))
-        if cur.fetchone():
-            raise ValueError(f"Item with name '{item.name}' already exists")
+
+        # Check for *any* row with this name
+        row_any = cx.execute(
+            "SELECT * FROM items WHERE LOWER(name)=LOWER(?) LIMIT 1",
+            (name,),
+        ).fetchone()
 
         # prefer explicit cash_value if non-zero, else fall back to scrap_value
         cv = getattr(item, "cash_value", None)
@@ -125,7 +168,7 @@ def create_item(item: Item) -> int:
 
         data = {
             **asdict(item),
-            "name": item.name,
+            "name": name,
             "item_class": getattr(item.item_class, "value", str(item.item_class)),
             "created_at": getattr(item, "created_at", datetime.now(timezone.utc)).isoformat(),
             "bind_on_pickup": 1 if getattr(item, "bind_on_pickup", False) else 0,
@@ -148,6 +191,51 @@ def create_item(item: Item) -> int:
         has_stack      = _col_exists(cx, "items", "stack_max")
         has_subcat     = _col_exists(cx, "items", "subcategory")
 
+        if row_any:
+            # If row exists and is soft-deleted -> RESURRECT
+            if has_deleted and _row_has(row_any, "deleted_at") and row_any["deleted_at"]:
+                sets = [
+                    "item_class = ?",
+                    "bind_on_pickup = ?",
+                    "durability = ?",
+                    "pitch_value = ?",
+                    "rune_value = ?",
+                    "scrap_value = ?",
+                    "hidden_trait = ?",
+                    "mint_index = ?",
+                    "deleted_at = NULL",
+                ]
+                args: list[Any] = [
+                    data["item_class"],
+                    data["bind_on_pickup"],
+                    data["durability"],
+                    data["pitch_value"],
+                    data["rune_value"],
+                    data["scrap_value"],
+                    data["hidden_trait"],
+                    data["mint_index"],
+                ]
+                if has_rarity:
+                    sets.append("rarity = ?");       args.append(data["rarity"])
+                if has_stack:
+                    sets.append("stack_max = ?");    args.append(data["stack_max"])
+                if has_equippable:
+                    sets.append("equippable = ?");   args.append(data["equippable"])
+                if has_cash:
+                    sets.append("cash_value = ?");   args.append(data["cash_value"])
+                if has_subcat:
+                    sets.append("subcategory = ?");  args.append(data["subcategory"])
+
+                sql_upd = f"UPDATE items SET {', '.join(sets)} WHERE id = ?"
+                args.append(int(row_any["id"]))
+                cx.execute(sql_upd, tuple(args))
+                cx.commit()
+                return int(row_any["id"])
+
+            # Otherwise the *active* name is taken
+            raise ValueError(f"Item with name '{name}' already exists")
+
+        # Fresh INSERT
         cols = [
             "name", "item_class", "created_at", "bind_on_pickup", "durability",
             "pitch_value", "rune_value", "scrap_value", "hidden_trait", "mint_index",
@@ -187,7 +275,7 @@ def update_item(item: Item) -> None:
             "mint_index = ?",
         ]
         args: list[Any] = [
-            item.name,
+            _norm(item.name),
             getattr(item.item_class, "value", str(item.item_class)),
             1 if getattr(item, "bind_on_pickup", False) else 0,
             int(getattr(item, "durability", 0) or 0),
@@ -224,12 +312,13 @@ def update_item(item: Item) -> None:
         cx.commit()
 
 
-def get_item_by_name(name: str) -> Optional[Item]:
+def get_item_by_name(name: str, include_deleted: bool = False) -> Optional[Item]:
+    name = _norm(name)
     with sqlite3.connect(DB_PATH) as cx:
         cx.row_factory = sqlite3.Row
         has_deleted = _items_has_deleted(cx)
         where = "WHERE LOWER(name)=LOWER(?)"
-        if has_deleted:
+        if has_deleted and not include_deleted:
             where += " AND deleted_at IS NULL"
         row = cx.execute(f"SELECT * FROM items {where} LIMIT 1", (name,)).fetchone()
         if not row:
@@ -320,7 +409,7 @@ def catalog_items(
         return [dict(r) for r in rows]
 
 
-# ---------- inventory + grants
+# ---------- inventory + grants (unchanged) ----------
 
 def grant_item(user_id: int, item: Item, qty: int = 1, equipped: bool = False) -> int:
     with sqlite3.connect(DB_PATH) as cx:
@@ -336,7 +425,7 @@ def grant_item(user_id: int, item: Item, qty: int = 1, equipped: bool = False) -
                 """,
                 (
                     int(getattr(item, "id", 0)),
-                    item.name,
+                    _norm(item.name),
                     getattr(item.item_class, "value", str(item.item_class)),
                     getattr(item, "created_at", datetime.now(timezone.utc)).isoformat(),
                     1 if getattr(item, "bind_on_pickup", False) else 0,
