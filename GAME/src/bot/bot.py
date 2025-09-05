@@ -43,6 +43,8 @@ if len(tok) < 40 or (" " in tok) or ("\n" in tok) or ("\r" in tok):
     log.error("Token looks malformed. Check GAME/.env DISCORD_TOKEN.")
 
 
+
+
 TOKEN = SETTINGS.discord_token
 GUILD_ID = SETTINGS.guild_id
 
@@ -253,6 +255,7 @@ class LowlifeBot(commands.Bot):
 
         # Base cogs to load
         COGS = [
+            
             "src.cogs.activity_logger",
             "src.cogs.admin_inspector",
             "src.cogs.analytics",
@@ -264,7 +267,12 @@ class LowlifeBot(commands.Bot):
             "src.cogs.inventory",
             "src.cogs.admin_tools",
             "src.cogs.health",
+            "src.cogs.suggestions",
+            
+
+            
         ]
+        
 
         async def try_load(module: str):
             try:
