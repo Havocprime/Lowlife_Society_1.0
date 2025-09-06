@@ -241,6 +241,18 @@ class LowlifeBot(commands.Bot):
         except Exception as e:
             log.warning("events schema ensure failed: %s", e)
 
+            from src.db.auto_migrate import ensure_all as ensure_auto_migrations
+            ensure_auto_migrations()
+            log.info("auto migrations ensured")
+        
+            try:
+                from src.db.auto_migrate import ensure_all as ensure_auto_migrations
+                ensure_auto_migrations()
+                log.info("auto migrations ensured")
+            except Exception as e:
+                log.warning("auto migrations failed: %s", e)
+
+
         # ---- Resolve ONLY the audit_event decorator via module import (robust) ----
         try:
             from src.core import audit as _audit_mod

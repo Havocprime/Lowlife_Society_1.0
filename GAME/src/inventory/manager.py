@@ -182,7 +182,7 @@ def create_item(item: Item) -> int:
             "stack_max": int(getattr(item, "stack_max", 1) or 1),
             "equippable": 1 if getattr(item, "equippable", True) else 0,
             "cash_value": int(cv or 0),
-            "subcategory": getattr(item, "subcategory", None),
+            "subcategory": getattr(item, "subcategory", None),  # validated in Item.__post_init__
         }
 
         has_cash       = _col_exists(cx, "items", "cash_value")
@@ -409,34 +409,58 @@ def catalog_items(
         return [dict(r) for r in rows]
 
 
-# ---------- inventory + grants (unchanged) ----------
+# ---------- inventory + grants ----------
 
 def grant_item(user_id: int, item: Item, qty: int = 1, equipped: bool = False) -> int:
     with sqlite3.connect(DB_PATH) as cx:
+        cx.row_factory = sqlite3.Row
         cur = cx.cursor()
-        cur.execute("SELECT id FROM items WHERE id = ?", (int(getattr(item, "id", 0)),))
-        if cur.fetchone() is None:
+
+        # Ensure item exists in catalog (if not, create a minimal-but-smart row)
+        row = cur.execute("SELECT id FROM items WHERE id = ?", (int(getattr(item, "id", 0)),)).fetchone()
+        if row is None:
+            has_rarity     = _col_exists(cx, "items", "rarity")
+            has_stack      = _col_exists(cx, "items", "stack_max")
+            has_equippable = _col_exists(cx, "items", "equippable")
+            has_cash       = _col_exists(cx, "items", "cash_value")
+            has_subcat     = _col_exists(cx, "items", "subcategory")
+
+            cols = [
+                "id", "name", "item_class", "created_at", "bind_on_pickup",
+                "durability", "pitch_value", "rune_value", "scrap_value",
+                "hidden_trait", "mint_index",
+            ]
+            vals = [
+                int(getattr(item, "id", 0)),
+                _norm(item.name),
+                getattr(item.item_class, "value", str(item.item_class)),
+                getattr(item, "created_at", datetime.now(timezone.utc)).isoformat(),
+                1 if getattr(item, "bind_on_pickup", False) else 0,
+                int(getattr(item, "durability", 0) or 0),
+                int(getattr(item, "pitch_value", 0) or 0),
+                int(getattr(item, "rune_value", 0) or 0),
+                int(getattr(item, "scrap_value", 0) or 0),
+                getattr(item, "hidden_trait", "") or "",
+                int(getattr(item, "mint_index", 0) or 0),
+            ]
+            if has_rarity:
+                cols.append("rarity");       vals.append((getattr(item, "rarity", "common") or "common").lower())
+            if has_stack:
+                cols.append("stack_max");    vals.append(int(getattr(item, "stack_max", 1) or 1))
+            if has_equippable:
+                cols.append("equippable");   vals.append(1 if getattr(item, "equippable", True) else 0)
+            if has_cash:
+                cv = getattr(item, "cash_value", None) or getattr(item, "scrap_value", 0)
+                cols.append("cash_value");   vals.append(int(cv or 0))
+            if has_subcat:
+                cols.append("subcategory");  vals.append(getattr(item, "subcategory", None))
+
             cur.execute(
-                """
-                INSERT INTO items (
-                    id, name, item_class, created_at, bind_on_pickup, durability,
-                    pitch_value, rune_value, scrap_value, hidden_trait, mint_index
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """,
-                (
-                    int(getattr(item, "id", 0)),
-                    _norm(item.name),
-                    getattr(item.item_class, "value", str(item.item_class)),
-                    getattr(item, "created_at", datetime.now(timezone.utc)).isoformat(),
-                    1 if getattr(item, "bind_on_pickup", False) else 0,
-                    int(getattr(item, "durability", 0) or 0),
-                    int(getattr(item, "pitch_value", 0) or 0),
-                    int(getattr(item, "rune_value", 0) or 0),
-                    int(getattr(item, "scrap_value", 0) or 0),
-                    getattr(item, "hidden_trait", "") or "",
-                    int(getattr(item, "mint_index", 0) or 0),
-                ),
+                f"INSERT INTO items ({', '.join(cols)}) VALUES ({', '.join('?' for _ in cols)})",
+                tuple(vals),
             )
+
+        # Now grant
         cur.execute(
             """
             INSERT INTO inventory (user_id, item_id, qty, equipped, acquired_at)
