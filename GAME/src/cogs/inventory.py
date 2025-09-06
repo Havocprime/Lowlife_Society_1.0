@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import List, Optional
 
 import discord
-from discord import app_commands
+from discord import app_commands, Interaction
 from discord.ext import commands
 
 from src.models.item import Item, ItemClass
@@ -27,9 +27,7 @@ from src.inventory.manager import (
 
 log = logging.getLogger("inventory.cog")
 
-# ---------------------------------------------------------------------
-# Choice helpers / registries
-# ---------------------------------------------------------------------
+# ---------- helpers (choices/autocomplete) ----------
 
 def _enum_choices(enum_cls) -> list[app_commands.Choice[str]]:
     try:
@@ -37,9 +35,9 @@ def _enum_choices(enum_cls) -> list[app_commands.Choice[str]]:
     except Exception:
         return []
 
-# Try to import canonical subcats from the model; provide a safe fallback
+# Try the central registry; otherwise fall back to a local map
 try:
-    from src.models.item import ALLOWED_SUBCATEGORIES, allowed_subcategories_for  # type: ignore
+    from src.models.item import ALLOWED_SUBCATEGORIES, allowed_subcategories_for
 except Exception:
     ALLOWED_SUBCATEGORIES = {
         ItemClass.currency: ["USD", "$", "Cash", "Bitcoin", "BTC", "Crypto"],
@@ -58,7 +56,7 @@ except Exception:
             ic = item_class
         return ALLOWED_SUBCATEGORIES.get(ic, [])
 
-# Lenient fallback map used only if the model map can’t be read
+# lenient fallback set used only if the model map isn’t available
 SUBCATS: dict[str, list[str]] = {
     "weapon": ["melee", "firearm", "thrown", "tool"],
     "currency": ["usd", "$", "cash", "bitcoin", "btc", "crypto"],
@@ -77,9 +75,9 @@ def _normalize_class(cls: ItemClass | str | None) -> str:
         return cls.value
     return str(cls).lower()
 
-# ---------------------------------------------------------------------
-# Embeds / utility
-# ---------------------------------------------------------------------
+# =============================================================================
+# Announce helpers — card style with optional thumbnail
+# =============================================================================
 
 def _active_work_channel(guild: discord.Guild) -> Optional[discord.TextChannel]:
     from src.core.settings import SETTINGS
@@ -130,8 +128,8 @@ def _bool_word(v) -> str:
 async def _announce_item_card(
     guild: discord.Guild,
     author: discord.abc.User,
-    action: str,
-    item_obj: Item | None,
+    action: str,            # "create" | "delete" | "edit"
+    item_obj: Item | None,  # can be None for delete-by-name
     extra: dict | None = None,
 ) -> None:
     ch = _active_work_channel(guild)
@@ -157,6 +155,7 @@ async def _announce_item_card(
     emoji = _class_emoji(cls_str, sub)
 
     e = discord.Embed(title=f"{emoji} {title}", colour=color)
+
     line1 = f"**{name}** · `ID {iid}`"
     cls_line = f"{cls_str}" + (f" / {sub}" if sub else "")
     line2 = f"*{cls_line} • {rarity}*"
@@ -179,9 +178,9 @@ async def _announce_item_card(
     else:
         await ch.send(embed=e)
 
-# ---------------------------------------------------------------------
-# Table renders
-# ---------------------------------------------------------------------
+# =============================================================================
+# Small formatting helpers
+# =============================================================================
 
 def _quality_word(q: float) -> str:
     q = float(q)
@@ -212,7 +211,12 @@ def _render_inventory_table(rows: List[dict], page: int = 1, page_size: int = 20
     start = (page - 1) * page_size
     chunk = rows[start : start + page_size]
 
-    w_id = 3; w_eq = 1; w_name = 20; w_qty = 3; w_rar = 7; w_qual = 7
+    w_id = 3
+    w_eq = 1
+    w_name = 20
+    w_qty = 3
+    w_rar = 7
+    w_qual = 7
 
     def qty_text(r: dict) -> str:
         qty = int(r.get("qty") or 1)
@@ -257,7 +261,14 @@ def _render_catalog_table(rows: List[dict]) -> str:
     if not rows:
         return "No matches."
 
-    w_emo = 2; w_id = 3; w_cash = 4; w_name = 20; w_class = 8; w_sub = 8; w_dura = 4; w_qty = 3
+    w_emo = 2
+    w_id = 3
+    w_cash = 4
+    w_name = 20
+    w_class = 8
+    w_sub = 8
+    w_dura = 4
+    w_qty = 3
 
     header = (
         f"{'':<{w_emo}}  "
@@ -293,16 +304,17 @@ def _render_catalog_table(rows: List[dict]) -> str:
 
     return f"```\n{'\n'.join(lines)}\n```"
 
-# ---------------------------------------------------------------------
-# Autocomplete helpers
-# ---------------------------------------------------------------------
+# =============================================================================
+# Autocompletes
+# =============================================================================
 
 async def _ac_item_name(
-    interaction: discord.Interaction, current: str
+    interaction: Interaction, current: str
 ) -> List[app_commands.Choice[str]]:
     query = (current or "").strip()
     choices: List[app_commands.Choice[str]] = []
 
+    # 1) Preferred: include deleted status
     try:
         rows = list_item_name_status(query, limit=25)
         if rows:
@@ -313,6 +325,7 @@ async def _ac_item_name(
     except Exception as e:
         log.warning("name autocomplete (status) failed: %s", e)
 
+    # 2) Active-only prefix
     try:
         names = list_item_names(query, limit=25, include_deleted=False) if query \
                 else list_item_names("", limit=25, include_deleted=False)
@@ -321,6 +334,7 @@ async def _ac_item_name(
     except Exception as e:
         log.warning("name autocomplete (primary) failed: %s", e)
 
+    # 3) Substring fallback via catalog
     try:
         rows = catalog_items(query, None, None, None, page=1, page_size=25) if query \
                else catalog_items("", None, None, None, page=1, page_size=25)
@@ -332,13 +346,15 @@ async def _ac_item_name(
 
 def _extract_item_class_from_interaction(interaction: discord.Interaction) -> str:
     """Return the selected item_class as a lowercase string, or '' if not set yet."""
-    # Preferred: namespace (most versions)
+    # Preferred: namespace (works on most discord.py versions)
     try:
         ns = getattr(interaction, "namespace", None)
         if ns is not None:
             v = getattr(ns, "item_class", None)
+            # Enum?
             if isinstance(v, ItemClass):
                 return v.value
+            # Choice?
             if hasattr(v, "value"):
                 return str(v.value).lower()
             if v:
@@ -346,7 +362,7 @@ def _extract_item_class_from_interaction(interaction: discord.Interaction) -> st
     except Exception:
         pass
 
-    # Fallback: raw options payload (covers subcommand nesting)
+    # Fallback: raw payload (handles subcommands/options nesting)
     try:
         data = getattr(interaction, "data", {}) or {}
         def walk(options):
@@ -362,18 +378,20 @@ def _extract_item_class_from_interaction(interaction: discord.Interaction) -> st
     except Exception:
         return ""
 
-async def _ac_subcategory(interaction: discord.Interaction, current: str) -> List[app_commands.Choice[str]]:
+async def _ac_subcategory(interaction: Interaction, current: str) -> List[app_commands.Choice[str]]:
     """Autocomplete for subcategory; never raises and degrades gracefully."""
     try:
         cls = _extract_item_class_from_interaction(interaction)
         base: list[str] = []
         if cls:
             try:
-                base = allowed_subcategories_for(ItemClass(cls))
+                base = allowed_subcategories_for(ItemClass(cls))  # canonical labels
             except Exception:
                 base = SUBCATS.get(cls, [])
         if not base:
+            # show a small friendly shortlist if nothing is selected yet
             base = sorted({c for opts in SUBCATS.values() for c in opts})[:12]
+
         q = (current or "").lower()
         suggestions = [s for s in base if q in s.lower()] if q else base
         suggestions = suggestions[:25] or base[:10]
@@ -382,15 +400,15 @@ async def _ac_subcategory(interaction: discord.Interaction, current: str) -> Lis
         log.warning("subcategory autocomplete failed: %s", e)
         return []
 
-# ---------------------------------------------------------------------
+# =============================================================================
 # Cog
-# ---------------------------------------------------------------------
+# =============================================================================
 
 class InventoryCog(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-    # ---- Admin utilities (debug/sync)
+    # ---------------- Admin utilities (debug/sync) ----------------
 
     @app_commands.command(name="debug_itemclass", description="Show ItemClass values (debug)")
     async def debug_itemclass(self, interaction: discord.Interaction):
@@ -406,9 +424,11 @@ class InventoryCog(commands.Cog):
         synced = await self.bot.tree.sync(guild=interaction.guild)
         await interaction.followup.send(f"Synced {len(synced)} commands to this guild.", ephemeral=True)
 
-    # ---- Admin: grant existing item
+    # ---------------- Admin: grant existing item ----------------
 
-    @app_commands.command(name="giveitem", description="Admin: grant an existing catalog item to a member")
+    @app_commands.command(
+        name="giveitem", description="Admin: grant an existing catalog item to a member"
+    )
     @app_commands.describe(
         member="Target member",
         name="Item name (from catalog)",
@@ -418,7 +438,7 @@ class InventoryCog(commands.Cog):
     @app_commands.autocomplete(name=_ac_item_name)
     async def giveitem(
         self,
-        interaction: discord.Interaction,
+        interaction: Interaction,
         member: discord.Member,
         name: str,
         qty: int = 1,
@@ -449,9 +469,11 @@ class InventoryCog(commands.Cog):
             )
         except Exception as e:
             log.exception("giveitem failed")
-            await interaction.followup.send(f"Grant failed: `{type(e).__name__}: {e}`", ephemeral=True)
+            await interaction.followup.send(
+                f"Grant failed: `{type(e).__name__}: {e}`", ephemeral=True
+            )
 
-    # ---- Admin: create item
+    # ---------------- Admin: create item ----------------
 
     @app_commands.command(name="createitem", description="Admin: add a new item to the catalog")
     @app_commands.describe(
@@ -467,13 +489,13 @@ class InventoryCog(commands.Cog):
         stack_max="Max stack size (default 1)",
         equippable="Can be equipped / worn / held?",
     )
-    @app_commands.choices(item_class=_enum_choices(ItemClass))           # dynamic from Enum (includes 'drugs')
+    @app_commands.choices(item_class=_enum_choices(ItemClass))   # build choices from Enum (includes 'drugs')
     @app_commands.autocomplete(subcategory=_ac_subcategory)
     async def createitem(
         self,
-        interaction: discord.Interaction,
+        interaction: Interaction,
         name: str,
-        item_class: app_commands.Choice[str],                              # Choice[str] at the API boundary
+        item_class: app_commands.Choice[str],   # accept Choice[str]
         subcategory: Optional[str] = None,
         durability: int = 0,
         bop: bool = False,
@@ -490,14 +512,14 @@ class InventoryCog(commands.Cog):
 
         await interaction.response.defer(thinking=True)
 
-        # Convert choice -> Enum
+        # Convert the choice back into your Enum
         try:
             ic = ItemClass(item_class.value)
         except Exception:
             await interaction.followup.send("Invalid item_class.", ephemeral=True)
             return
 
-        # Duplicate name check
+        # ---- Preflight duplicate name check (active only) ----
         try:
             existing = get_item_by_name(name)
         except Exception:
@@ -515,14 +537,14 @@ class InventoryCog(commands.Cog):
             item = Item(
                 id=0,
                 name=name,
-                item_class=ic,                          # Enum
+                item_class=ic,
                 created_at=datetime.now(timezone.utc),
                 bind_on_pickup=bop,
                 durability=durability,
-                scrap_value=cash,                       # mirrored to cash_value by manager (compat)
+                scrap_value=cash,  # canonical value mirrored to cash_value by manager
                 hidden_trait=hidden,
                 mint_index=mint,
-                subcategory=(subcategory or None),      # validated by Item.__post_init__
+                subcategory=(subcategory or None),  # validated by Item.__post_init__
             )
             setattr(item, "rarity", rarity)
             setattr(item, "stack_max", stack_max)
@@ -560,9 +582,11 @@ class InventoryCog(commands.Cog):
                 )
                 return
             log.exception("createitem failed")
-            await interaction.followup.send(f"Create failed: `{type(e).__name__}: {e}`", ephemeral=False)
+            await interaction.followup.send(
+                f"Create failed: `{type(e).__name__}: {e}`", ephemeral=False
+            )
 
-    # ---- Admin: edit item
+    # ---------------- Admin: edit item ----------------
 
     @app_commands.command(name="item_edit", description="Admin: edit a catalog item")
     @app_commands.describe(
@@ -581,7 +605,7 @@ class InventoryCog(commands.Cog):
     @app_commands.autocomplete(name=_ac_item_name, subcategory=_ac_subcategory)
     async def item_edit(
         self,
-        interaction: discord.Interaction,
+        interaction: Interaction,
         name: str,
         new_name: Optional[str] = None,
         subcategory: Optional[str] = None,
@@ -652,14 +676,16 @@ class InventoryCog(commands.Cog):
 
         except Exception as e:
             log.exception("item_edit failed")
-            await interaction.followup.send(f"Edit failed: `{type(e).__name__}: {e}`", ephemeral=False)
+            await interaction.followup.send(
+                f"Edit failed: `{type(e).__name__}: {e}`", ephemeral=False
+            )
 
-    # ---- Admin: soft-delete
+    # ---------------- Admin: soft-delete ----------------
 
     @app_commands.command(name="item_delete", description="Admin: soft-delete a catalog item by name")
     @app_commands.describe(name="Name of the item to delete")
     @app_commands.autocomplete(name=_ac_item_name)
-    async def item_delete_cmd(self, interaction: discord.Interaction, name: str):
+    async def item_delete_cmd(self, interaction: Interaction, name: str):
         if not interaction.user.guild_permissions.manage_guild:
             await interaction.response.send_message("Nope.", ephemeral=True)
             return
@@ -685,9 +711,11 @@ class InventoryCog(commands.Cog):
 
         except Exception as e:
             log.exception("item_delete failed")
-            await interaction.followup.send(f"Delete error: `{type(e).__name__}: {e}`", ephemeral=False)
+            await interaction.followup.send(
+                f"Delete error: `{type(e).__name__}: {e}`", ephemeral=False
+            )
 
-    # ---- Catalog (ephemeral)
+    # ---------------- Catalog (ephemeral) ----------------
 
     @app_commands.command(name="catalog", description="Browse item catalog")
     @app_commands.describe(
@@ -701,7 +729,7 @@ class InventoryCog(commands.Cog):
     @app_commands.autocomplete(subcategory=_ac_subcategory)
     async def catalog_cmd(
         self,
-        interaction: discord.Interaction,
+        interaction: Interaction,
         q: Optional[str] = None,
         rarity: Optional[str] = None,
         item_class: Optional[str] = None,
@@ -714,7 +742,9 @@ class InventoryCog(commands.Cog):
         state = {"page": max(1, int(page))}
 
         def fetch_filtered(p: int) -> List[dict]:
-            rows = catalog_items(q or "", rarity, item_class, equippable, page=p, page_size=20)
+            rows = catalog_items(
+                q or "", rarity, item_class, equippable, page=p, page_size=20
+            )
             if subcategory:
                 sub_l = subcategory.lower()
                 rows = [r for r in rows if str(r.get("subcategory") or "").lower() == sub_l]
@@ -726,11 +756,12 @@ class InventoryCog(commands.Cog):
 
         try:
             table = render()
+
             view = discord.ui.View()
             prev_btn = discord.ui.Button(label="◀ Prev", style=discord.ButtonStyle.secondary)
             next_btn = discord.ui.Button(label="Next ▶", style=discord.ButtonStyle.secondary)
 
-            async def _flip(i: discord.Interaction, delta: int):
+            async def _flip(i: Interaction, delta: int):
                 if i.user.id != interaction.user.id:
                     await i.response.send_message("Only the requester can change pages.", ephemeral=True)
                     return
@@ -744,11 +775,15 @@ class InventoryCog(commands.Cog):
             await interaction.followup.send(table, view=view, ephemeral=True)
         except Exception as e:
             log.exception("catalog failed")
-            await interaction.followup.send(f"Catalog error: `{type(e).__name__}: {e}`", ephemeral=True)
+            await interaction.followup.send(
+                f"Catalog error: `{type(e).__name__}: {e}`", ephemeral=True
+            )
 
-    # ---- Catalog (public)
+    # ---------------- Catalog (public) ----------------
 
-    @app_commands.command(name="catalog_publish", description="Publish the item catalog (with filters) to this channel.")
+    @app_commands.command(
+        name="catalog_publish",
+        description="Publish the item catalog (with filters) to this channel.")
     @app_commands.describe(
         q="Search text",
         rarity="Filter by rarity (e.g., common, rare)",
@@ -760,7 +795,7 @@ class InventoryCog(commands.Cog):
     @app_commands.autocomplete(subcategory=_ac_subcategory)
     async def catalog_publish(
         self,
-        interaction: discord.Interaction,
+        interaction: Interaction,
         q: Optional[str] = None,
         rarity: Optional[str] = None,
         item_class: Optional[str] = None,
@@ -773,7 +808,9 @@ class InventoryCog(commands.Cog):
         state = {"page": max(1, int(page))}
 
         def fetch_filtered(p: int) -> List[dict]:
-            rows = catalog_items(q or "", rarity, item_class, equippable, page=p, page_size=20)
+            rows = catalog_items(
+                q or "", rarity, item_class, equippable, page=p, page_size=20
+            )
             if subcategory:
                 sub_l = subcategory.lower()
                 rows = [r for r in rows if str(r.get("subcategory") or "").lower() == sub_l]
@@ -789,7 +826,7 @@ class InventoryCog(commands.Cog):
             prev_btn = discord.ui.Button(label="◀ Prev", style=discord.ButtonStyle.secondary)
             next_btn = discord.ui.Button(label="Next ▶", style=discord.ButtonStyle.secondary)
 
-            async def _flip(i: discord.Interaction, delta: int):
+            async def _flip(i: Interaction, delta: int):
                 if i.user.id != interaction.user.id:
                     await i.response.send_message("Only the requester can change pages.", ephemeral=True)
                     return
@@ -803,15 +840,17 @@ class InventoryCog(commands.Cog):
             await interaction.followup.send(table, view=view, ephemeral=False)
         except Exception as e:
             log.exception("catalog_publish failed")
-            await interaction.followup.send(f"Catalog publish error: `{type(e).__name__}: {e}`", ephemeral=False)
+            await interaction.followup.send(
+                f"Catalog publish error: `{type(e).__name__}: {e}`", ephemeral=False
+            )
 
-    # ---- Player: inventory & equip / unequip
+    # ---------------- Player: inventory & equip/unequip ----------------
 
     @app_commands.command(name="inventory", description="View your inventory (or a member’s).")
     @app_commands.describe(member="Optional member to inspect", page="Optional page number (1-based)")
     async def inventory_cmd(
         self,
-        interaction: discord.Interaction,
+        interaction: Interaction,
         member: Optional[discord.Member] = None,
         page: int = 1,
     ):
@@ -828,10 +867,12 @@ class InventoryCog(commands.Cog):
             await interaction.followup.send(table, ephemeral=True)
         except Exception as e:
             log.exception("inventory failed")
-            await interaction.followup.send(f"Inventory error: `{type(e).__name__}: {e}`", ephemeral=True)
+            await interaction.followup.send(
+                f"Inventory error: `{type(e).__name__}: {e}`", ephemeral=True
+            )
 
     @app_commands.command(name="equip", description="Equip an inventory item by id.")
-    async def equip_cmd(self, interaction: discord.Interaction, inv_id: int):
+    async def equip_cmd(self, interaction: Interaction, inv_id: int):
         await interaction.response.defer(ephemeral=True, thinking=True)
         try:
             set_equipped(inv_id, True)
@@ -840,17 +881,21 @@ class InventoryCog(commands.Cog):
             await interaction.followup.send(f"❌ {e}", ephemeral=True)
         except Exception as e:
             log.exception("equip failed")
-            await interaction.followup.send(f"Equip error: `{type(e).__name__}: {e}`", ephemeral=True)
+            await interaction.followup.send(
+                f"Equip error: `{type(e).__name__}: {e}`", ephemeral=True
+            )
 
     @app_commands.command(name="unequip", description="Unequip an inventory item by id.")
-    async def unequip_cmd(self, interaction: discord.Interaction, inv_id: int):
+    async def unequip_cmd(self, interaction: Interaction, inv_id: int):
         await interaction.response.defer(ephemeral=True, thinking=True)
         try:
             set_equipped(inv_id, False)
             await interaction.followup.send("✅ Unequipped", ephemeral=True)
         except Exception as e:
             log.exception("unequip failed")
-            await interaction.followup.send(f"Unequip error: `{type(e).__name__}: {e}`", ephemeral=True)
+            await interaction.followup.send(
+                f"Unequip error: `{type(e).__name__}: {e}`", ephemeral=True
+            )
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(InventoryCog(bot))
