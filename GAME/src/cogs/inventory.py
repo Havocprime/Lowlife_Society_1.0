@@ -1,4 +1,6 @@
+# =========================
 # GAME/src/cogs/inventory.py
+# =========================
 from __future__ import annotations
 
 import logging
@@ -26,6 +28,77 @@ from src.inventory.manager import (
 )
 
 log = logging.getLogger("inventory.cog")
+
+# --- Image lookup wiring (module if present, else ENV fallback) ----------------
+_item_images_fn = None
+try:
+    from src.assets.item_images import item_image_for as _item_images_fn  # type: ignore
+except Exception:
+    log.info("inventory.cog: item_images module not found; using env-based image lookup.")
+
+def _env_item_image_for(ic: ItemClass, sub: Optional[str]) -> Optional[str]:
+    """
+    ENV keys checked (first hit wins), all uppercased:
+      ITEM_IMG_<CLASS>_<SUB>
+      ITEM_IMG_<CLASS>_DEFAULT
+      ITEM_IMG_<CLASS>
+      ITEM_IMG_DEFAULT
+    """
+    c = (ic.value or "").upper()
+    s = (sub or "").upper()
+    keys = [f"ITEM_IMG_{c}_{s}"] if s else []
+    keys += [f"ITEM_IMG_{c}_DEFAULT", f"ITEM_IMG_{c}", "ITEM_IMG_DEFAULT"]
+    for k in keys:
+        v = os.getenv(k)
+        if v:
+            return v
+    return None
+
+def item_image_for(ic: ItemClass, sub: Optional[str]) -> Optional[str]:
+    if _item_images_fn:
+        try:
+            return _item_images_fn(ic, sub)
+        except Exception:
+            pass
+    return _env_item_image_for(ic, sub)
+
+
+# --- thumbnail helper for item embeds ---
+def _apply_item_thumbnail(emb, item=None, *, item_class=None, subcategory=None):
+    """
+    Sets a thumbnail on `emb` based on (class, subcategory) -> class default -> global default.
+    You can pass either an Item instance via `item` OR pass item_class/subcategory directly.
+    """
+    try:
+        if item is not None:
+            # Support both dataclass attributes and dicts
+            ic = getattr(item, "item_class", None)
+            if ic is None and isinstance(item, dict):
+                ic = item.get("item_class")
+            sub = getattr(item, "subcategory", None)
+            if sub is None and isinstance(item, dict):
+                sub = item.get("subcategory")
+        else:
+            ic, sub = item_class, subcategory
+
+        # If class is a string, coerce to enum
+        if isinstance(ic, str):
+            try:
+                ic = ItemClass(ic)
+            except Exception:
+                ic = None
+
+        if ic is None:
+            return emb
+
+        thumb = item_image_for(ic, sub)
+        if thumb:
+            emb.set_thumbnail(url=thumb)
+        return emb
+    except Exception:
+        # Never let art fail the command
+        return emb
+
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Helpers (choices/autocomplete)
@@ -221,6 +294,10 @@ async def _announce_item_card(
 
     e = discord.Embed(title=f"{emoji} {title}", colour=color)
 
+    # Preferred: CDN/thumb via mapping
+    _apply_item_thumbnail(e, item=item_obj)
+
+    # Description
     line1 = f"**{name}** · `ID {iid}`"
     cls_line = f"{cls_str}" + (f" / {sub}" if sub else "")
     line2 = f"*{cls_line} • {rarity}*"
@@ -236,11 +313,20 @@ async def _announce_item_card(
     e.description = "\n".join([line1, line2, line3])
     e.set_footer(text=f"By {getattr(author, 'display_name', author)}")
 
-    icon_path = _icon_asset_path()
-    if icon_path and icon_path.exists():
-        e.set_thumbnail(url="attachment://item_icon.png")
-        await ch.send(embed=e, file=discord.File(icon_path, filename="item_icon.png"))
-    else:
+    # Fallback: local placeholder if no thumbnail applied
+    used_attachment = False
+    try:
+        has_thumb = bool(getattr(getattr(e, "thumbnail", None), "url", None))
+        if not has_thumb:
+            icon_path = _icon_asset_path()
+            if icon_path and icon_path.exists():
+                e.set_thumbnail(url="attachment://item_icon.png")
+                await ch.send(embed=e, file=discord.File(icon_path, filename="item_icon.png"))
+                used_attachment = True
+    except Exception:
+        pass
+
+    if not used_attachment:
         await ch.send(embed=e)
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -498,7 +584,7 @@ class InventoryCog(commands.Cog):
         self,
         interaction: Interaction,
         name: str,
-        item_class: str,              # string + autocomplete; converted to Enum below
+        item_class: str,
         subcategory: Optional[str] = None,
         durability: int = 0,
         bop: bool = False,
@@ -911,3 +997,4 @@ class InventoryCog(commands.Cog):
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(InventoryCog(bot))
+
