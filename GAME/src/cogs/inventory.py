@@ -27,7 +27,9 @@ from src.inventory.manager import (
 
 log = logging.getLogger("inventory.cog")
 
-# ---------- helpers (choices/autocomplete) ----------
+# ──────────────────────────────────────────────────────────────────────────────
+# Helpers (choices/autocomplete)
+# ──────────────────────────────────────────────────────────────────────────────
 
 def _enum_choices(enum_cls) -> list[app_commands.Choice[str]]:
     try:
@@ -35,7 +37,7 @@ def _enum_choices(enum_cls) -> list[app_commands.Choice[str]]:
     except Exception:
         return []
 
-# Try the central registry; otherwise fall back to a local map
+# Try central registry; otherwise fall back to a local map
 try:
     from src.models.item import ALLOWED_SUBCATEGORIES, allowed_subcategories_for
 except Exception:
@@ -56,7 +58,7 @@ except Exception:
             ic = item_class
         return ALLOWED_SUBCATEGORIES.get(ic, [])
 
-# lenient fallback set used only if the model map isn’t available
+# Lenient fallback used only if model map isn’t available
 SUBCATS: dict[str, list[str]] = {
     "weapon": ["melee", "firearm", "thrown", "tool"],
     "currency": ["usd", "$", "cash", "bitcoin", "btc", "crypto"],
@@ -75,9 +77,72 @@ def _normalize_class(cls: ItemClass | str | None) -> str:
         return cls.value
     return str(cls).lower()
 
-# =============================================================================
+# ItemClass autocomplete (dynamic so new classes like "drugs" show up)
+async def _ac_item_class(
+    interaction: Interaction, current: str
+) -> List[app_commands.Choice[str]]:
+    q = (current or "").strip().lower()
+    opts = [e.value for e in ItemClass]
+    if q:
+        opts = [o for o in opts if q in o.lower()]
+    return [app_commands.Choice(name=o, value=o) for o in opts[:25]]
+
+def _extract_item_class_from_interaction(interaction: discord.Interaction) -> str:
+    """Return the selected item_class as a lowercase string, or '' if not set yet."""
+    # Preferred: namespace
+    try:
+        ns = getattr(interaction, "namespace", None)
+        if ns is not None:
+            v = getattr(ns, "item_class", None)
+            if isinstance(v, ItemClass):
+                return v.value
+            if hasattr(v, "value"):
+                return str(v.value).lower()
+            if v:
+                return str(v).lower()
+    except Exception:
+        pass
+
+    # Fallback: raw payload
+    try:
+        data = getattr(interaction, "data", {}) or {}
+        def walk(options):
+            for opt in options or []:
+                if opt.get("name") == "item_class" and "value" in opt:
+                    return str(opt["value"]).lower()
+                if "options" in opt:
+                    found = walk(opt.get("options"))
+                    if found:
+                        return found
+            return ""
+        return walk(data.get("options", [])) or ""
+    except Exception:
+        return ""
+
+# Subcategory autocomplete
+async def _ac_subcategory(interaction: Interaction, current: str) -> List[app_commands.Choice[str]]:
+    try:
+        cls = _extract_item_class_from_interaction(interaction)
+        base: list[str] = []
+        if cls:
+            try:
+                base = allowed_subcategories_for(ItemClass(cls))  # canonical labels
+            except Exception:
+                base = SUBCATS.get(cls, [])
+        if not base:
+            base = sorted({c for opts in SUBCATS.values() for c in opts})[:12]
+
+        q = (current or "").lower()
+        suggestions = [s for s in base if q in s.lower()] if q else base
+        suggestions = suggestions[:25] or base[:10]
+        return [app_commands.Choice(name=s, value=s) for s in suggestions]
+    except Exception as e:
+        log.warning("subcategory autocomplete failed: %s", e)
+        return []
+
+# ──────────────────────────────────────────────────────────────────────────────
 # Announce helpers — card style with optional thumbnail
-# =============================================================================
+# ──────────────────────────────────────────────────────────────────────────────
 
 def _active_work_channel(guild: discord.Guild) -> Optional[discord.TextChannel]:
     from src.core.settings import SETTINGS
@@ -119,7 +184,7 @@ def _class_emoji(cls_str: str, sub: str | None = None) -> str:
         return "💵"
     if s in ("food", "consumable"): return "🍖"
     if s in ("drink", "beverage"): return "🥤"
-    if s in ("medical", "med"): return "💊"
+    if s in ("medical", "med") or s == "drugs": return "💊"
     return "📦"
 
 def _bool_word(v) -> str:
@@ -128,8 +193,8 @@ def _bool_word(v) -> str:
 async def _announce_item_card(
     guild: discord.Guild,
     author: discord.abc.User,
-    action: str,            # "create" | "delete" | "edit"
-    item_obj: Item | None,  # can be None for delete-by-name
+    action: str,
+    item_obj: Item | None,
     extra: dict | None = None,
 ) -> None:
     ch = _active_work_channel(guild)
@@ -178,9 +243,9 @@ async def _announce_item_card(
     else:
         await ch.send(embed=e)
 
-# =============================================================================
+# ──────────────────────────────────────────────────────────────────────────────
 # Small formatting helpers
-# =============================================================================
+# ──────────────────────────────────────────────────────────────────────────────
 
 def _quality_word(q: float) -> str:
     q = float(q)
@@ -304,17 +369,16 @@ def _render_catalog_table(rows: List[dict]) -> str:
 
     return f"```\n{'\n'.join(lines)}\n```"
 
-# =============================================================================
+# ──────────────────────────────────────────────────────────────────────────────
 # Autocompletes
-# =============================================================================
+# ──────────────────────────────────────────────────────────────────────────────
 
 async def _ac_item_name(
     interaction: Interaction, current: str
 ) -> List[app_commands.Choice[str]]:
     query = (current or "").strip()
     choices: List[app_commands.Choice[str]] = []
-
-    # 1) Preferred: include deleted status
+    # 1) include deleted status
     try:
         rows = list_item_name_status(query, limit=25)
         if rows:
@@ -324,8 +388,7 @@ async def _ac_item_name(
             return choices
     except Exception as e:
         log.warning("name autocomplete (status) failed: %s", e)
-
-    # 2) Active-only prefix
+    # 2) active-only prefix
     try:
         names = list_item_names(query, limit=25, include_deleted=False) if query \
                 else list_item_names("", limit=25, include_deleted=False)
@@ -333,8 +396,7 @@ async def _ac_item_name(
             return [app_commands.Choice(name=n, value=n) for n in names[:25]]
     except Exception as e:
         log.warning("name autocomplete (primary) failed: %s", e)
-
-    # 3) Substring fallback via catalog
+    # 3) substring fallback via catalog
     try:
         rows = catalog_items(query, None, None, None, page=1, page_size=25) if query \
                else catalog_items("", None, None, None, page=1, page_size=25)
@@ -344,71 +406,15 @@ async def _ac_item_name(
         log.warning("name autocomplete (fallback) failed: %s", e)
         return []
 
-def _extract_item_class_from_interaction(interaction: discord.Interaction) -> str:
-    """Return the selected item_class as a lowercase string, or '' if not set yet."""
-    # Preferred: namespace (works on most discord.py versions)
-    try:
-        ns = getattr(interaction, "namespace", None)
-        if ns is not None:
-            v = getattr(ns, "item_class", None)
-            # Enum?
-            if isinstance(v, ItemClass):
-                return v.value
-            # Choice?
-            if hasattr(v, "value"):
-                return str(v.value).lower()
-            if v:
-                return str(v).lower()
-    except Exception:
-        pass
-
-    # Fallback: raw payload (handles subcommands/options nesting)
-    try:
-        data = getattr(interaction, "data", {}) or {}
-        def walk(options):
-            for opt in options or []:
-                if opt.get("name") == "item_class" and "value" in opt:
-                    return str(opt["value"]).lower()
-                if "options" in opt:
-                    found = walk(opt.get("options"))
-                    if found:
-                        return found
-            return ""
-        return walk(data.get("options", [])) or ""
-    except Exception:
-        return ""
-
-async def _ac_subcategory(interaction: Interaction, current: str) -> List[app_commands.Choice[str]]:
-    """Autocomplete for subcategory; never raises and degrades gracefully."""
-    try:
-        cls = _extract_item_class_from_interaction(interaction)
-        base: list[str] = []
-        if cls:
-            try:
-                base = allowed_subcategories_for(ItemClass(cls))  # canonical labels
-            except Exception:
-                base = SUBCATS.get(cls, [])
-        if not base:
-            # show a small friendly shortlist if nothing is selected yet
-            base = sorted({c for opts in SUBCATS.values() for c in opts})[:12]
-
-        q = (current or "").lower()
-        suggestions = [s for s in base if q in s.lower()] if q else base
-        suggestions = suggestions[:25] or base[:10]
-        return [app_commands.Choice(name=s, value=s) for s in suggestions]
-    except Exception as e:
-        log.warning("subcategory autocomplete failed: %s", e)
-        return []
-
-# =============================================================================
+# ──────────────────────────────────────────────────────────────────────────────
 # Cog
-# =============================================================================
+# ──────────────────────────────────────────────────────────────────────────────
 
 class InventoryCog(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-    # ---------------- Admin utilities (debug/sync) ----------------
+    # ---------- Admin utilities (debug/sync)
 
     @app_commands.command(name="debug_itemclass", description="Show ItemClass values (debug)")
     async def debug_itemclass(self, interaction: discord.Interaction):
@@ -424,11 +430,9 @@ class InventoryCog(commands.Cog):
         synced = await self.bot.tree.sync(guild=interaction.guild)
         await interaction.followup.send(f"Synced {len(synced)} commands to this guild.", ephemeral=True)
 
-    # ---------------- Admin: grant existing item ----------------
+    # ---------- Admin: grant existing item
 
-    @app_commands.command(
-        name="giveitem", description="Admin: grant an existing catalog item to a member"
-    )
+    @app_commands.command(name="giveitem", description="Admin: grant an existing catalog item to a member")
     @app_commands.describe(
         member="Target member",
         name="Item name (from catalog)",
@@ -453,7 +457,7 @@ class InventoryCog(commands.Cog):
             item = get_item_by_name(name)
             if not item:
                 await interaction.followup.send(
-                    f"❌ Unknown item **{name}**. Use `/createitem` first, then try again.",
+                    f"❌ Unknown item **{name}**. Use `/createitem2` first, then try again.",
                     ephemeral=True,
                 )
                 return
@@ -473,13 +477,13 @@ class InventoryCog(commands.Cog):
                 f"Grant failed: `{type(e).__name__}: {e}`", ephemeral=True
             )
 
-    # ---------------- Admin: create item ----------------
+    # ---------- Admin: create item (the proven one)
 
-    @app_commands.command(name="createitem", description="Admin: add a new item to the catalog")
+    @app_commands.command(name="createitem2", description="Admin: add a new item to the catalog")
     @app_commands.describe(
         name="Unique item name",
-        item_class="Item class enum (e.g., misc, weapon, gear...)",
-        subcategory="Optional subcategory (e.g., melee, firearm, usd, bitcoin)",
+        item_class="Item class (e.g., misc, weapon, gear, drugs...)",
+        subcategory="Optional subcategory (e.g., melee, pistol, USD, Depressant)",
         durability="Base durability (0-100)",
         bop="Bind on pickup?",
         cash="Cash value at a typical vendor",
@@ -489,13 +493,12 @@ class InventoryCog(commands.Cog):
         stack_max="Max stack size (default 1)",
         equippable="Can be equipped / worn / held?",
     )
-    @app_commands.choices(item_class=_enum_choices(ItemClass))   # build choices from Enum (includes 'drugs')
-    @app_commands.autocomplete(subcategory=_ac_subcategory)
-    async def createitem(
+    @app_commands.autocomplete(item_class=_ac_item_class, subcategory=_ac_subcategory)
+    async def createitem2(
         self,
         interaction: Interaction,
         name: str,
-        item_class: app_commands.Choice[str],   # accept Choice[str]
+        item_class: str,              # string + autocomplete; converted to Enum below
         subcategory: Optional[str] = None,
         durability: int = 0,
         bop: bool = False,
@@ -512,14 +515,17 @@ class InventoryCog(commands.Cog):
 
         await interaction.response.defer(thinking=True)
 
-        # Convert the choice back into your Enum
+        # Convert to Enum (case-insensitive)
         try:
-            ic = ItemClass(item_class.value)
+            ic = ItemClass(str(item_class).strip().lower())
         except Exception:
-            await interaction.followup.send("Invalid item_class.", ephemeral=True)
+            await interaction.followup.send(
+                f"Invalid item_class **{item_class}**. Valid: {', '.join(e.value for e in ItemClass)}",
+                ephemeral=True
+            )
             return
 
-        # ---- Preflight duplicate name check (active only) ----
+        # Duplicate name check
         try:
             existing = get_item_by_name(name)
         except Exception:
@@ -541,10 +547,10 @@ class InventoryCog(commands.Cog):
                 created_at=datetime.now(timezone.utc),
                 bind_on_pickup=bop,
                 durability=durability,
-                scrap_value=cash,  # canonical value mirrored to cash_value by manager
+                scrap_value=cash,
                 hidden_trait=hidden,
                 mint_index=mint,
-                subcategory=(subcategory or None),  # validated by Item.__post_init__
+                subcategory=(subcategory or None),
             )
             setattr(item, "rarity", rarity)
             setattr(item, "stack_max", stack_max)
@@ -552,12 +558,12 @@ class InventoryCog(commands.Cog):
 
             iid = create_item(item)
             item.id = iid
-            log.info("/createitem by %s -> %s (id=%s)", interaction.user, name, iid)
+            log.info("/createitem2 by %s -> %s (id=%s)", interaction.user, name, iid)
 
             if interaction.guild:
                 extras = {
                     "class": ic.value,
-                    "subcategory": subcategory or None,
+                    "subcategory": item.subcategory,
                     "rarity": rarity,
                     "stack_max": stack_max,
                     "durability": durability,
@@ -572,6 +578,12 @@ class InventoryCog(commands.Cog):
                 f"🆕 Item **{name}** created with id **{iid}** → logged to {dest}", ephemeral=False
             )
 
+        except ValueError as ve:
+            allowed = ", ".join(allowed_subcategories_for(ic)) or "—"
+            await interaction.followup.send(
+                f"Create failed: {ve}\nAllowed subcategories for **{ic.value}**: {allowed}",
+                ephemeral=True,
+            )
         except Exception as e:
             msg = str(e)
             if "UNIQUE constraint failed: items.name" in msg:
@@ -581,12 +593,12 @@ class InventoryCog(commands.Cog):
                     ephemeral=True,
                 )
                 return
-            log.exception("createitem failed")
+            log.exception("createitem2 failed")
             await interaction.followup.send(
                 f"Create failed: `{type(e).__name__}: {e}`", ephemeral=False
             )
 
-    # ---------------- Admin: edit item ----------------
+    # ---------- Admin: edit item
 
     @app_commands.command(name="item_edit", description="Admin: edit a catalog item")
     @app_commands.describe(
@@ -680,7 +692,7 @@ class InventoryCog(commands.Cog):
                 f"Edit failed: `{type(e).__name__}: {e}`", ephemeral=False
             )
 
-    # ---------------- Admin: soft-delete ----------------
+    # ---------- Admin: soft-delete
 
     @app_commands.command(name="item_delete", description="Admin: soft-delete a catalog item by name")
     @app_commands.describe(name="Name of the item to delete")
@@ -715,7 +727,7 @@ class InventoryCog(commands.Cog):
                 f"Delete error: `{type(e).__name__}: {e}`", ephemeral=False
             )
 
-    # ---------------- Catalog (ephemeral) ----------------
+    # ---------- Catalog (ephemeral)
 
     @app_commands.command(name="catalog", description="Browse item catalog")
     @app_commands.describe(
@@ -779,7 +791,7 @@ class InventoryCog(commands.Cog):
                 f"Catalog error: `{type(e).__name__}: {e}`", ephemeral=True
             )
 
-    # ---------------- Catalog (public) ----------------
+    # ---------- Catalog (public)
 
     @app_commands.command(
         name="catalog_publish",
@@ -844,7 +856,7 @@ class InventoryCog(commands.Cog):
                 f"Catalog publish error: `{type(e).__name__}: {e}`", ephemeral=False
             )
 
-    # ---------------- Player: inventory & equip/unequip ----------------
+    # ---------- Player: inventory & equip/unequip
 
     @app_commands.command(name="inventory", description="View your inventory (or a member’s).")
     @app_commands.describe(member="Optional member to inspect", page="Optional page number (1-based)")
