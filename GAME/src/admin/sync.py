@@ -10,10 +10,20 @@ from discord.ext import commands
 log = logging.getLogger("admin.sync")
 
 DEV_GUILD_ID   = int(os.getenv("DEV_GUILD_ID", "0"))
-SYNC_ON_READY  = os.getenv("SYNC_ON_READY", "0") == "1"   # default OFF (no auto-sync)
-SYNC_TIMEOUT_S = float(os.getenv("SYNC_TIMEOUT_S", "6.0"))  # used ONLY for auto-sync, not manual
+SYNC_ON_READY  = os.getenv("SYNC_ON_READY", "0") == "1"        # default OFF (no auto-sync)
+SYNC_TIMEOUT_S = float(os.getenv("SYNC_TIMEOUT_S", "6.0"))     # used ONLY for auto-sync, not manual
+
 
 class SyncCog(commands.Cog):
+    """
+    Centralized, guarded sync utilities.
+
+    - Blocks arbitrary calls to CommandTree.sync() from other cogs (forces using /sync).
+    - Fast dev flow: guild-only sync (default).
+    - Global sync & both-scopes sync to prune stale GLOBAL commands (e.g., ghost /createitem).
+    - "sync_one" helper upserts a single command to a guild via HTTP.
+    """
+
     def __init__(self, bot: commands.Bot):
         self.bot = bot
         self._synced_once = False
@@ -25,8 +35,10 @@ class SyncCog(commands.Cog):
             if not getattr(self.bot, "_allow_sync_calls", False):
                 guild = kwargs.get("guild", None)
                 gid = getattr(guild, "id", None) if guild else None
-                log.info("sync: blocked an external sync call%s; use /sync to run manually.",
-                         f" for guild {gid}" if gid else "")
+                log.info(
+                    "sync: blocked an external sync call%s; use /sync to run manually.",
+                    f" for guild {gid}" if gid else " (GLOBAL)",
+                )
                 return []
             return await self._orig_sync(*args, **kwargs)
 
@@ -43,24 +55,39 @@ class SyncCog(commands.Cog):
             return
         await asyncio.sleep(random.uniform(1.0, 3.0))  # soften thundering herd
         # Auto-sync uses a SHORT TIMEOUT so we never block startup forever
-        await self._do_sync(auto=True, long_wait=False)
+        await self._do_sync(auto=True, guild_id=None, long_wait=False, global_scope=False)
 
     # --- Core sync runner ----------------------------------------------------------
-    async def _do_sync(self, auto: bool, *, guild_id: int | None, long_wait: bool) -> int:
+    async def _do_sync(
+        self,
+        auto: bool,
+        *,
+        guild_id: int | None,
+        long_wait: bool,
+        global_scope: bool,
+    ) -> int:
         """
         Run a real sync once, bypassing the guard.
 
         long_wait=True  -> no timeout; let discord.py honor Retry-After (manual /sync)
         long_wait=False -> short timeout; abort quickly if rate-limited (auto paths)
+
+        global_scope=True  -> force a GLOBAL sync (ignore DEV_GUILD_ID)
         """
         try:
             self.bot._allow_sync_calls = True
+
             async def _go():
+                if global_scope:
+                    # Force GLOBAL sync (this is what prunes stale global commands)
+                    return await self._orig_sync()
                 if guild_id is not None:
                     return await self._orig_sync(guild=discord.Object(id=guild_id))
                 elif DEV_GUILD_ID:
+                    # Dev convenience: if no guild_id passed, default to DEV_GUILD_ID
                     return await self._orig_sync(guild=discord.Object(id=DEV_GUILD_ID))
                 else:
+                    # Fallback GLOBAL (only when no DEV_GUILD_ID is set)
                     return await self._orig_sync()
 
             if long_wait:
@@ -68,10 +95,12 @@ class SyncCog(commands.Cog):
             else:
                 cmds = await asyncio.wait_for(_go(), timeout=SYNC_TIMEOUT_S)
 
-            # Logging
-            where = f"guild {guild_id or DEV_GUILD_ID}" if (guild_id or DEV_GUILD_ID) else "GLOBAL"
-            log.info("sync: %s-synced %d commands to %s",
-                     "auto" if auto else "manually", len(cmds), where)
+            if global_scope:
+                where = "GLOBAL"
+            else:
+                where = f"guild {guild_id or DEV_GUILD_ID}" if (guild_id or DEV_GUILD_ID) else "GLOBAL"
+
+            log.info("sync: %s-synced %d commands to %s", "auto" if auto else "manually", len(cmds), where)
             return len(cmds)
 
         except asyncio.TimeoutError:
@@ -111,16 +140,16 @@ class SyncCog(commands.Cog):
     # ---------------- Manual commands ----------------
     @app_commands.command(
         name="sync",
-        description="Admin: bulk-sync slash commands (guild by default, or a specific guild)."
+        description="Bulk-sync commands (guild/global/both)."  # <= 100 chars
     )
     @app_commands.describe(
-        scope="Where to sync (guild = fast/dev; global is slow & rate-limited)",
-        guild_id="Optional explicit guild id (overrides current guild & DEV_GUILD_ID)"
+        scope="Where to sync: guild (fast), global (prune ghosts), or both",
+        guild_id="Optional explicit guild id for guild scope"
     )
     async def sync_cmd(
         self,
         interaction: discord.Interaction,
-        scope: Literal["guild", "global"] = "guild",
+        scope: Literal["guild", "global", "both"] = "guild",
         guild_id: Optional[str] = None,
     ):
         if not interaction.user.guild_permissions.manage_guild:
@@ -133,44 +162,53 @@ class SyncCog(commands.Cog):
 
         async def runner():
             try:
-                if scope == "guild":
+                synced_global = synced_guild = None
+
+                if scope in ("global", "both"):
+                    # Force GLOBAL sync regardless of DEV_GUILD_ID
+                    synced_global = await self._do_sync(
+                        auto=False, guild_id=None, long_wait=True, global_scope=True
+                    )
+
+                if scope in ("guild", "both"):
                     gid: Optional[int] = None
                     if guild_id:
-                        try: gid = int(guild_id)
-                        except ValueError: gid = None
-                    if gid is None and interaction.guild: gid = interaction.guild.id
-                    if gid is None and DEV_GUILD_ID: gid = DEV_GUILD_ID
+                        try:
+                            gid = int(guild_id)
+                        except ValueError:
+                            gid = None
+                    if gid is None and interaction.guild:
+                        gid = interaction.guild.id
+                    if gid is None and DEV_GUILD_ID:
+                        gid = DEV_GUILD_ID
                     if not gid:
                         return await interaction.followup.send(
-                            "No guild context for bulk sync (pass guild_id or set DEV_GUILD_ID).",
+                            "No guild context for guild sync (pass guild_id or set DEV_GUILD_ID).",
                             ephemeral=True,
                         )
-
-                    # IMPORTANT: long_wait=True so discord.py waits through Retry-After
-                    count = await self._do_sync(auto=False, guild_id=gid, long_wait=True)
-                    if count == -1:
-                        return await interaction.followup.send(
-                            f"⚠️ Bulk sync for guild {gid} timed out early (unexpected).",
-                            ephemeral=True,
-                        )
-                    if count == 0:
-                        return await interaction.followup.send(
-                            f"⚠️ Bulk sync for guild {gid} failed (see logs).",
-                            ephemeral=True,
-                        )
-                    return await interaction.followup.send(
-                        f"✅ Bulk-synced {count} commands to **{gid}**.",
-                        ephemeral=True,
+                    synced_guild = await self._do_sync(
+                        auto=False, guild_id=gid, long_wait=True, global_scope=False
                     )
 
-                # GLOBAL bulk sync (also long_wait=True)
-                count = await self._do_sync(auto=False, guild_id=None, long_wait=True)
-                if count <= 0:
-                    msg = "timed out" if count == -1 else "failed"
-                    return await interaction.followup.send(
-                        f"⚠️ Global bulk sync {msg}. See logs.", ephemeral=True
-                    )
-                await interaction.followup.send(f"✅ Bulk-synced {count} global commands.", ephemeral=True)
+                parts: List[str] = []
+                if synced_guild is not None:
+                    if synced_guild == -1:
+                        parts.append("Guild: timed out")
+                    elif synced_guild == 0:
+                        parts.append("Guild: failed")
+                    else:
+                        parts.append(f"Guild: {synced_guild}")
+                if synced_global is not None:
+                    if synced_global == -1:
+                        parts.append("Global: timed out")
+                    elif synced_global == 0:
+                        parts.append("Global: failed")
+                    else:
+                        parts.append(f"Global: {synced_global}")
+
+                summary = " • ".join(parts) if parts else "No operations"
+                await interaction.followup.send(f"✅ Sync complete — {summary}.", ephemeral=True)
+
             except Exception as e:
                 log.exception("/sync runner failed")
                 try:
@@ -182,7 +220,7 @@ class SyncCog(commands.Cog):
 
     @app_commands.command(
         name="sync_one",
-        description="Admin: upsert a single command to a guild (bypasses bulk PUT)."
+        description="Upsert a single command to a guild (HTTP helper)."
     )
     @app_commands.describe(
         name="Command name to upsert",
@@ -205,10 +243,14 @@ class SyncCog(commands.Cog):
 
         gid: Optional[int] = None
         if guild_id:
-            try: gid = int(guild_id)
-            except ValueError: gid = None
-        if gid is None and interaction.guild: gid = interaction.guild.id
-        if gid is None and DEV_GUILD_ID: gid = DEV_GUILD_ID
+            try:
+                gid = int(guild_id)
+            except ValueError:
+                gid = None
+        if gid is None and interaction.guild:
+            gid = interaction.guild.id
+        if gid is None and DEV_GUILD_ID:
+            gid = DEV_GUILD_ID
         if not gid:
             return await interaction.response.send_message(
                 "No guild context for sync_one (pass guild_id or set DEV_GUILD_ID).", ephemeral=True
@@ -226,9 +268,15 @@ class SyncCog(commands.Cog):
             payload = self._payload_for(cmd)
             try:
                 existing = await self._get_guild_cmds_http(app_id, gid)
-                found = next((e for e in existing
-                              if str(e.get("name","")).lower() == cmd.name.lower()
-                              and int(e.get("type",1)) == int(payload.get("type",1))), None)
+                found = next(
+                    (
+                        e
+                        for e in existing
+                        if str(e.get("name", "")).lower() == cmd.name.lower()
+                        and int(e.get("type", 1)) == int(payload.get("type", 1))
+                    ),
+                    None,
+                )
                 if found:
                     await self._edit_guild_cmd_http(app_id, gid, int(found["id"]), payload)
                     what = "updated"
@@ -245,7 +293,7 @@ class SyncCog(commands.Cog):
 
         asyncio.create_task(runner())
 
-    @app_commands.command(name="sync_preview", description="Admin: show commands this process would register (no API calls).")
+    @app_commands.command(name="sync_preview", description="Show commands this process would register (no API calls).")
     async def sync_preview(self, interaction: discord.Interaction):
         if not interaction.user.guild_permissions.manage_guild:
             return await interaction.response.send_message("Nope.", ephemeral=True)
@@ -254,13 +302,14 @@ class SyncCog(commands.Cog):
         text = "\n".join(lines) if lines else "No commands found in this process."
         await interaction.response.send_message(text[:1900], ephemeral=True)
 
-    @app_commands.command(name="sync_status", description="Admin: show whether a bulk sync has run this session.")
+    @app_commands.command(name="sync_status", description="Show whether a bulk sync has run this session.")
     async def sync_status(self, interaction: discord.Interaction):
         flag = getattr(self.bot, "_synced_once", False)
         await interaction.response.send_message(
             f"synced_once={flag} • DEV_GUILD_ID={DEV_GUILD_ID} • SYNC_ON_READY={int(SYNC_ON_READY)}",
             ephemeral=True,
         )
+
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(SyncCog(bot))
