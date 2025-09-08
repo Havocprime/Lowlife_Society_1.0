@@ -6,7 +6,7 @@ import shlex
 import json
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, Optional, Tuple, List, Literal
+from typing import Any, Dict, Optional, Tuple, List
 
 import discord
 from discord.ext import commands, tasks
@@ -33,7 +33,6 @@ MAG_PROCESSED = Path(os.getenv("ITEM_MAG_PROCESSED_FILE", str(MAG_FILE) + ".proc
 
 ANNOUNCE_FILE = ROOT / "data" / "item_mag_channel.txt"
 CDN_FILE = ROOT / "data" / "item_mag_cdn_channel.txt"
-ANNOUNCE_SILENT_FILE = ROOT / "data" / "item_mag_announce_silent.txt"  # <— toggle persistence
 
 # Provide safe module-level fallbacks so imports never crash
 ANNOUNCE_CHANNEL_ID = 0
@@ -69,6 +68,37 @@ def _coerce_value(raw: str) -> Any:
     except Exception:
         pass
     return raw
+
+
+def _item_class_label(ic: Any) -> str:
+    """Return a printable/sluggable class label regardless of enum/string."""
+    return getattr(ic, "name", str(ic)).strip()
+
+
+def _coerce_item_class(value: Any) -> Any:
+    """Try to coerce a string into ItemClass; fall back to lowercase string."""
+    if isinstance(value, ItemClass):
+        return value
+    if not isinstance(value, str):
+        return value
+    key = value.split(".")[-1].strip().lower()
+    aliases = {
+        "tools": "tool",
+        "armour": "armor",
+        "apparel": "clothing",
+        "clothes": "clothing",
+        "medicine": "medical",
+        "consumables": "consumable",
+        "components": "component",
+        "materials": "material",
+    }
+    key = aliases.get(key, key)
+    try:
+        if hasattr(ItemClass, key):
+            return getattr(ItemClass, key)
+        return ItemClass[key.upper()]
+    except Exception:
+        return key  # keep as string; rest of code handles it
 
 
 def _parse_createitem2(line: str) -> Optional[Dict[str, Any]]:
@@ -111,13 +141,9 @@ def _parse_createitem2(line: str) -> Optional[Dict[str, Any]]:
         if src in raw_kwargs:
             mapped[dst] = raw_kwargs[src]
 
-    ic = raw_kwargs.get("item_class")
-    if isinstance(ic, str):
-        try:
-            ic_name = ic.split(".")[-1]
-            mapped["item_class"] = getattr(ItemClass, ic_name) if hasattr(ItemClass, ic_name) else ItemClass[ic_name.upper()]
-        except Exception:
-            pass
+    # Coerce item_class robustly; may remain a string if not in enum
+    if "item_class" in mapped:
+        mapped["item_class"] = _coerce_item_class(mapped["item_class"])
 
     if "name" not in mapped or "item_class" not in mapped:
         return None
@@ -211,15 +237,6 @@ class ItemMagazine(commands.Cog):
         except Exception:
             self._announce_channel_id = 0
 
-        # mute toggle for announce channel only
-        self._announce_silent: bool = False
-        try:
-            if ANNOUNCE_SILENT_FILE.exists():
-                val = (ANNOUNCE_SILENT_FILE.read_text("utf-8").strip() or "0").lower()
-                self._announce_silent = val in ("1", "true", "yes", "on")
-        except Exception:
-            self._announce_silent = False
-
         # CDN channel (pinned icons)
         self._cdn_channel_id = CDN_CHANNEL_ID
         try:
@@ -291,13 +308,6 @@ class ItemMagazine(commands.Cog):
         except Exception:
             pass
 
-    def _save_announce_silent(self) -> None:
-        try:
-            ANNOUNCE_SILENT_FILE.parent.mkdir(parents=True, exist_ok=True)
-            ANNOUNCE_SILENT_FILE.write_text("1" if self._announce_silent else "0", encoding="utf-8")
-        except Exception:
-            pass
-
     # ---------- magazine core ----------
     def _find_next_line(self) -> Tuple[Optional[Dict[str, Any]], Optional[str], int, Optional[str]]:
         if not MAG_FILE.exists():
@@ -364,7 +374,6 @@ class ItemMagazine(commands.Cog):
             try:
                 item_obj.id = int(new_id)
             except Exception:
-                # if DAL returned a non-int but truthy, keep it stringified
                 item_obj.id = int(str(new_id))
 
             # Optional: refresh from DB to pick up DB-side defaults (created_at, etc.)
@@ -457,7 +466,7 @@ class ItemMagazine(commands.Cog):
         if not self._icon_cache:
             return None
 
-        cls_key = _slug(item.item_class.name)  # e.g., "tool", "weapon"
+        cls_key = _slug(_item_class_label(item.item_class))  # enum or string
         sub = _slug(item.subcategory) if item.subcategory else ""
         name_key = _slug(item.name)
 
@@ -509,10 +518,11 @@ class ItemMagazine(commands.Cog):
                 embed = None
 
         if embed is None:
+            cls_label = _item_class_label(item.item_class)
             embed = discord.Embed(title="NEW Item", color=0xE74C3C)
             embed.description = (
                 f"**\"{item.name}\"** — **ID** `{item.id}`\n"
-                f"*{item.item_class.name}* / *{item.subcategory or 'Utility'}* · **{item.rarity or 'common'}**\n\n"
+                f"*{cls_label}* / *{item.subcategory or 'Utility'}* · **{item.rarity or 'common'}**\n\n"
                 f"**Durability** {item.durability}   **Stack** {item.stack_max}   **Cash** {item.cash_value}\n"
                 f"**Equippable** {'Yes' if item.equippable else 'No'}"
             )
@@ -524,7 +534,7 @@ class ItemMagazine(commands.Cog):
             except Exception:
                 pass
 
-        # Announce to configured channel (with optional "silent" notifications)
+        # Announce to configured channel
         if self._announce_channel_id:
             ch = self.bot.get_channel(self._announce_channel_id)
             if not isinstance(ch, (discord.TextChannel, discord.Thread)):
@@ -534,22 +544,11 @@ class ItemMagazine(commands.Cog):
                     ch = None
             if isinstance(ch, (discord.TextChannel, discord.Thread)):
                 try:
-                    # discord.py 2.3+: 'silent' kw suppresses push notifications
-                    await ch.send(
-                        embed=embed,
-                        silent=self._announce_silent,
-                        allowed_mentions=discord.AllowedMentions.none(),
-                    )
-                except TypeError:
-                    # Older discord.py: retry without 'silent'
-                    try:
-                        await ch.send(embed=embed, allowed_mentions=discord.AllowedMentions.none())
-                    except Exception:
-                        pass
+                    await ch.send(embed=embed)
                 except Exception:
                     pass
 
-        # Also acknowledge in the invoking channel (if any) — NOT silenced
+        # Also acknowledge in the invoking channel (if any)
         if origin_channel:
             try:
                 await origin_channel.send(f"✅ Created item: {item.name}")
@@ -582,7 +581,7 @@ class ItemMagazine(commands.Cog):
             f"**Interval:** {MAG_INTERVAL_S:.1f}s\n"
             f"**Cursor:** {self._cursor}\n"
             f"**Processed:** {len(self._processed)}\n"
-            f"**Announce:** {ann_str} • **Silent:** {'ON' if self._announce_silent else 'OFF'}\n"
+            f"**Announce:** {ann_str}\n"
             f"**CDN:** {cdn_str} • **Icons cached:** {len(self._icon_cache)}"
         )
 
@@ -618,28 +617,10 @@ class ItemMagazine(commands.Cog):
         added = await self._load_icon_cache_from_pins()
         await ctx.reply(f"🧹 Icon cache rebuilt — **{added}** icon(s) loaded.")
 
-    @commands.hybrid_command(
-        description="Mute/unmute item announcements in the announce channel (push notifications). "
-                    "Modes: on/off/toggle; omit to show current."
-    )
-    @commands.has_permissions(manage_guild=True)
-    async def mag_set_announce_silent(
-        self,
-        ctx: commands.Context,
-        mode: Optional[Literal["on", "off", "toggle"]] = None
-    ):
-        if mode is None:
-            await ctx.reply(f"🔕 Announce silent is **{'ON' if self._announce_silent else 'OFF'}**.")
-            return
-
-        if mode == "toggle":
-            self._announce_silent = not self._announce_silent
-        else:
-            self._announce_silent = (mode == "on")
-
-        self._save_announce_silent()
-        await ctx.reply(f"🔕 Announce silent set to **{'ON' if self._announce_silent else 'OFF'}**.")
-
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(ItemMagazine(bot))
+
+async def setup(bot: commands.Bot):
+    if bot.get_cog("ItemMagazine") is None:
+        await bot.add_cog(ItemMagazine(bot))

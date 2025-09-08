@@ -1,3 +1,4 @@
+# GAME/src/cogs/activity_logger.py
 from __future__ import annotations
 
 import json
@@ -6,7 +7,7 @@ import re
 import sqlite3
 from collections import OrderedDict
 from datetime import datetime, timezone
-from typing import Any
+from typing import Any, Iterable
 
 import discord
 from discord.ext import commands
@@ -48,6 +49,7 @@ def _insert(kind: str, user_id: int, guild_id: int, payload: dict[str, Any]) -> 
                 ),
             )
     except Exception:
+        # swallow logging errors; the bot shouldn’t crash on telemetry issues
         pass
 
 
@@ -81,39 +83,81 @@ def _attachment_type(att: discord.Attachment) -> str:
     return "file"
 
 
-def _perm_names(perms: discord.Permissions) -> set[str]:
-    out = set()
-    for name, allowed in perms:
-        if allowed:
-            out.add(name)
-    return out
+def _perm_names(perms: Any) -> set[str]:
+    """
+    Return a set of permission names that evaluate to True.
+
+    Accepts:
+      - discord.Permissions
+      - discord.PermissionOverwrite
+      - dict-like objects (with .items())
+      - generic iterables of tuples/lists (name, value, *rest)
+      - iterables/sets of strings (already names)
+    """
+    # Fast path: objects that expose to_dict()
+    if hasattr(perms, "to_dict"):
+        try:
+            d = perms.to_dict()
+            return {k for k, v in d.items() if bool(v)}
+        except Exception:
+            pass
+
+    # Mapping?
+    if hasattr(perms, "items"):
+        try:
+            return {str(k) for k, v in perms.items() if bool(v)}
+        except Exception:
+            pass
+
+    # If it's already a set/list/tuple of strings, accept it
+    if isinstance(perms, (set, list, tuple)) and all(isinstance(x, str) for x in perms):
+        return set(perms)
+
+    # Generic iterable: tuples/lists/etc.
+    names: set[str] = set()
+    try:
+        for item in perms:  # type: ignore
+            # tuple/list like ("manage_messages", True, ...) or ("manage_messages", True)
+            if isinstance(item, (tuple, list)) and len(item) >= 2:
+                name = str(item[0])
+                allowed = bool(item[1])
+                if allowed:
+                    names.add(name)
+            # if item is a string, treat as already-allowed name
+            elif isinstance(item, str):
+                names.add(item)
+            else:
+                continue
+    except Exception:
+        # Last-resort attempt
+        try:
+            d = dict(perms)  # type: ignore[arg-type]
+            for k, v in d.items():
+                if bool(v):
+                    names.add(str(k))
+        except Exception:
+            pass
+
+    return names
 
 
-# --- replace or add ---
 def _agg_member_perms(member: discord.Member) -> set[str]:
     """
     Return the union of all allowed permission names for this member.
-    Never constructs Permissions from ad-hoc dicts; only uses real Permission objects.
+    Uses only real Permission objects from Discord entities.
     """
     out: set[str] = set()
 
-    # member.guild_permissions is already a discord.Permissions
     gp = getattr(member, "guild_permissions", None)
     if isinstance(gp, discord.Permissions):
-        for name, allowed in gp:
-            if allowed:
-                out.add(name)
+        out |= _perm_names(gp)
 
-    # include union of each role's permissions
     for role in getattr(member, "roles", []) or []:
         rp = getattr(role, "permissions", None)
         if isinstance(rp, discord.Permissions):
-            for name, allowed in rp:
-                if allowed:
-                    out.add(name)
+            out |= _perm_names(rp)
 
     return out
-
 
 
 class ActivityLogger(commands.Cog):
@@ -432,7 +476,7 @@ class ActivityLogger(commands.Cog):
     # -------- role updates --------
     @commands.Cog.listener()
     async def on_guild_role_update(self, before: discord.Role, after: discord.Role):
-        diffs = {}
+        diffs: dict[str, Any] = {}
         for attr in ("name", "color", "position", "mentionable", "hoist"):
             b = getattr(before, attr, None)
             a = getattr(after, attr, None)
@@ -449,7 +493,7 @@ class ActivityLogger(commands.Cog):
     # -------- guild updates --------
     @commands.Cog.listener()
     async def on_guild_update(self, before: discord.Guild, after: discord.Guild):
-        diffs = {}
+        diffs: dict[str, Any] = {}
         for attr in (
             "name",
             "icon",
@@ -470,7 +514,7 @@ class ActivityLogger(commands.Cog):
     async def on_guild_channel_update(
         self, before: discord.abc.GuildChannel, after: discord.abc.GuildChannel
     ):
-        diffs = {}
+        diffs: dict[str, Any] = {}
         for attr in ("name", "topic", "nsfw"):
             b = getattr(before, attr, None)
             a = getattr(after, attr, None)
@@ -534,24 +578,21 @@ class ActivityLogger(commands.Cog):
 
         bset = {r.id for r in before.roles}
         aset = {r.id for r in after.roles}
-        added = list(aset - bset)
-        removed = list(bset - aset)
-        if added or removed:
+        added_roles = list(aset - bset)
+        removed_roles = list(bset - aset)
+        if added_roles or removed_roles:
             _insert(
                 "roles",
                 after.id,
                 g,
-                {"added": [str(i) for i in added], "removed": [str(i) for i in removed]},
+                {"added": [str(i) for i in added_roles], "removed": [str(i) for i in removed_roles]},
             )
 
+        # Permission diffs using sets (no tuple unpacking errors)
         bp = _agg_member_perms(before)
         ap = _agg_member_perms(after)
-        added   = sorted(ap - bp)
-        removed = sorted(bp - ap)
-        bnames = _perm_names(bp)
-        anames = _perm_names(ap)
-        gained = sorted((anames - bnames) & RISKY_PERMS)
-        lost = sorted((bnames - anames) & RISKY_PERMS)
+        gained = sorted((ap - bp) & RISKY_PERMS)
+        lost = sorted((bp - ap) & RISKY_PERMS)
         if gained or lost:
             _insert("perm_diff", after.id, g, {"gained": gained, "lost": lost})
             if self.alert_channel_id and gained:

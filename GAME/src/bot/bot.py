@@ -282,6 +282,9 @@ class LowlifeBot(commands.Bot):
             "src.cogs.suggestions",
             "src.cogs.admin_items",
             "src.cogs.item_magazine",
+            "src.cogs.onboarding",
+            "src.cogs.profile",
+            "src.cogs.admin_backfill",
 
             
         ]
