@@ -280,8 +280,8 @@ class LowlifeBot(commands.Bot):
             "src.cogs.admin_tools",
             "src.cogs.health",
             "src.cogs.suggestions",
-            "src.cogs.admin_items"
-            
+            "src.cogs.admin_items",
+            "src.cogs.item_magazine",
 
             
         ]

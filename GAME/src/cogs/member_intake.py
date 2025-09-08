@@ -42,14 +42,18 @@ class MemberIntake(commands.Cog):
         invite_code = inviter_id = invite_channel_id = None
         if inv_cog:
             try:
-                invite_code, inviter_id, invite_channel_id = await inv_cog.diff_invites(
-                    member.guild
-                )
+                invite_code, inviter_id, invite_channel_id = await inv_cog.diff_invites(member.guild)
             except Exception:
                 pass
 
-        created = member.created_at.replace(tzinfo=timezone.utc)
+        # Account age
+        created = member.created_at
+        if created.tzinfo is None:  # safety: normalize to UTC-aware
+            created = created.replace(tzinfo=timezone.utc)
         age_days = (now - created).days
+
+        # Safe access: may not exist on some gateway/library combos
+        comm_disabled_until = getattr(member, "communication_disabled_until", None)
 
         snapshot = {
             "user": {
@@ -60,7 +64,7 @@ class MemberIntake(commands.Cog):
                 "system": bool(member.system),
                 "created_at": created.isoformat().replace("+00:00", "Z"),
                 "avatar_url": member.display_avatar.url if member.display_avatar else None,
-                "banner_url": None,  # Safe default; fetching user banner requires an extra API call
+                "banner_url": None,  # fetching user banner requires an extra API call
                 "accent_color": (
                     getattr(member, "accent_color", None).value
                     if getattr(member, "accent_color", None)
@@ -86,29 +90,19 @@ class MemberIntake(commands.Cog):
                     for r in sorted(member.roles, key=lambda r: r.position)
                 ],
                 "status": str(getattr(member, "status", "offline")),
-                "activities": [
-                    getattr(a, "name", str(a)) for a in getattr(member, "activities", [])
-                ],
+                "activities": [getattr(a, "name", str(a)) for a in getattr(member, "activities", [])],
                 "voice": {
                     "channel_id": (
-                        str(member.voice.channel.id)
-                        if member.voice and member.voice.channel
-                        else None
+                        str(member.voice.channel.id) if member.voice and member.voice.channel else None
                     ),
                     "mute": bool(member.voice.mute) if member.voice else False,
                     "deaf": bool(member.voice.deaf) if member.voice else False,
-                    "stream": (
-                        bool(getattr(member.voice, "self_stream", False)) if member.voice else False
-                    ),
+                    "stream": bool(getattr(member.voice, "self_stream", False)) if member.voice else False,
                 },
                 "communication_disabled_until": (
-                    member.communication_disabled_until.isoformat().replace("+00:00", "Z")
-                    if member.communication_disabled_until
-                    else None
+                    comm_disabled_until.isoformat().replace("+00:00", "Z") if comm_disabled_until else None
                 ),
-                "permissions": [
-                    p for p, allowed in dict(member.guild_permissions).items() if allowed
-                ],
+                "permissions": [p for p, allowed in dict(member.guild_permissions).items() if allowed],
             },
             "join_context": {
                 "invite_code": invite_code,
