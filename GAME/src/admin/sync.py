@@ -1,7 +1,11 @@
 # src/admin/sync.py
 from __future__ import annotations
-import asyncio, logging, os, random
-from typing import Literal, Any, Awaitable, Callable, Optional, List
+import asyncio
+import inspect
+import logging
+import os
+import random
+from typing import Any, Awaitable, Callable, List, Literal, Optional
 
 import discord
 from discord import app_commands
@@ -12,6 +16,10 @@ log = logging.getLogger("admin.sync")
 DEV_GUILD_ID   = int(os.getenv("DEV_GUILD_ID", "0"))
 SYNC_ON_READY  = os.getenv("SYNC_ON_READY", "0") == "1"        # default OFF (no auto-sync)
 SYNC_TIMEOUT_S = float(os.getenv("SYNC_TIMEOUT_S", "6.0"))     # used ONLY for auto-sync, not manual
+
+# Capture the ORIGINAL (unwrapped) sync function once, at import time.
+# We'll bind this to each bot's tree to bypass our own guard when /sync runs.
+_RAW_SYNC_FN = inspect.unwrap(app_commands.CommandTree.sync)
 
 
 class SyncCog(commands.Cog):
@@ -28,22 +36,33 @@ class SyncCog(commands.Cog):
         self.bot = bot
         self._synced_once = False
 
-        # ---- Guard: block external CommandTree.sync calls (other cogs) ----
-        self._orig_sync: Callable[..., Awaitable[List[app_commands.AppCommand]]] = bot.tree.sync  # type: ignore[attr-defined]
+        # Bind the ORIGINAL sync as a method on THIS tree so we can always call it.
+        self._raw_sync_bound: Callable[..., Awaitable[List[app_commands.AppCommand]]] = _RAW_SYNC_FN.__get__(
+            bot.tree, app_commands.CommandTree
+        )
 
-        async def _guarded_sync(*args: Any, **kwargs: Any) -> List[app_commands.AppCommand]:
-            if not getattr(self.bot, "_allow_sync_calls", False):
+        # ---- Guard: block external CommandTree.sync calls (other cogs) ----
+        # We only monkeypatch THIS bot's tree (not the class), so other bots are unaffected.
+        self._guard_installed = False
+        if getattr(bot.tree.sync, "__name__", "") != "_guarded_sync":
+            orig_bound = bot.tree.sync  # keep around for clarity (not used directly)
+
+            async def _guarded_sync(*args: Any, **kwargs: Any) -> List[app_commands.AppCommand]:
                 guild = kwargs.get("guild", None)
                 gid = getattr(guild, "id", None) if guild else None
                 log.info(
                     "sync: blocked an external sync call%s; use /sync to run manually.",
                     f" for guild {gid}" if gid else " (GLOBAL)",
                 )
-                return []
-            return await self._orig_sync(*args, **kwargs)
+                return []  # pretend success but do nothing
 
-        bot.tree.sync = _guarded_sync  # type: ignore[assignment]
-        log.info("sync: guard installed; SYNC_ON_READY=%s, DEV_GUILD_ID=%s", int(SYNC_ON_READY), DEV_GUILD_ID)
+            bot.tree.sync = _guarded_sync  # type: ignore[assignment]
+            self._guard_installed = True
+
+        log.info(
+            "sync: guard installed=%s; SYNC_ON_READY=%s, DEV_GUILD_ID=%s",
+            self._guard_installed, int(SYNC_ON_READY), DEV_GUILD_ID
+        )
 
     # ---------------- Auto-sync (optional; still disabled by default) ----------------
     @commands.Cog.listener()
@@ -67,7 +86,7 @@ class SyncCog(commands.Cog):
         global_scope: bool,
     ) -> int:
         """
-        Run a real sync once, bypassing the guard.
+        Run a real sync once, BYPASSING the guard by calling the original sync.
 
         long_wait=True  -> no timeout; let discord.py honor Retry-After (manual /sync)
         long_wait=False -> short timeout; abort quickly if rate-limited (auto paths)
@@ -75,20 +94,18 @@ class SyncCog(commands.Cog):
         global_scope=True  -> force a GLOBAL sync (ignore DEV_GUILD_ID)
         """
         try:
-            self.bot._allow_sync_calls = True
-
             async def _go():
                 if global_scope:
                     # Force GLOBAL sync (this is what prunes stale global commands)
-                    return await self._orig_sync()
+                    return await self._raw_sync_bound()
                 if guild_id is not None:
-                    return await self._orig_sync(guild=discord.Object(id=guild_id))
+                    return await self._raw_sync_bound(guild=discord.Object(id=guild_id))
                 elif DEV_GUILD_ID:
                     # Dev convenience: if no guild_id passed, default to DEV_GUILD_ID
-                    return await self._orig_sync(guild=discord.Object(id=DEV_GUILD_ID))
+                    return await self._raw_sync_bound(guild=discord.Object(id=DEV_GUILD_ID))
                 else:
                     # Fallback GLOBAL (only when no DEV_GUILD_ID is set)
-                    return await self._orig_sync()
+                    return await self._raw_sync_bound()
 
             if long_wait:
                 cmds = await _go()  # NO timeout: library will wait & retry properly
@@ -110,9 +127,8 @@ class SyncCog(commands.Cog):
             log.warning("sync: sync failed: %s", e)
             return 0
         finally:
-            self.bot._allow_sync_calls = False
             self._synced_once = True
-            self.bot._synced_once = True
+            self.bot._synced_once = True  # type: ignore[attr-defined]
 
     # ----------- Helpers for single-command upsert (bypasses bulk PUT) -------------
     async def _get_guild_cmds_http(self, app_id: int, guild_id: int):

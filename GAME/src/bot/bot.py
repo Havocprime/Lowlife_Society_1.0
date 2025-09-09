@@ -7,6 +7,7 @@ import io
 import json
 import logging
 import sys
+import inspect
 from datetime import datetime, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -14,6 +15,8 @@ from zoneinfo import ZoneInfo
 import discord
 from discord import app_commands
 from discord.ext import commands
+
+from src.core.heartbeat import Heartbeat, HeartbeatConfig
 
 # ---------- boot logging ----------
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
@@ -41,9 +44,6 @@ masked = (tok[:8] + "…" + tok[-6:]) if len(tok) > 16 else "(too short)"
 log.info("Token loaded (len=%d): %s", len(tok), masked)
 if len(tok) < 40 or (" " in tok) or ("\n" in tok) or ("\r" in tok):
     log.error("Token looks malformed. Check GAME/.env DISCORD_TOKEN.")
-
-
-
 
 TOKEN = SETTINGS.discord_token
 GUILD_ID = SETTINGS.guild_id
@@ -221,6 +221,8 @@ class LowlifeTree(app_commands.CommandTree):
 class LowlifeBot(commands.Bot):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        self._heartbeat: Heartbeat | None = None
+        self._bootstrap_synced: bool = False
 
     async def setup_hook(self):
         # global crash/error capture
@@ -252,7 +254,6 @@ class LowlifeBot(commands.Bot):
             except Exception as e:
                 log.warning("auto migrations failed: %s", e)
 
-
         # ---- Resolve ONLY the audit_event decorator via module import (robust) ----
         try:
             from src.core import audit as _audit_mod
@@ -267,7 +268,6 @@ class LowlifeBot(commands.Bot):
 
         # Base cogs to load
         COGS = [
-            
             "src.cogs.activity_logger",
             "src.cogs.admin_inspector",
             "src.cogs.analytics",
@@ -285,10 +285,8 @@ class LowlifeBot(commands.Bot):
             "src.cogs.onboarding",
             "src.cogs.profile",
             "src.cogs.admin_backfill",
-
-            
+            "src.cogs.heartbeat_taps",
         ]
-        
 
         async def try_load(module: str):
             try:
@@ -302,7 +300,7 @@ class LowlifeBot(commands.Bot):
 
         # Extra/feature/admin cogs (best-effort)
         for module in (
-            "src.cogs.events",              # writes to events table
+            "src.cogs.events",
             "src.admin.sync",
             "src.admin.export",
             "src.admin.audit",
@@ -313,11 +311,40 @@ class LowlifeBot(commands.Bot):
             "src.admin.econ",
             "src.admin.roles",
             "src.admin.backup",
-            "src.cogs.event_listener",      # audit ledger event hooks
+            "src.cogs.event_listener",
             "src.admin.investigate",
-            "src.admin.events_viewer",      # /events group + aliases
+            "src.admin.events_viewer",
         ):
             await try_load(module)
+
+        # ---------- HEARTBEAT ----------
+        try:
+            cfg = HeartbeatConfig(interval_s=0.5, log_every_n=12, label="LOWLIFE")
+            self._heartbeat = Heartbeat(cfg)
+            await self._heartbeat.start()
+            log.info("heartbeat started")
+        except Exception:
+            log.exception("failed to start heartbeat")
+
+        # ---------- Ensure /hb is registered ----------
+        try:
+            hb_cog = self.get_cog("HeartbeatTaps")
+            if hb_cog and hasattr(hb_cog, "hb"):
+                try:
+                    self.tree.add_command(hb_cog.hb)
+                except Exception as e:
+                    if "already registered" not in str(e).lower():
+                        log.warning("add_command(global, /hb) failed: %s", e)
+                if GUILD_ID:
+                    try:
+                        self.tree.add_command(hb_cog.hb, guild=discord.Object(id=GUILD_ID))
+                    except Exception as e:
+                        if "already registered" not in str(e).lower():
+                            log.warning("add_command(guild, /hb) failed: %s", e)
+            else:
+                log.warning("HeartbeatTaps cog not found; /hb not registered.")
+        except Exception:
+            log.exception("failed to register /hb")
 
         # --- /inspect_full (admin) ---
         @app_commands.command(
@@ -561,6 +588,16 @@ class LowlifeBot(commands.Bot):
                 if "already registered" not in str(e).lower():
                     log.warning("add_command(global,inspect_full) failed: %s", e)
 
+            # debug inventory
+            try:
+                all_cmds = list(self.tree.get_commands())
+                log.info("pre-sync: tree has %d top-level commands", len(all_cmds))
+                for top in all_cmds:
+                    qname = getattr(top, "qualified_name", getattr(top, "name", "?"))
+                    log.info("pre-sync: /%s", qname)
+            except Exception as e:
+                log.warning("pre-sync inventory failed: %s", e)
+
             guild_added = False
             target_guild = None
             if GUILD_ID:
@@ -612,8 +649,49 @@ class LowlifeBot(commands.Bot):
 
         await register_and_sync()
 
+    async def _bootstrap_sync_once(self):
+        """
+        One-time emergency sync to break the 'guarded sync' deadlock.
+        We call the ORIGINAL (unwrapped) CommandTree.sync directly, bypassing admin.sync's guard.
+        """
+        if self._bootstrap_synced:
+            return
+        self._bootstrap_synced = True
+
+        # obtain the original (unwrapped) function object
+        try:
+            orig_sync_fn = inspect.unwrap(app_commands.CommandTree.sync)
+            bound_sync = orig_sync_fn.__get__(self.tree, app_commands.CommandTree)
+
+            # Global sync
+            try:
+                gcmds = await bound_sync()
+                log.info("bootstrap sync (unwrapped): global ok — %d cmds", len(gcmds))
+            except Exception as e:
+                log.warning("bootstrap sync (unwrapped): global sync failed: %s", e)
+
+            # Guild sync
+            if GUILD_ID:
+                try:
+                    gcmds = await bound_sync(guild=discord.Object(id=GUILD_ID))
+                    log.info("bootstrap sync (unwrapped): guild ok — %d cmds to %s", len(gcmds), GUILD_ID)
+                except Exception as e:
+                    log.warning("bootstrap sync (unwrapped): guild sync failed: %s", e)
+        except Exception:
+            log.exception("bootstrap sync (unwrapped) failed completely")
+
     async def on_ready(self):
         log.info("Logged in as %s (%s) — %s", self.user, getattr(self.user, "id", "?"), BUILD_TAG)
+        await self._bootstrap_sync_once()
+
+    # ---------- HEARTBEAT: graceful shutdown ----------
+    async def close(self):
+        try:
+            if self._heartbeat:
+                await self._heartbeat.stop()
+                log.info("heartbeat stopped")
+        finally:
+            await super().close()
 
 
 def build_bot() -> LowlifeBot:
