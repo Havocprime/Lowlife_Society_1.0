@@ -1,0 +1,365 @@
+from __future__ import annotations
+import os, json, logging, traceback, uuid, difflib
+from typing import Optional, Callable, Tuple
+
+import discord
+from discord import app_commands, Interaction
+from discord.ext import commands
+
+from src.systems.tags.schema import ensure_tags_schema  # runtime schema guard
+from src.systems.tags import dal as tag_dal
+from src.systems.tags.engine import TagEngine
+from src.systems.tags.api import apply_tag
+from src.db import dal as core_dal  # your main DAL
+from src.services import health as health_svc  # ✅ persisted health
+
+log = logging.getLogger("tags.cog")
+ENGINE = TagEngine()
+
+
+# ------------------------------ config ------------------------------
+
+def _enabled() -> bool:
+    return os.getenv("TAGS_ENABLED", "0") == "1"
+
+FALLBACK_OWNER_KIND = os.getenv("TAGS_FALLBACK_OWNER_KIND", "discord")
+
+
+# ------------------------------ helpers -----------------------------
+
+# Robust owner resolver (player if available; else discord)
+def _resolve_owner(user: discord.abc.User) -> Tuple[str, int]:
+    """
+    Returns (owner_kind, owner_id).
+    1) Try common DAL helpers to get a canonical 'player' id.
+    2) If none work, fall back to ('discord', discord_id).
+    """
+    candidates: list[tuple[str, Callable]] = []
+    for name in (
+        "get_or_create_player",
+        "get_or_create_account",
+        "player_get_or_create",
+        "ensure_player",
+    ):
+        fn = getattr(core_dal, name, None)
+        if callable(fn):
+            candidates.append((name, fn))
+
+    discord_id = int(user.id)
+
+    for name, fn in candidates:
+        try:
+            try:
+                pid = fn(discord_id=discord_id)  # keyword form
+            except TypeError:
+                pid = fn(discord_id)            # positional form
+            pid_int = int(pid)
+            return ("player", pid_int)
+        except Exception as e:
+            log.debug("DAL helper %s failed: %r", name, e)
+
+    # Fallback: treat Discord user as the owner directly
+    log.warning(
+        "Tags: falling back to (%s, %s) — no player DAL helper succeeded",
+        FALLBACK_OWNER_KIND, discord_id
+    )
+    return (FALLBACK_OWNER_KIND, discord_id)
+
+
+def _catalog_names() -> list[str]:
+    """List all tag names from catalog."""
+    con = tag_dal._conn()
+    return [r["name"] for r in con.execute("SELECT name FROM tags").fetchall()]
+
+
+# tolerant name lookup (exact, case-insensitive, a few aliases)
+_ALIASES = {
+    "bleed": "Bleeding",
+    "bleeding": "Bleeding",
+    "gunshot": "Gunshot Wound",
+    "gunshot_wound": "Gunshot Wound",
+    "gsw": "Gunshot Wound",
+}
+
+def _canonical_tag_name(requested: str) -> Optional[str]:
+    names = _catalog_names()
+    if requested in names:
+        return requested
+    # case-insensitive exact match
+    lowered = {n.lower(): n for n in names}
+    if requested.lower() in lowered:
+        return lowered[requested.lower()]
+    # alias mapping
+    alias = _ALIASES.get(requested.lower())
+    if alias and alias in names:
+        return alias
+    return None
+
+def _suggest_names(requested: str, limit: int = 3) -> list[str]:
+    names = _catalog_names()
+    # include alias targets once
+    choices = list({*names, *(_ALIASES.values())})
+    return difflib.get_close_matches(requested, choices, n=limit, cutoff=0.5)
+
+
+# ------------------------------ cog --------------------------------
+
+class TagsCog(commands.Cog):
+    def __init__(self, bot: commands.Bot):
+        self.bot = bot
+
+    async def cog_load(self):
+        # Ensure schema before ticker does any queries
+        try:
+            ensure_tags_schema()
+            log.info("Tags schema ensured.")
+        except Exception as e:
+            log.exception("Failed to ensure tags schema: %s", e)
+
+        if _enabled():
+            await ENGINE.start()
+
+    async def cog_unload(self):
+        if _enabled():
+            await ENGINE.stop()
+
+    # ----------------------- Commands -----------------------
+
+    @app_commands.command(name="tag_catalog", description="List available tag templates in the catalog")
+    async def tag_catalog(self, itx: Interaction):
+        if not _enabled():
+            return await itx.response.send_message("Tags disabled.", ephemeral=True)
+        await itx.response.defer(ephemeral=True)
+
+        try:
+            con = tag_dal._conn()
+            rows = con.execute(
+                "SELECT name, kind, polarity FROM tags ORDER BY name LIMIT 200"
+            ).fetchall()
+            if not rows:
+                return await itx.followup.send("Catalog is empty. Run the seed script.", ephemeral=True)
+            lines = [
+                f"- **{r['name']}**  ({(r['kind'] or 'dynamic')}{(' · ' + r['polarity']) if r['polarity'] else ''})"
+                for r in rows
+            ]
+            await itx.followup.send("\n".join(lines), ephemeral=True)
+        except Exception:
+            trace = uuid.uuid4().hex[:8]
+            log.error("[tag_catalog] trace=%s\n%s", trace, traceback.format_exc())
+            await itx.followup.send(f"⚠️ Catalog read failed. Trace `{trace}`.", ephemeral=True)
+
+    @app_commands.command(name="tag_add", description="[DEV] Apply a tag to an anchor on a player/discord user")
+    @app_commands.describe(
+        tag_name="Catalog name (e.g., Bleeding)",
+        anchor_path="Where to attach (e.g., body:Left Bicep)",
+        stacks="Stacks to add",
+        duration_ms="Duration override in ms",
+        user="Target user (defaults to you)"
+    )
+    async def tag_add(
+        self,
+        itx: Interaction,
+        tag_name: str,
+        anchor_path: str = "entity",
+        stacks: int = 1,
+        duration_ms: Optional[int] = None,
+        user: Optional[discord.Member] = None,
+    ):
+        if not _enabled():
+            return await itx.response.send_message("Tags disabled.", ephemeral=True)
+
+        await itx.response.defer(ephemeral=True)
+        trace = uuid.uuid4().hex[:8]
+
+        try:
+            target = user or itx.user
+            owner_kind, owner_id = _resolve_owner(target)
+
+            canon = _canonical_tag_name(tag_name)
+            if not canon:
+                suggestions = _suggest_names(tag_name)
+                hint = f" Did you mean: {', '.join(f'`{s}`' for s in suggestions)}?" if suggestions else ""
+                return await itx.followup.send(f"❌ Tag `{tag_name}` not found in catalog.{hint}", ephemeral=True)
+
+            iid = apply_tag(
+                owner_kind=owner_kind,
+                owner_id=owner_id,
+                anchor_path=anchor_path,
+                tag_name=canon,
+                stacks=max(1, int(stacks)),
+                duration_ms=duration_ms,
+                source_kind="cmd",
+                source_ref="tag_add",
+            )
+
+            await itx.followup.send(
+                f"✅ `{canon}` x{stacks} → `{anchor_path}` on {target.mention} "
+                f"(owner=`{owner_kind}:{owner_id}`, instance #{iid})",
+                ephemeral=True,
+            )
+
+        except Exception:
+            log.error("[tag_add] trace=%s\n%s", trace, traceback.format_exc())
+            await itx.followup.send(f"⚠️ Something broke. Trace `{trace}`. (See server logs.)", ephemeral=True)
+
+    @app_commands.command(name="tag_list", description="List your active tags")
+    async def tag_list(self, itx: Interaction, user: Optional[discord.Member] = None):
+        if not _enabled():
+            return await itx.response.send_message("Tags disabled.", ephemeral=True)
+
+        await itx.response.defer(ephemeral=True)
+        trace = uuid.uuid4().hex[:8]
+
+        try:
+            target = user or itx.user
+            owner_kind, owner_id = _resolve_owner(target)
+
+            rows = tag_dal.list_instances(owner_kind, owner_id)
+            if not rows:
+                return await itx.followup.send("No active tags.", ephemeral=True)
+
+            lines = []
+            for r in rows:
+                timer = f"⏱ {int(r['tick_ms'])}ms" if r["tick_ms"] else ""
+                state = f" · state:`{r['state']}`" if r["state"] else ""
+                anchor = r["anchor_path"]
+                lines.append(f"- **{r['name']}** x{r['stacks']} @ `{anchor}` {timer}{state}")
+
+            await itx.followup.send("\n".join(lines), ephemeral=True)
+
+        except Exception:
+            log.error("[tag_list] trace=%s\n%s", trace, traceback.format_exc())
+            await itx.followup.send(f"⚠️ Something broke. Trace `{trace}`.", ephemeral=True)
+
+    @app_commands.command(name="tag_clear", description="[DEV] Clear all tags from a player/discord user")
+    async def tag_clear(self, itx: Interaction, user: Optional[discord.Member] = None):
+        if not _enabled():
+            return await itx.response.send_message("Tags disabled.", ephemeral=True)
+
+        await itx.response.defer(ephemeral=True)
+        trace = uuid.uuid4().hex[:8]
+
+        try:
+            target = user or itx.user
+            owner_kind, owner_id = _resolve_owner(target)
+            n = tag_dal.clear_owner(owner_kind, owner_id)
+            await itx.followup.send(
+                f"🧹 Cleared {n} tag(s) from {target.mention} (owner=`{owner_kind}:{owner_id}`).",
+                ephemeral=True
+            )
+        except Exception:
+            log.error("[tag_clear] trace=%s\n%s", trace, traceback.format_exc())
+            await itx.followup.send(f"⚠️ Something broke. Trace `{trace}`.", ephemeral=True)
+
+    @app_commands.command(name="status", description="Show HP and active tags for you (or a target user)")
+    async def status(self, itx: Interaction, user: Optional[discord.Member] = None):
+        if not _enabled():
+            return await itx.response.send_message("Tags disabled.", ephemeral=True)
+        await itx.response.defer(ephemeral=True)
+        trace = uuid.uuid4().hex[:8]
+
+        try:
+            target = user or itx.user
+            owner_kind, owner_id = _resolve_owner(target)
+
+            hp, max_hp = health_svc.get_state(owner_kind, owner_id)
+            rows = tag_dal.list_instances(owner_kind, owner_id)
+
+            lines = [f"**HP:** {hp}/{max_hp}  ·  **Owner:** `{owner_kind}:{owner_id}`"]
+            if rows:
+                for r in rows:
+                    timer = f"⏱ {int(r['tick_ms'])}ms" if r["tick_ms"] else ""
+                    state = f" · state:`{r['state']}`" if r["state"] else ""
+                    anchor = r["anchor_path"]
+                    lines.append(f"- **{r['name']}** x{r['stacks']} @ `{anchor}` {timer}{state}")
+            else:
+                lines.append("_No active tags_")
+
+            await itx.followup.send("\n".join(lines), ephemeral=True)
+
+        except Exception:
+            log.error("[status] trace=%s\n%s", trace, traceback.format_exc())
+            await itx.followup.send(f"⚠️ Something broke. Trace `{trace}`.", ephemeral=True)
+
+    # ----------------------- DEV Utilities -----------------------
+
+    @app_commands.command(name="dev_gunshot", description="[DEV] Apply a Gunshot Wound (and auto-bleed) to a user")
+    @app_commands.describe(
+        severity="light | medium | heavy",
+        anchor_path="Where to attach (e.g., body:Left Bicep)",
+        user="Target user (defaults to you)",
+    )
+    async def dev_gunshot(
+        self,
+        itx: Interaction,
+        severity: str = "heavy",
+        anchor_path: str = "body:Left Bicep",
+        user: Optional[discord.Member] = None,
+    ):
+        if not _enabled():
+            return await itx.response.send_message("Tags disabled.", ephemeral=True)
+
+        await itx.response.defer(ephemeral=True)
+        trace = uuid.uuid4().hex[:8]
+
+        try:
+            target = user or itx.user
+            owner_kind, owner_id = _resolve_owner(target)
+
+            sev_map = {
+                "light": 1, "lite": 1, "minor": 1,
+                "medium": 2, "moderate": 2,
+                "heavy": 3, "severe": 3,
+            }
+            stacks = sev_map.get(severity.lower(), 3)
+
+            # Apply Gunshot Wound
+            gsw_name = _canonical_tag_name("Gunshot Wound") or "Gunshot Wound"
+            iid = apply_tag(
+                owner_kind=owner_kind,
+                owner_id=owner_id,
+                anchor_path=anchor_path,
+                tag_name=gsw_name,
+                stacks=stacks,
+                duration_ms=None,
+                source_kind="cmd",
+                source_ref="dev_gunshot",
+            )
+
+            # Optional: also ensure Bleeding present (if catalog has it)
+            bleed_name = _canonical_tag_name("Bleeding")
+            if bleed_name:
+                apply_tag(
+                    owner_kind=owner_kind,
+                    owner_id=owner_id,
+                    anchor_path=anchor_path,
+                    tag_name=bleed_name,
+                    stacks=max(1, stacks - 1),  # tiny scale with severity
+                    duration_ms=None,
+                    source_kind="cmd",
+                    source_ref="dev_gunshot",
+                )
+
+            await itx.followup.send(
+                f"🟢 Applied **Gunshot Wound** ({severity}) @ `{anchor_path}` on {target.mention} "
+                f"(owner=`{owner_kind}:{owner_id}`, instance #{iid})",
+                ephemeral=True,
+            )
+        except Exception:
+            log.error("[dev_gunshot] trace=%s\n%s", trace, traceback.format_exc())
+            await itx.followup.send(f"⚠️ Something broke. Trace `{trace}`.", ephemeral=True)
+
+    @app_commands.command(name="wound_gunshot", description="[DEV] Alias of /dev_gunshot")
+    async def wound_gunshot(
+        self,
+        itx: Interaction,
+        severity: str = "heavy",
+        anchor_path: str = "body:Left Bicep",
+        user: Optional[discord.Member] = None,
+    ):
+        await self.dev_gunshot(itx, severity=severity, anchor_path=anchor_path, user=user)
+
+
+async def setup(bot: commands.Bot):
+    if _enabled():
+        await bot.add_cog(TagsCog(bot))

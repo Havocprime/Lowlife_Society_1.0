@@ -286,6 +286,7 @@ class LowlifeBot(commands.Bot):
             "src.cogs.profile",
             "src.cogs.admin_backfill",
             "src.cogs.heartbeat_taps",
+            "src.cogs.tags",
         ]
 
         async def try_load(module: str):
