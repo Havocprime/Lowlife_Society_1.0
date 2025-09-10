@@ -1,4 +1,4 @@
-# scripts/export_events.py
+﻿# scripts/export_events.py
 from __future__ import annotations
 
 import csv

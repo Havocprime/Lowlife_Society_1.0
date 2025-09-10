@@ -1,4 +1,4 @@
-# GAME/src/cogs/audit_log.py
+﻿# GAME/src/cogs/audit_log.py
 from __future__ import annotations
 
 import json
@@ -46,7 +46,7 @@ class AuditLogCog(commands.Cog):
         row = await self._fetch_one(id)
         if not row:
             await interaction.response.send_message(
-                f"❌ No action found for ID `{id}`.", ephemeral=True
+                f"âŒ No action found for ID `{id}`.", ephemeral=True
             )
             return
 
@@ -56,10 +56,10 @@ class AuditLogCog(commands.Cog):
         except Exception:
             pass
 
-        embed = discord.Embed(title="🔎 Audit Trace", color=discord.Color.blurple())
+        embed = discord.Embed(title="ðŸ”Ž Audit Trace", color=discord.Color.blurple())
         embed.add_field(name="Trace ID", value=f"`{row['id']}`", inline=False)
-        embed.add_field(name="Action Type", value=row["action_type"] or "—", inline=True)
-        embed.add_field(name="Command", value=row["command_name"] or "—", inline=True)
+        embed.add_field(name="Action Type", value=row["action_type"] or "â€”", inline=True)
+        embed.add_field(name="Command", value=row["command_name"] or "â€”", inline=True)
         embed.add_field(name="Timestamp (UTC, ms)", value=str(row["ts"]), inline=False)
         embed.add_field(name="Guild", value=str(row["guild_id"]), inline=True)
         embed.add_field(name="Channel", value=str(row["channel_id"]), inline=True)
@@ -83,12 +83,12 @@ class AuditLogCog(commands.Cog):
         )
         if not rows:
             await interaction.response.send_message(
-                f"ℹ️ No recent actions for {user.mention}.", ephemeral=True
+                f"â„¹ï¸ No recent actions for {user.mention}.", ephemeral=True
             )
             return
 
         lines = [
-            f"- `{r['id']}` • `{r['action_type']}` • ts={r['ts']} • cmd={r['command_name'] or '—'}"
+            f"- `{r['id']}` â€¢ `{r['action_type']}` â€¢ ts={r['ts']} â€¢ cmd={r['command_name'] or 'â€”'}"
             for r in rows
         ]
         await interaction.response.send_message(
@@ -118,11 +118,11 @@ class AuditLogCog(commands.Cog):
             rows = await self._fetch_many("SELECT * FROM audit_log WHERE 1=1", tuple(), limit)
 
         if not rows:
-            await interaction.response.send_message("ℹ️ No recent actions found.", ephemeral=True)
+            await interaction.response.send_message("â„¹ï¸ No recent actions found.", ephemeral=True)
             return
 
         lines = [
-            f"- `{r['id']}` • `{r['action_type']}` • ts={r['ts']} • user={r['user_id']} • cmd={r['command_name'] or '—'}"
+            f"- `{r['id']}` â€¢ `{r['action_type']}` â€¢ ts={r['ts']} â€¢ user={r['user_id']} â€¢ cmd={r['command_name'] or 'â€”'}"
             for r in rows
         ]
         await interaction.response.send_message(
@@ -144,12 +144,12 @@ class AuditLogCog(commands.Cog):
         )
         if not rows:
             await interaction.response.send_message(
-                f"ℹ️ No actions referencing `item_id={item_id}`.", ephemeral=True
+                f"â„¹ï¸ No actions referencing `item_id={item_id}`.", ephemeral=True
             )
             return
 
         lines = [
-            f"- `{r['id']}` • `{r['action_type']}` • ts={r['ts']} • user={r['user_id']}"
+            f"- `{r['id']}` â€¢ `{r['action_type']}` â€¢ ts={r['ts']} â€¢ user={r['user_id']}"
             for r in rows
         ]
         await interaction.response.send_message(

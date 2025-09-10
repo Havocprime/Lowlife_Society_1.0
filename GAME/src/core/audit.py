@@ -1,198 +1,293 @@
-# GAME/src/core/audit.py
+﻿# GAME/src/admin/audit.py
 from __future__ import annotations
 
-import functools
-import json
 import os
-import time
-import uuid
-from typing import Any, Awaitable, Callable, Dict, Optional
-
-import aiosqlite
+from typing import Optional, List, Callable, Any
+import functools
 import discord
-
-# --- Storage: GAME/data/audit.sqlite (override via AUDIT_DB_PATH) ---
-_AUDIT_DB_PATH = os.getenv(
-    "AUDIT_DB_PATH",
-    os.path.join(os.path.dirname(__file__), "..", "..", "data", "audit.sqlite"),
-)
-
-_SCHEMA = """
-CREATE TABLE IF NOT EXISTS audit_log (
-    id TEXT PRIMARY KEY,
-    ts INTEGER NOT NULL,
-    guild_id INTEGER,
-    channel_id INTEGER,
-    user_id INTEGER,
-    target_user_id INTEGER,
-    action_type TEXT NOT NULL,
-    command_name TEXT,
-    details TEXT
-);
-CREATE INDEX IF NOT EXISTS idx_audit_ts        ON audit_log(ts);
-CREATE INDEX IF NOT EXISTS idx_audit_guild_ts  ON audit_log(guild_id, ts);
-CREATE INDEX IF NOT EXISTS idx_audit_user_ts   ON audit_log(user_id, ts);
-CREATE INDEX IF NOT EXISTS idx_audit_action_ts ON audit_log(action_type, ts);
-"""
-
-_DB_READY = False
+from discord import app_commands
+from discord.ext import commands
+from datetime import datetime, timezone
+from src.core.custodian import ledger
 
 
-async def ensure_db() -> None:
-    """Initialize the audit DB schema if needed."""
-    os.makedirs(os.path.dirname(_AUDIT_DB_PATH), exist_ok=True)
-    async with aiosqlite.connect(_AUDIT_DB_PATH) as db:
-        await db.executescript(_SCHEMA)
-        await db.commit()
+ADMIN_ROLE_ID = int(os.getenv("ADMIN_ROLE_ID", "0") or "0")
 
 
-async def _ensure_db_once() -> None:
-    global _DB_READY
-    if not _DB_READY:
-        await ensure_db()
-        _DB_READY = True
+# ---------- helpers ----------
+def is_admin():
+    async def predicate(inter: discord.Interaction) -> bool:
+        # Allow configured admin role OR server administrators
+        if isinstance(inter.user, discord.Member):
+            if ADMIN_ROLE_ID and any(r.id == ADMIN_ROLE_ID for r in inter.user.roles):
+                return True
+            if inter.user.guild_permissions.administrator:
+                return True
+        return False
+    return app_commands.check(predicate)
 
 
-async def log_action(
-    *,
-    id: Optional[str] = None,
-    guild_id: Optional[int],
-    channel_id: Optional[int],
-    user_id: Optional[int],
-    target_user_id: Optional[int] = None,
-    action_type: str,
-    command_name: Optional[str] = None,
-    details: Optional[Dict[str, Any]] = None,
-) -> str:
-    """Append an audit row."""
-    await _ensure_db_once()
-    trace_id = id or str(uuid.uuid4())
-    ts = int(time.time() * 1000)
-    payload = json.dumps(details or {}, separators=(",", ":"), ensure_ascii=False)
-    async with aiosqlite.connect(_AUDIT_DB_PATH) as db:
-        await db.execute(
-            """
-            INSERT INTO audit_log
-                (id, ts, guild_id, channel_id, user_id, target_user_id, action_type, command_name, details)
-            VALUES (?,  ?,  ?,        ?,         ?,       ?,              ?,           ?,            ?)
-            """,
-            (
-                trace_id,
-                ts,
-                guild_id,
-                channel_id,
-                user_id,
-                target_user_id,
-                action_type,
-                command_name,
-                payload,
-            ),
-        )
-        await db.commit()
-    return trace_id
+def _chan_mention(guild: Optional[discord.Guild], channel_id: Optional[int]) -> str:
+    if not guild or not channel_id:
+        return "â€”"
+    ch = guild.get_channel(channel_id) or guild.get_thread(channel_id)
+    return ch.mention if ch else f"#deleted({channel_id})"
 
+
+def _preview(text: Optional[str], limit: int = 180) -> str:
+    if not text:
+        return ""
+    t = text.replace("\n", " ").strip()
+    return (t[:limit] + "â€¦") if len(t) > limit else t
+
+
+def _ts_iso(ts_ms: Optional[int]) -> str:
+    try:
+        return datetime.fromtimestamp(int(ts_ms) / 1000, tz=timezone.utc).isoformat(timespec="seconds")
+    except Exception:
+        return str(ts_ms or "")
+
+
+# ---------- unified decorator ----------
+def _resolve_interaction(args, kwargs):
+    for a in args:
+        if getattr(a, "response", None) and getattr(a, "user", None):
+            return a
+    itx = kwargs.get("interaction")
+    if getattr(itx, "response", None) and getattr(itx, "user", None):
+        return itx
+    return None
+
+def _maybe_call(fn_or_val, interaction, **kw):
+    if callable(fn_or_val):
+        try:
+            return fn_or_val(interaction, **kw)
+        except TypeError:
+            return fn_or_val(interaction)
+    return fn_or_val
 
 def audit_event(
-    action_type: str,
-    target_user: Optional[Callable[..., Optional[discord.User | discord.Member]]] = None,
-    extra: Optional[Callable[..., Dict[str, Any]]] = None,
+    name_or_none: Optional[str] = None,
     *,
-    ack: bool = False,  # set True only if you want the decorator to ack early
-    skip_commands: tuple[str, ...] = ("sync",),  # never touch /sync's token
+    action_type: Optional[str] = None,
+    target_user: Optional[Callable[..., Any]] = None,
+    extra: Optional[Callable[..., Any] | dict] = None,
 ):
     """
-    Decorator for slash commands.
-    - Does NOT perform any I/O before the handler runs (prevents 'Unknown interaction').
-    - Optionally acknowledges once up-front (ack=True) using ack_once, except for commands in skip_commands.
-    - Always logs after the handler finishes (success or error), including status & error info.
+    Flexible decorator for auditing.
+
+    Usages:
+      @audit_event("admin.do_thing")
+      @audit_event(action_type="admin.do_thing",
+                   target_user=lambda itx, user=None: user,
+                   extra=lambda itx: {...})
     """
+    # Handle bare @audit_event without args
+    if callable(name_or_none) and action_type is None:
+        fn = name_or_none
+        derived = f"{getattr(fn, '__module__', 'unknown')}.{getattr(fn, '__name__', 'callback')}"
+        return audit_event(action_type=derived)(fn)
 
-    def _wrap(func: Callable[..., Awaitable[Any]]):
-        @functools.wraps(func)
-        async def inner(*args, **kwargs):
-            # Extract interaction from args/kwargs
-            interaction: Optional[discord.Interaction] = None
-            for a in args:
-                if isinstance(a, discord.Interaction):
-                    interaction = a
-                    break
-            if interaction is None:
-                interaction = kwargs.get("interaction")
+    action = action_type or name_or_none or "unspecified"
 
-            # Snapshot lightweight context (no I/O)
-            guild_id = interaction.guild_id if interaction else None
-            channel_id = interaction.channel_id if interaction else None
-            user_id = interaction.user.id if interaction else None
-            cmd_name = (
-                (interaction.command and interaction.command.qualified_name)
-                if interaction
-                else None
-            )
-
-            # Resolve target user (pure Python)
-            tgt_id: Optional[int] = None
-            if target_user:
-                try:
-                    got = target_user(*args, **kwargs)
-                    if got is not None:
-                        tgt_id = got.id
-                except Exception:
-                    tgt_id = None
-
-            # Extra fields (pure Python)
-            extra_details: Dict[str, Any] = {}
-            if extra:
-                try:
-                    extra_details = extra(*args, **kwargs) or {}
-                except Exception:
-                    extra_details = {}
-
-            # Optional safe ack (never for /sync to avoid token races)
-            if ack and interaction is not None and (cmd_name or "") not in skip_commands:
-                try:
-                    from src.core.ack import ack_once  # local import to avoid cycles
-
-                    await ack_once(interaction, ephemeral=True)
-                except Exception:
-                    # ack is best-effort; never fail the command because of the decorator
-                    pass
-
-            # Generate a trace id and stick it on the interaction for downstream use
-            trace_id = str(uuid.uuid4())
+    def deco(fn):
+        @functools.wraps(fn)
+        async def wrapper(*args, **kwargs):
+            interaction = _resolve_interaction(args, kwargs)
+            actor_id = None
+            guild_id = None
+            channel_id = None
             if interaction is not None:
-                interaction.extras = getattr(interaction, "extras", {})
-                interaction.extras["trace_id"] = trace_id
-
-            # Run the command, then log outcome
-            status = "ok"
-            err_txt = None
-            try:
-                return await func(*args, **kwargs)
-            except Exception as e:
-                status = "error"
-                err_txt = f"{type(e).__name__}: {e}"
-                raise
-            finally:
-                # Log asynchronously after the handler, so we don't delay the initial ack
                 try:
-                    details = dict(extra_details)
-                    details["status"] = status
-                    if err_txt:
-                        details["error"] = err_txt
-                    await log_action(
-                        id=trace_id,
-                        guild_id=guild_id,
-                        channel_id=channel_id,
-                        user_id=user_id,
-                        target_user_id=tgt_id,
-                        action_type=action_type,
-                        command_name=cmd_name,
-                        details=details,
-                    )
+                    actor_id = str(getattr(interaction.user, "id", None))
                 except Exception:
-                    # Never let audit logging crash the command
+                    pass
+                try:
+                    guild_id = str(getattr(interaction.guild, "id", None)) if getattr(interaction, "guild", None) else None
+                except Exception:
+                    pass
+                try:
+                    channel_id = str(getattr(interaction.channel, "id", None)) if getattr(interaction, "channel", None) else None
+                except Exception:
                     pass
 
-        return inner
+            tu = _maybe_call(target_user, interaction, **kwargs) if target_user else None
+            if hasattr(tu, "id"):
+                tu = str(tu.id)
+            elif tu is not None:
+                tu = str(tu)
 
-    return _wrap
+            extra_ctx = _maybe_call(extra, interaction, **kwargs) if extra else {}
+            if not isinstance(extra_ctx, dict):
+                extra_ctx = {"extra": extra_ctx}
+
+            ctx = {
+                "fn": f"{getattr(fn, '__module__', '?')}.{getattr(fn, '__name__', '?')}",
+                "kwargs_keys": list(kwargs.keys())[:20],
+            }
+            ctx.update(extra_ctx or {})
+
+            try:
+                ledger.log(
+                    actor_id=str(actor_id or "system"),
+                    actor_type="user" if actor_id else "system",
+                    action=str(action),
+                    context_json=ctx,
+                    target_id=tu,
+                    guild_id=guild_id,
+                    channel_id=channel_id,
+                )
+            except Exception:
+                # Never block the command on audit failure
+                pass
+
+            return await fn(*args, **kwargs)
+        return wrapper
+    return deco
+
+
+# ---------- pagination view ----------
+class AuditPager(discord.ui.View):
+    def __init__(
+        self,
+        rows: List[dict],
+        guild: discord.Guild | None,
+        page_size: int = 10,
+        author_id: int | None = None,
+        *,
+        timeout: int | None = 180
+    ):
+        super().__init__(timeout=timeout)
+        self.rows = rows
+        self.guild = guild
+        self.page_size = max(1, min(page_size, 25))
+        self.page = 0
+        self.author_id = author_id
+        self._sync_buttons()
+
+    def _sync_buttons(self):
+        total_pages = max(1, (len(self.rows) + self.page_size - 1) // self.page_size)
+        for child in self.children:
+            if isinstance(child, discord.ui.Button):
+                if child.custom_id == "prev":
+                    child.disabled = self.page <= 0
+                elif child.custom_id == "next":
+                    child.disabled = self.page >= (total_pages - 1)
+
+    def _page_slice(self) -> List[dict]:
+        start = self.page * self.page_size
+        end = start + self.page_size
+        return self.rows[start:end]
+
+    def build_embed(self) -> discord.Embed:
+        total = len(self.rows)
+        total_pages = max(1, (total + self.page_size - 1) // self.page_size)
+        lines: List[str] = []
+        for r in self._page_slice():
+            ts = _ts_iso(r.get("ts"))
+            et = r.get("action_type") or "â€”"
+            chid = r.get("channel_id")
+            msg = _preview(r.get("content") or "")
+            line = f"`{ts}` â€¢ **{et}** â€¢ {_chan_mention(self.guild, chid)}\n{msg}"
+            lines.append(line)
+        desc = "\n\n".join(lines) if lines else "_No events._"
+        emb = discord.Embed(
+            title=f"Audit Recent ({self.page + 1}/{total_pages})",
+            description=desc,
+            color=discord.Color.blurple()
+        )
+        emb.set_footer(text=f"{total} events â€¢ page size {self.page_size}")
+        return emb
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        if self.author_id and interaction.user.id != self.author_id:
+            await interaction.response.send_message("Only the invoker can use these controls.", ephemeral=True)
+            return False
+        return True
+
+    @discord.ui.button(label="Prev", style=discord.ButtonStyle.secondary, custom_id="prev")
+    async def prev_btn(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if self.page > 0:
+            self.page -= 1
+        self._sync_buttons()
+        await interaction.response.edit_message(embed=self.build_embed(), view=self)
+
+    @discord.ui.button(label="Next", style=discord.ButtonStyle.secondary, custom_id="next")
+    async def next_btn(self, interaction: discord.Interaction, button: discord.ui.Button):
+        total_pages = max(1, (len(self.rows) + self.page_size - 1) // self.page_size)
+        if self.page < total_pages - 1:
+            self.page += 1
+        self._sync_buttons()
+        await interaction.response.edit_message(embed=self.build_embed(), view=self)
+
+
+# ---------- Cog ----------
+class AuditCog(commands.Cog):
+    def __init__(self, bot: commands.Bot):
+        self.bot = bot
+
+    @app_commands.command(name="audit_recent", description="Show recent audit events (not paged).")
+    @is_admin()
+    async def audit_recent(
+        self,
+        inter: discord.Interaction,
+        limit: app_commands.Range[int, 1, 25] = 10,
+        user: Optional[discord.Member] = None,
+        channel: Optional[discord.abc.GuildChannel] = None,
+        action_type: Optional[str] = None,
+        command_name: Optional[str] = None,
+        q: Optional[str] = None,
+    ):
+        await inter.response.defer(ephemeral=True)
+        rows = await query_events(
+            guild_id=inter.guild_id,
+            user_id=(user.id if user else None),
+            channel_id=(getattr(channel, "id", None) if channel else None),
+            action_type=action_type,
+            command_name=command_name,
+            q=q,
+            limit=limit,
+        )
+        lines: List[str] = []
+        for r in rows:
+            ts = _ts_iso(r.get("ts"))
+            et = r.get("action_type") or "â€”"
+            chid = r.get("channel_id")
+            msg = _preview(r.get("content") or "")
+            lines.append(f"`{ts}` â€¢ **{et}** â€¢ {_chan_mention(inter.guild, chid)}\n{msg}")
+        emb = discord.Embed(
+            title="Audit Recent",
+            description="\n\n".join(lines) if lines else "_No events._",
+            color=discord.Color.blurple(),
+        )
+        await inter.followup.send(embed=emb, ephemeral=True)
+
+    @app_commands.command(name="audit_recent_paged", description="Browse recent audit events with paging.")
+    @is_admin()
+    async def audit_recent_paged(
+        self,
+        inter: discord.Interaction,
+        page_size: app_commands.Range[int, 5, 25] = 10,
+        user: Optional[discord.Member] = None,
+        channel: Optional[discord.abc.GuildChannel] = None,
+        action_type: Optional[str] = None,
+        command_name: Optional[str] = None,
+        q: Optional[str] = None,
+        limit: app_commands.Range[int, 20, 500] = 200,
+    ):
+        await inter.response.defer(ephemeral=True)
+        rows = await query_events(
+            guild_id=inter.guild_id,
+            user_id=(user.id if user else None),
+            channel_id=(getattr(channel, "id", None) if channel else None),
+            action_type=action_type,
+            command_name=command_name,
+            q=q,
+            limit=limit,
+        )
+        view = AuditPager(rows=rows, guild=inter.guild, page_size=page_size, author_id=inter.user.id)
+        await inter.followup.send(embed=view.build_embed(), view=view, ephemeral=True)
+
+
+async def setup(bot: commands.Bot):
+    await bot.add_cog(AuditCog(bot))

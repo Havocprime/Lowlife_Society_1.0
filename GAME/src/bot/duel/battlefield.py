@@ -1,4 +1,4 @@
-# FILE: src/bot/duel/battlefield.py
+﻿# FILE: src/bot/duel/battlefield.py
 from __future__ import annotations
 
 import math
@@ -29,7 +29,7 @@ def gate_step(g: RangeGate, delta: int) -> RangeGate:
 
 def readable_state(ds: DuelState) -> str:
     def cov(c):
-        return {COVER_NONE: "—", COVER_PARTIAL: "▦", COVER_FULL: "▩"}.get(c, "—")
+        return {COVER_NONE: "â€”", COVER_PARTIAL: "â–¦", COVER_FULL: "â–©"}.get(c, "â€”")
 
     return (
         f"**Range:** {RANGE_NAMES[ds.current_range]}  |  "
@@ -70,7 +70,7 @@ def act_advance(ds: DuelState, idx: int, sprint: bool = False) -> str:
     f.stamina = clamp(f.stamina - cost, 0, 100)
     before = ds.current_range
     ds.current_range = gate_step(ds.current_range, -steps)
-    return f"{f.display} **advances** ({RANGE_NAMES[before]} → {RANGE_NAMES[ds.current_range]})."
+    return f"{f.display} **advances** ({RANGE_NAMES[before]} â†’ {RANGE_NAMES[ds.current_range]})."
 
 
 def act_retreat(ds: DuelState, idx: int, sprint: bool = False) -> str:
@@ -80,7 +80,7 @@ def act_retreat(ds: DuelState, idx: int, sprint: bool = False) -> str:
     f.stamina = clamp(f.stamina - cost, 0, 100)
     before = ds.current_range
     ds.current_range = gate_step(ds.current_range, +steps)
-    return f"{f.display} **retreats** ({RANGE_NAMES[before]} → {RANGE_NAMES[ds.current_range]})."
+    return f"{f.display} **retreats** ({RANGE_NAMES[before]} â†’ {RANGE_NAMES[ds.current_range]})."
 
 
 def act_take_cover(ds: DuelState, idx: int, level: int) -> str:
@@ -146,7 +146,7 @@ def compose_distance_rows(state) -> list[str]:
         a_idx = max(0, min(segs - 1, int(pos.get(a_id, 0))))
         b_idx = max(0, min(segs - 1, int(pos.get(b_id, segs - 1))))
 
-        lane = ["·"] * segs
+        lane = ["Â·"] * segs
         if a_idx == b_idx:
             lane[a_idx] = "X"
         else:
@@ -188,7 +188,7 @@ def mark_path_between(state, user_id: int, start_idx: int, end_idx: int) -> None
         for i in range(a, b + 1):
             state.path_marks.add((user_id, i))
     except Exception:
-        # Keep this tolerant—never block turn resolution on visuals.
+        # Keep this tolerantâ€”never block turn resolution on visuals.
         pass
 
 
@@ -208,7 +208,7 @@ def compose_distance_rows(state) -> list[str]:
         a_idx = max(0, min(segs - 1, int(pos.get(a_id, 0))))
         b_idx = max(0, min(segs - 1, int(pos.get(b_id, segs - 1))))
 
-        lane = ["·"] * segs
+        lane = ["Â·"] * segs
         if a_idx == b_idx:
             lane[a_idx] = "X"  # same cell
         else:

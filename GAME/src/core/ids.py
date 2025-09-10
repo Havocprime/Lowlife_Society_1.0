@@ -1,4 +1,4 @@
-# GAME/src/core/ids.py
+﻿# GAME/src/core/ids.py
 from __future__ import annotations
 
 import random

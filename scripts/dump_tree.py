@@ -1,4 +1,4 @@
-# scripts/dump_tree.py
+﻿# scripts/dump_tree.py
 import os
 from pathlib import Path
 

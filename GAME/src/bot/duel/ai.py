@@ -1,4 +1,4 @@
-"""
+﻿"""
 Very simple AI that:
 - respects choke/grapple phases
 - won't punch across non-melee range
@@ -68,21 +68,21 @@ async def maybe_ai_take_turn(inter, state: DuelState):
             state.bloodflow[target] = iclamp(
                 state.bloodflow.get(target, 50) - random.randint(4, 8), 0, 100
             )
-            state.push(f"🤖 {ai.name} tightens the choke.")
+            state.push(f"ðŸ¤– {ai.name} tightens the choke.")
             if state.breath[target] <= 0 or state.bloodflow[target] <= 0:
                 state.unconscious.add(target)
                 record_hit(state, choker, target, "strangled", "")
                 winner = state.winner()
                 if winner:
                     state.finisher = (winner.user_id, target)
-                    msg = "☠️ Your opponent is **unconscious**. Choose their fate."
+                    msg = "â˜ ï¸ Your opponent is **unconscious**. Choose their fate."
                     if not state.log_lines or state.log_lines[-1] != msg:
                         state.add_raw(msg)
             state.end_turn()
             await hud_update_auto(inter, state, inter.user)
             return
         else:
-            state.push(f"🤖 {ai.name} struggles for air…")
+            state.push(f"ðŸ¤– {ai.name} struggles for airâ€¦")
             state.end_turn()
             await hud_update_auto(inter, state, inter.user)
             return
@@ -103,12 +103,12 @@ async def maybe_ai_take_turn(inter, state: DuelState):
                 swing = " Position improved."
             else:
                 swing = ""
-            state.push(f"🤖 {ai.name} wrestles {foe.name} for **{dmg}**.{swing}")
+            state.push(f"ðŸ¤– {ai.name} wrestles {foe.name} for **{dmg}**.{swing}")
             record_hit(state, ai.user_id, foe.user_id, "wrestle", "")
         elif choice == "punch":
             dmg = random.randint(1, 5)
             foe.hp = max(0, foe.hp - dmg)
-            state.push(f"🤖 {ai.name} punches {foe.name} for **{dmg}**.")
+            state.push(f"ðŸ¤– {ai.name} punches {foe.name} for **{dmg}**.")
             record_hit(state, ai.user_id, foe.user_id, "punch", "Fists")
         else:
             my_pos = state.positioning.get(ai.user_id, 50)
@@ -117,11 +117,11 @@ async def maybe_ai_take_turn(inter, state: DuelState):
             if random.random() <= p:
                 state.grappling = False
                 state.choking = None
-                state.push(f"🤖 {ai.name} breaks free!")
+                state.push(f"ðŸ¤– {ai.name} breaks free!")
             else:
                 state.positioning[ai.user_id] = iclamp(my_pos - 5, 0, 100)
                 state.positioning[foe.user_id] = iclamp(their_pos + 5, 0, 100)
-                state.push(f"🤖 {ai.name} tries to break free but fails.")
+                state.push(f"ðŸ¤– {ai.name} tries to break free but fails.")
         state.end_turn()
         await hud_update_auto(inter, state, inter.user)
         return
@@ -139,7 +139,7 @@ async def maybe_ai_take_turn(inter, state: DuelState):
             cur = iclamp(state.pos.get(ai.user_id, 0), 0, state.vis_segments - 1)
             mark_path_between(state, ai.user_id, prev, cur)
             update_cover_flags(state)
-            state.push(f"🤖 {ai.name} advances **{step} meters**.")
+            state.push(f"ðŸ¤– {ai.name} advances **{step} meters**.")
             took_action = True
         else:
             p = float(calc["accuracy"]) / 100.0
@@ -158,19 +158,19 @@ async def maybe_ai_take_turn(inter, state: DuelState):
                 foe.hp = max(0, foe.hp - final)
                 if weapon_name == "Fists":
                     state.push(
-                        f"🤖 {ai.name} **swings** and hits {foe.name} for **{final}**{f' (−{mit} armor)' if mit>0 else ''}."
+                        f"ðŸ¤– {ai.name} **swings** and hits {foe.name} for **{final}**{f' (âˆ’{mit} armor)' if mit>0 else ''}."
                     )
                 else:
                     state.push(
-                        f"🤖 {ai.name} fires **{calc['weapon'].name}** and hits {foe.name} for **{final}**{f' (−{mit} armor)' if mit>0 else ''}."
+                        f"ðŸ¤– {ai.name} fires **{calc['weapon'].name}** and hits {foe.name} for **{final}**{f' (âˆ’{mit} armor)' if mit>0 else ''}."
                     )
                 record_hit(state, ai.user_id, foe.user_id, "shot", calc["weapon"].name)
                 took_action = True
             else:
                 if weapon_name == "Fists":
-                    state.push(f"🤖 {ai.name} **swings** and **misses**.")
+                    state.push(f"ðŸ¤– {ai.name} **swings** and **misses**.")
                 else:
-                    state.push(f"🤖 {ai.name} fires and **misses**.")
+                    state.push(f"ðŸ¤– {ai.name} fires and **misses**.")
                 took_action = True
 
     if not took_action:
@@ -180,7 +180,7 @@ async def maybe_ai_take_turn(inter, state: DuelState):
         cur = iclamp(state.pos.get(ai.user_id, 0), 0, state.vis_segments - 1)
         mark_path_between(state, ai.user_id, prev, cur)
         update_cover_flags(state)
-        state.push(f"🤖 {ai.name} advances **{step} meters**.")
+        state.push(f"ðŸ¤– {ai.name} advances **{step} meters**.")
 
     state.end_turn()
     await hud_update_auto(inter, state, inter.user)

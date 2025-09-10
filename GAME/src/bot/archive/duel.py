@@ -1,4 +1,4 @@
-# src/bot/commands/duel.py
+﻿# src/bot/commands/duel.py
 import json
 import time
 from pathlib import Path
@@ -97,13 +97,13 @@ def _hud_line_for_user(uid: int, d: Optional[Dict[str, Any]]) -> str:
     hp = _hp_for_user_in_duel(uid, d)
     return (
         f"**{p['alias']}**  "
-        f"♥ {hp}/{MAX_HP_DEFAULT}  |  "
-        f"🩸 {p['blood']}  |  "
-        f"💵 ${p['cash']:,}  |  "
-        f"📈 ${p['net_worth']:,}  |  "
-        f"🧬 L{p['level']}  |  "
-        f"🧰 {p['equipped']}  |  "
-        f"⚖️ {p['weight']}/{p['capacity']}"
+        f"â™¥ {hp}/{MAX_HP_DEFAULT}  |  "
+        f"ðŸ©¸ {p['blood']}  |  "
+        f"ðŸ’µ ${p['cash']:,}  |  "
+        f"ðŸ“ˆ ${p['net_worth']:,}  |  "
+        f"ðŸ§¬ L{p['level']}  |  "
+        f"ðŸ§° {p['equipped']}  |  "
+        f"âš–ï¸ {p['weight']}/{p['capacity']}"
     )
 
 async def _send_hud_ephemeral(inter: Interaction, uid: int, d: Optional[Dict[str, Any]]) -> None:
@@ -124,8 +124,8 @@ def _build_tracker_embed(
     last_action: Optional[str] = None,
 ) -> discord.Embed:
     color = COLOR_LIVE if live else COLOR_ENDED
-    desc = f"**Range:** {rng} • **Round:** {rnd}" + ("" if live else "\n**Status:** Ended")
-    emb = discord.Embed(title=f"⚔️ {attacker_label} vs {defender_label}", description=desc, color=color)
+    desc = f"**Range:** {rng} â€¢ **Round:** {rnd}" + ("" if live else "\n**Status:** Ended")
+    emb = discord.Embed(title=f"âš”ï¸ {attacker_label} vs {defender_label}", description=desc, color=color)
     if last_action:
         emb.add_field(name="Last action", value=last_action, inline=False)
     return emb
@@ -170,7 +170,7 @@ def register(tree: app_commands.CommandTree) -> None:
     @slash_try
     async def duel(inter: Interaction, target: Member):
         if target.id == inter.user.id:
-            await inter.response.send_message("You can’t duel yourself.", ephemeral=True)
+            await inter.response.send_message("You canâ€™t duel yourself.", ephemeral=True)
             return
 
         combats = _load_combats()
@@ -223,11 +223,11 @@ def register(tree: app_commands.CommandTree) -> None:
             return
         d = combats[k]
         await inter.response.send_message(
-            f"📏 Range is **{d['range']}** (Round {d['round']}). "
+            f"ðŸ“ Range is **{d['range']}** (Round {d['round']}). "
             f"<@{d['attacker_id']}> vs <@{d['defender_id']}>."
         )
 
-    @tree.command(name="advance", description="Move one range closer (e.g., Mid → Near).")
+    @tree.command(name="advance", description="Move one range closer (e.g., Mid â†’ Near).")
     @slash_try
     async def advance(inter: Interaction):
         combats = _load_combats()
@@ -246,7 +246,7 @@ def register(tree: app_commands.CommandTree) -> None:
         idx = max(0, RANGES.index(cur) - 1)
         new = RANGES[idx]
         if new == cur:
-            await inter.followup.send("You’re already at **Close**.", ephemeral=True)
+            await inter.followup.send("Youâ€™re already at **Close**.", ephemeral=True)
             return
 
         d["range"] = new
@@ -257,7 +257,7 @@ def register(tree: app_commands.CommandTree) -> None:
         a_lbl = await _user_label(inter, d["attacker_id"])
         b_lbl = await _user_label(inter, d["defender_id"])
         actor_lbl = await _user_label(inter, inter.user.id)
-        last = f"**{actor_lbl}** advanced: **{cur} → {new}**"
+        last = f"**{actor_lbl}** advanced: **{cur} â†’ {new}**"
         tracker = _build_tracker_embed(a_lbl, b_lbl, d["range"], d["round"], live=True, last_action=last)
         await _replace_tracker(inter, combats, d, tracker)
         await _send_hud_ephemeral(inter, inter.user.id, d)
@@ -281,7 +281,7 @@ def register(tree: app_commands.CommandTree) -> None:
         idx = min(len(RANGES) - 1, RANGES.index(cur) + 1)
         new = RANGES[idx]
         if new == cur:
-            await inter.followup.send("You’re already at **OutOfRange**.", ephemeral=True)
+            await inter.followup.send("Youâ€™re already at **OutOfRange**.", ephemeral=True)
             return
 
         d["range"] = new
@@ -293,7 +293,7 @@ def register(tree: app_commands.CommandTree) -> None:
         b_lbl = await _user_label(inter, d["defender_id"])
         actor_lbl = await _user_label(inter, inter.user.id)
         opponent_id = d["defender_id"] if inter.user.id == d["attacker_id"] else d["attacker_id"]
-        last = f"**{actor_lbl}** retreated: **{cur} → {new}**  |  <@{opponent_id}> your opponent moved."
+        last = f"**{actor_lbl}** retreated: **{cur} â†’ {new}**  |  <@{opponent_id}> your opponent moved."
         tracker = _build_tracker_embed(a_lbl, b_lbl, d["range"], d["round"], live=True, last_action=last)
         await _replace_tracker(inter, combats, d, tracker, allowed_mentions=_mentions_only(opponent_id))
         await _send_hud_ephemeral(inter, inter.user.id, d)
@@ -320,7 +320,7 @@ def register(tree: app_commands.CommandTree) -> None:
 
         combats.pop(k, None)
         _save_combats(combats)
-        await inter.followup.send("✅ Duel ended. State cleared.", ephemeral=True)
+        await inter.followup.send("âœ… Duel ended. State cleared.", ephemeral=True)
         await _send_hud_ephemeral(inter, inter.user.id, None)
 
     @tree.command(name="reset_duel", description="Force clear duel state for this server.")
@@ -337,7 +337,7 @@ def register(tree: app_commands.CommandTree) -> None:
                 pass
             combats.pop(k, None)
             _save_combats(combats)
-            await inter.response.send_message("🧹 Cleared duel state.", ephemeral=True)
+            await inter.response.send_message("ðŸ§¹ Cleared duel state.", ephemeral=True)
         else:
             await inter.response.send_message("No duel state found.", ephemeral=True)
 

@@ -1,4 +1,4 @@
-# FILE: src/bot/embed_demo.py
+﻿# FILE: src/bot/embed_demo.py
 from __future__ import annotations
 
 from pathlib import Path
@@ -28,7 +28,7 @@ def _build_combat_embed(image_attach_name: str) -> discord.Embed:
     attach_url = f"attachment://{image_attach_name}"
 
     e = discord.Embed(
-        title="⚔️ Lowlife Combat — Template",
+        title="âš”ï¸ Lowlife Combat â€” Template",
         description=(
             "**Attacker:** Havocprime\n"
             "**Defender:** AI Defender\n"
@@ -50,10 +50,10 @@ def _build_combat_embed(image_attach_name: str) -> discord.Embed:
     e.set_thumbnail(url=attach_url)
 
     # Fields to mimic a combat readout
-    e.add_field(name="Attacker Action", value="**Choke** (Stamina −6)", inline=True)
-    e.add_field(name="Defender Reaction", value="**Struggle** (Stamina −4)", inline=True)
+    e.add_field(name="Attacker Action", value="**Choke** (Stamina âˆ’6)", inline=True)
+    e.add_field(name="Defender Reaction", value="**Struggle** (Stamina âˆ’4)", inline=True)
     e.add_field(
-        name="Outcome", value="**Choke escalates** → Defender **Unconscious**", inline=False
+        name="Outcome", value="**Choke escalates** â†’ Defender **Unconscious**", inline=False
     )
 
     e.add_field(name="Attacker HP", value="**82 / 100**", inline=True)
@@ -64,7 +64,7 @@ def _build_combat_embed(image_attach_name: str) -> discord.Embed:
     e.set_image(url=attach_url)
 
     # Footer (supports an icon)
-    e.set_footer(text="Prototype • All image slots populated", icon_url=attach_url)
+    e.set_footer(text="Prototype â€¢ All image slots populated", icon_url=attach_url)
 
     return e
 
@@ -85,7 +85,7 @@ def register_embed_demo(tree: app_commands.CommandTree):
         if not IMAGE_PATH.exists():
             await interaction.response.send_message(
                 content=(
-                    f"⚠️ Image not found at `{IMAGE_PATH}`.\n"
+                    f"âš ï¸ Image not found at `{IMAGE_PATH}`.\n"
                     "Please place your provided image there, or update IMAGE_PATH in `embed_demo.py`."
                 ),
                 ephemeral=True,
@@ -125,7 +125,7 @@ class EmbedDemo(commands.Cog):
     async def combat_embed_template_cog(self, interaction: discord.Interaction):
         if not IMAGE_PATH.exists():
             await interaction.response.send_message(
-                content=f"⚠️ Image not found at `{IMAGE_PATH}`.", ephemeral=True
+                content=f"âš ï¸ Image not found at `{IMAGE_PATH}`.", ephemeral=True
             )
             return
 

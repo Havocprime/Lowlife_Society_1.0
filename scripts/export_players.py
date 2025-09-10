@@ -1,4 +1,4 @@
-# scripts/export_players.py  (repo root /scripts)
+﻿# scripts/export_players.py  (repo root /scripts)
 from __future__ import annotations
 
 import csv

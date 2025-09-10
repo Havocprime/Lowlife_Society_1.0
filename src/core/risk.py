@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+﻿from datetime import datetime, timezone
 
 
 def compute_risk(snapshot: dict) -> tuple[int, list[str]]:

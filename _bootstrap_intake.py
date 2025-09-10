@@ -1,4 +1,4 @@
-import os
+﻿import os
 import sqlite3
 from pathlib import Path
 
@@ -297,8 +297,8 @@ class MemberIntake(commands.Cog):
         portrait = snap["derived"].get("portrait_asset")
         file = discord.File(portrait, filename="mug.png") if portrait else None
         e = discord.Embed(
-            title="📸 NEW ARRIVAL — FIRST MUGSHOT",
-            description=f"**Alias:** {member.mention}\\n**Rank:** {snap['derived'].get('veteran_rank','—')}",
+            title="ðŸ“¸ NEW ARRIVAL â€” FIRST MUGSHOT",
+            description=f"**Alias:** {member.mention}\\n**Rank:** {snap['derived'].get('veteran_rank','â€”')}",
             colour=discord.Color.dark_embed()
         )
         if member.display_avatar:
@@ -310,12 +310,12 @@ class MemberIntake(commands.Cog):
         inv = snap.get("join_context", {})
         inv_line = f"`{inv.get('invite_code') or 'unknown'}`"
         if inv.get("inviter_id"):
-            inv_line += f" • by <@{inv['inviter_id']}>"
+            inv_line += f" â€¢ by <@{inv['inviter_id']}>"
         e.add_field(name="Referral", value=inv_line, inline=False)
         risk = snap["derived"].get("risk_score", 0)
-        reasons = ", ".join(snap["derived"].get("risk_reasons", [])) or "—"
+        reasons = ", ".join(snap["derived"].get("risk_reasons", [])) or "â€”"
         e.add_field(name="Risk Index", value=f"`{risk}` ({reasons})", inline=False)
-        e.set_footer(text="LOWLIFE SOCIETY — Intake Bureau")
+        e.set_footer(text="LOWLIFE SOCIETY â€” Intake Bureau")
         if file:
             e.set_image(url="attachment://mug.png")
             await channel.send(embed=e, file=file)
@@ -381,13 +381,13 @@ class AdminInspector(commands.Cog):
                 "permissions_false": [p for p, allowed in dict(member.guild_permissions).items() if not allowed],
             }
         }
-        e = discord.Embed(title="🛠️ Admin Inspector", description=f"Full dump for {member.mention}", colour=discord.Color.blurple())
+        e = discord.Embed(title="ðŸ› ï¸ Admin Inspector", description=f"Full dump for {member.mention}", colour=discord.Color.blurple())
         e.add_field(name="ID", value=f"`{member.id}`", inline=True)
         e.add_field(name="Account Created", value=f"`{data['user']['created_at']}`", inline=True)
-        e.add_field(name="Joined Guild", value=f"`{data['member']['joined_at'] or '—'}`", inline=True)
-        e.add_field(name="Roles", value=(", ".join(r['name'] for r in data['member']['roles']) or "—")[:1024], inline=False)
+        e.add_field(name="Joined Guild", value=f"`{data['member']['joined_at'] or 'â€”'}`", inline=True)
+        e.add_field(name="Roles", value=(", ".join(r['name'] for r in data['member']['roles']) or "â€”")[:1024], inline=False)
         e.add_field(name="Status", value=data["member"]["status"], inline=True)
-        e.add_field(name="Activities", value=", ".join(data["member"]["activities"]) or "—", inline=True)
+        e.add_field(name="Activities", value=", ".join(data["member"]["activities"]) or "â€”", inline=True)
         if data["user"]["avatar_url"]:
             e.set_thumbnail(url=data["user"]["avatar_url"])
         buf = io.BytesIO(json.dumps(data, indent=2).encode("utf-8"))

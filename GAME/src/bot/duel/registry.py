@@ -1,4 +1,4 @@
-"""
+﻿"""
 Command group wiring, state registry, and simple setup utilities.
 This is the only module your bot needs to import (`register_duel`).
 """
@@ -30,7 +30,7 @@ log = logging.getLogger("duel.registry")
 # ---------- Seed combat log & initiative ----------
 
 
-def _seed_combat_log(state: DuelState, rows: int = LOG_VISIBLE - 1, fill_char: str = "◐") -> None:
+def _seed_combat_log(state: DuelState, rows: int = LOG_VISIBLE - 1, fill_char: str = "â—") -> None:
     if not state.log_lines:
         state.log_lines.extend([fill_char] * rows)
         state.full_log_lines.extend([fill_char] * rows)
@@ -51,7 +51,7 @@ def _decide_initiative(state: DuelState) -> None:
     pb = 100 - pa
     state.initiative_note = f"a{pa}_[b{pb}]"
     state.log_lines.append(
-        f"Initiative: {a.name} {pa}% vs {b.name} {pb}% → **{first.name}** starts."
+        f"Initiative: {a.name} {pa}% vs {b.name} {pb}% â†’ **{first.name}** starts."
     )
     state.full_log_lines.append(state.log_lines[-1])
 
@@ -82,7 +82,7 @@ async def duel_start(inter: discord.Interaction, opponent: discord.Member):
     if opponent.id == me.id:
         await safe_reply(
             inter,
-            content="You can’t duel yourself. Try `/duel ai` to test against a bot.",
+            content="You canâ€™t duel yourself. Try `/duel ai` to test against a bot.",
             ephemeral=True,
         )
         return
@@ -91,7 +91,7 @@ async def duel_start(inter: discord.Interaction, opponent: discord.Member):
     if key in _DUEL_BY_CHANNEL and _DUEL_BY_CHANNEL[key].active:
         await safe_reply(
             inter,
-            content="There’s already an active duel in this channel. Use `/duel reset` first.",
+            content="Thereâ€™s already an active duel in this channel. Use `/duel reset` first.",
             ephemeral=True,
         )
         return
@@ -123,7 +123,7 @@ async def duel_ai(inter: discord.Interaction):
     if key in _DUEL_BY_CHANNEL and _DUEL_BY_CHANNEL[key].active:
         await safe_reply(
             inter,
-            content="There’s already an active duel in this channel. Use `/duel reset` first.",
+            content="Thereâ€™s already an active duel in this channel. Use `/duel reset` first.",
             ephemeral=True,
         )
         return
@@ -158,7 +158,7 @@ async def duel_reset(inter: discord.Interaction):
         return
     state.finisher = None
     state.active = False
-    state.push("⛔ Duel reset.")
+    state.push("â›” Duel reset.")
     _end_duel_in_channel(state)
     try:
         from .ui import update_public_result

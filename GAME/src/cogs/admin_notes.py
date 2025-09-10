@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import os
 from typing import Optional
@@ -51,13 +51,13 @@ async def notes_add(interaction: discord.Interaction, user: discord.Member, note
         nid = add_admin_note(interaction.guild.id, user.id, note, interaction.user.id)  # type: ignore[misc]
 
     await interaction.followup.send(
-        f"🗒️ Added note `#{nid}` for {user.mention}: {discord.utils.escape_markdown(note)}",
+        f"ðŸ—’ï¸ Added note `#{nid}` for {user.mention}: {discord.utils.escape_markdown(note)}",
         ephemeral=True,
     )
 
 
 @notes.command(name="list", description="List recent admin notes for a member")
-@app_commands.describe(user="Target member", limit="How many to show (1–50)")
+@app_commands.describe(user="Target member", limit="How many to show (1â€“50)")
 async def notes_list(
     interaction: discord.Interaction,
     user: discord.Member,
@@ -80,12 +80,12 @@ async def notes_list(
 
     lines = []
     for nid, ts, admin_id, text in rows:
-        author = f"<@{admin_id}>" if admin_id else "—"
+        author = f"<@{admin_id}>" if admin_id else "â€”"
         safe = discord.utils.escape_markdown(text or "")
-        lines.append(f"`#{nid}` `{ts}` — {author}: {safe}")
+        lines.append(f"`#{nid}` `{ts}` â€” {author}: {safe}")
 
     e = discord.Embed(
-        title=f"Admin Notes — {user} (latest {len(rows)})",
+        title=f"Admin Notes â€” {user} (latest {len(rows)})",
         colour=discord.Colour.blurple(),
         description="\n".join(lines)[:4096],
     )
@@ -108,7 +108,7 @@ async def notes_delete(interaction: discord.Interaction, note_id: int):
         deleted = delete_admin_note(interaction.guild.id, note_id)  # type: ignore[misc]
 
     if deleted:
-        await interaction.response.send_message(f"🗑️ Deleted note `#{note_id}`.", ephemeral=True)
+        await interaction.response.send_message(f"ðŸ—‘ï¸ Deleted note `#{note_id}`.", ephemeral=True)
     else:
         await interaction.response.send_message(f"Couldn't find note `#{note_id}`.", ephemeral=True)
 
@@ -122,7 +122,7 @@ class AdminNotes(commands.Cog):
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(AdminNotes(bot))
-    # If bot.py didn’t pre-register the group, register it here too:
+    # If bot.py didnâ€™t pre-register the group, register it here too:
     try:
         from ..bot.bot import GUILD_ID  # optional import
 

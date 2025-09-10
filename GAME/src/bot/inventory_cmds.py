@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import discord
 from discord import app_commands
@@ -13,7 +13,7 @@ def register_inventory(tree: app_commands.CommandTree) -> None:
         ensure_player(uid)
         inv = get_inventory(uid)
         eq = get_equipped(uid)
-        txt = f"Equipped: **{eq}**\n" + ("Empty." if not inv else "• " + "\n• ".join(inv))
+        txt = f"Equipped: **{eq}**\n" + ("Empty." if not inv else "â€¢ " + "\nâ€¢ ".join(inv))
         await interaction.response.send_message(txt, ephemeral=True)
 
     @tree.command(name="equip", description="Equip an item from your inventory.")
@@ -23,7 +23,7 @@ def register_inventory(tree: app_commands.CommandTree) -> None:
         if ok:
             await interaction.response.send_message(f"Equipped **{item}**.", ephemeral=True)
         else:
-            await interaction.response.send_message(f"You don’t have **{item}**.", ephemeral=True)
+            await interaction.response.send_message(f"You donâ€™t have **{item}**.", ephemeral=True)
 
     @tree.command(name="give", description="Admin: give an item to a user.")
     async def give_cmd(interaction: discord.Interaction, user: discord.Member, item: str):

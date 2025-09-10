@@ -1,0 +1,28 @@
+{
+  "generated_utc": "2025-09-10T10:11:51.719919+00:00",
+  "files_scanned": 4516,
+  "checks": {
+    "src": "OK",
+    "src.cogs": "OK",
+    "src.cogs.tags": "MISSING",
+    "GAME.src": "OK",
+    "GAME.src.cogs": "OK",
+    "GAME.src.tags": "OK",
+    "GAME.src.cogs.tags": "OK"
+  },
+  "directory_issues": [
+    {
+      "kind": "duplicate_dir",
+      "details": "Nested GAME/GAME exists at: GAME/GAME \u2014 consider moving its contents up to GAME/ and removing the extra folder."
+    },
+    {
+      "kind": "duplicate_package",
+      "details": "Multiple 'tags' packages found:\n    GAME/src/cogs/tags\n    GAME/src/systems/tags\n    GAME/src/tags\nRecommended: Keep a single canonical package under GAME/src/cogs/tags and migrate others into it."
+    },
+    {
+      "kind": "conflict_paths",
+      "details": "Both GAME/src/tags and GAME/src/cogs/tags exist. Use GAME/src/cogs/tags as the canonical location."
+    }
+  ],
+  "repo_root": "C:\\Users\\Havocprime\\Desktop\\Lowlife_Society_GITHUB_EDITION"
+}

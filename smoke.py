@@ -1,4 +1,4 @@
-from src.db.dal import (
+﻿from src.db.dal import (
     append_event,
     create_character,
     ensure_wallet,

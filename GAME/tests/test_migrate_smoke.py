@@ -1,4 +1,4 @@
-# GAME/tests/test_migrate_smoke.py
+﻿# GAME/tests/test_migrate_smoke.py
 # GAME/tests/test_migrate_smoke.py
 import importlib
 import os

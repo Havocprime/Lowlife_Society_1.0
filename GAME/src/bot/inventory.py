@@ -1,4 +1,4 @@
-# FILE: src/bot/inventory.py
+﻿# FILE: src/bot/inventory.py
 from __future__ import annotations
 
 import discord
@@ -26,9 +26,9 @@ async def _safe_reply(inter: discord.Interaction, *, content=None, embed=None, e
 
 
 def _inv_embed(user: discord.User, inv: dict, eq: dict) -> discord.Embed:
-    e = discord.Embed(title=f"🎒 Inventory — {user.display_name}", color=discord.Color.dark_gold())
+    e = discord.Embed(title=f"ðŸŽ’ Inventory â€” {user.display_name}", color=discord.Color.dark_gold())
     if inv:
-        lines = [f"- **{get_item(i).name if get_item(i) else i}** × {c}" for i, c in inv.items()]
+        lines = [f"- **{get_item(i).name if get_item(i) else i}** Ã— {c}" for i, c in inv.items()]
         e.add_field(name="Items", value="\n".join(lines)[:1024], inline=False)
     else:
         e.add_field(name="Items", value="(empty)", inline=False)
@@ -56,7 +56,7 @@ def register_inventory(tree: app_commands.CommandTree) -> None:
     @app_commands.describe(item_id="ID of the item to equip (see /inv listitems or /inv show).")
     async def equip(inter: discord.Interaction, item_id: str):
         ok, msg = await equip_item(inter.user.id, item_id)
-        await _safe_reply(inter, content=("✅ " if ok else "⚠️ ") + msg, ephemeral=True)
+        await _safe_reply(inter, content=("âœ… " if ok else "âš ï¸ ") + msg, ephemeral=True)
         if ok:
             items, eq = await get_inventory(inter.user.id)
             await inter.followup.send(embed=_inv_embed(inter.user, items, eq), ephemeral=True)
@@ -65,7 +65,7 @@ def register_inventory(tree: app_commands.CommandTree) -> None:
     @app_commands.describe(slot=f"One of: {', '.join(SLOTS)}")
     async def unequip(inter: discord.Interaction, slot: str):
         ok, msg = await unequip_slot(inter.user.id, slot)
-        await _safe_reply(inter, content=("✅ " if ok else "⚠️ ") + msg, ephemeral=True)
+        await _safe_reply(inter, content=("âœ… " if ok else "âš ï¸ ") + msg, ephemeral=True)
         if ok:
             items, eq = await get_inventory(inter.user.id)
             await inter.followup.send(embed=_inv_embed(inter.user, items, eq), ephemeral=True)
@@ -74,11 +74,11 @@ def register_inventory(tree: app_commands.CommandTree) -> None:
     async def listitems(inter: discord.Interaction):
         catalog = list_items()
         lines = [
-            f"`{iid}` — **{it.name}** (slot: {it.slot or '—'}, wt {it.weight})"
+            f"`{iid}` â€” **{it.name}** (slot: {it.slot or 'â€”'}, wt {it.weight})"
             for iid, it in catalog.items()
         ]
         e = discord.Embed(
-            title="📦 Item Catalog",
+            title="ðŸ“¦ Item Catalog",
             description="\n".join(lines)[:4000],
             color=discord.Color.dark_gold(),
         )
@@ -97,7 +97,7 @@ def register_inventory(tree: app_commands.CommandTree) -> None:
         await add_item(user.id, item_id, qty)
         await _safe_reply(
             inter,
-            content=f"✅ Gave **{qty}× {get_item(item_id).name}** to **{user.display_name}**.",
+            content=f"âœ… Gave **{qty}Ã— {get_item(item_id).name}** to **{user.display_name}**.",
             ephemeral=True,
         )
 

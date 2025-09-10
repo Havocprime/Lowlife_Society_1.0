@@ -1,13 +1,13 @@
+﻿# GAME/src/bot/bot.py
 from __future__ import annotations
 
 import asyncio
 import csv
-import importlib
 import io
 import json
 import logging
-import os
 import sys
+import inspect
 from datetime import datetime, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -15,13 +15,19 @@ from zoneinfo import ZoneInfo
 import discord
 from discord import app_commands
 from discord.ext import commands
-from dotenv import load_dotenv
 
-BUILD_TAG = "bot.py:v4-inspect_full-and-cmd-origin-log"
+from src.core.heartbeat import Heartbeat, HeartbeatConfig
+
+# ---------- boot logging ----------
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
+logging.getLogger("discord.gateway").setLevel(logging.ERROR)
+log = logging.getLogger("boot")
+
+BUILD_TAG = "bot.py:v6f-full-inspector+module-audit+safe-sync"
 
 # ---------- paths & env ----------
 THIS_FILE = Path(__file__).resolve()
-SRC_DIR = THIS_FILE.parents[1]  # .../GAME/src
+SRC_DIR = THIS_FILE.parents[1]   # .../GAME/src
 GAME_DIR = THIS_FILE.parents[2]  # .../GAME
 REPO_DIR = THIS_FILE.parents[3]  # repo root
 for p in (GAME_DIR, SRC_DIR, REPO_DIR):
@@ -29,30 +35,28 @@ for p in (GAME_DIR, SRC_DIR, REPO_DIR):
     if sp not in sys.path:
         sys.path.insert(0, sp)
 
-# --- settings ---
-from src.core.settings import SETTINGS
+# --- settings (after sys.path is set) ---
+from src.core.settings import SETTINGS  # noqa: E402
+
+# TEMP: verify token is being read from env correctly
+tok = SETTINGS.discord_token or ""
+masked = (tok[:8] + "â€¦" + tok[-6:]) if len(tok) > 16 else "(too short)"
+log.info("Token loaded (len=%d): %s", len(tok), masked)
+if len(tok) < 40 or (" " in tok) or ("\n" in tok) or ("\r" in tok):
+    log.error("Token looks malformed. Check GAME/.env DISCORD_TOKEN.")
 
 TOKEN = SETTINGS.discord_token
 GUILD_ID = SETTINGS.guild_id
 
-
-# ✅ import AFTER sys.path is set
-from src.core.audit import audit_event, ensure_db
-from src.core.events import DB_PATH, last_event_time, list_admin_notes, message_count, recent_events
-
-COGS = [
-    "src.cogs.activity_logger",
-    "src.cogs.admin_inspector",
-    "src.cogs.admin_notes",
-    "src.cogs.analytics",
-    "src.cogs.audit_log",
-    "src.cogs.invite_tracker",
-    "src.cogs.member_intake",
-]
-
-logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
-log = logging.getLogger("boot")
-log.info("Starting %s", BUILD_TAG)
+# event helpers (for /inspect_full)
+from src.core.events import (  # noqa: E402
+    DB_PATH,
+    last_event_time,
+    list_admin_notes,
+    message_count,
+    recent_events,
+)
+from src.core.errors import setup_error_reporting  # noqa: E402
 
 DANGEROUS_PERMS = {
     "administrator",
@@ -71,7 +75,12 @@ DANGEROUS_PERMS = {
     "priority_speaker",
 }
 
+try:
+    LA_TZ = ZoneInfo("America/Los_Angeles")
+except Exception:
+    LA_TZ = None
 
+# ---------- small helpers ----------
 def _hex_color(v):
     try:
         return f"#{int(v):06X}"
@@ -80,8 +89,9 @@ def _hex_color(v):
 
 
 def _rel_ymdh(a: datetime | None, b: datetime | None = None) -> str:
+    """Rough 'y_m_d_h ago' string (years, months, days, hours)."""
     if not a:
-        return "—"
+        return "â€”"
     if b is None:
         b = datetime.now(timezone.utc)
     from calendar import monthrange
@@ -96,6 +106,7 @@ def _rel_ymdh(a: datetime | None, b: datetime | None = None) -> str:
     delta = b - anchor
     d = delta.days
     h = delta.seconds // 3600
+
     parts = []
     if y:
         parts.append(f"{y}_years")
@@ -107,14 +118,8 @@ def _rel_ymdh(a: datetime | None, b: datetime | None = None) -> str:
     return "_".join(parts) + " ago"
 
 
-try:
-    LA_TZ = ZoneInfo("America/Los_Angeles")
-except Exception:
-    LA_TZ = None
-
-
 def _fmt_ts_local(ts_in) -> str:
-    """DD/MM/YYYY H:MM AM/PM in LA time if available; accepts iso 'Z', seconds, ms, datetime."""
+    """DD/MM/YY H:MM AM/PM in LA time if available; accepts iso 'Z', seconds, ms, datetime."""
     try:
         if isinstance(ts_in, datetime):
             dt = ts_in
@@ -138,56 +143,26 @@ def _fmt_ts_local(ts_in) -> str:
         ampm = "AM" if hour < 12 else "PM"
         h12 = hour % 12 or 12
         return f"{dt.day}/{dt.month}/{dt.year % 100:02d} {h12}:{dt.minute:02d} {ampm}"
-
     except Exception:
         return str(ts_in)
-
-
-def _is_trusted(member: discord.Member) -> bool:
-    if member.guild_permissions.administrator:
-        return True
-    if ADMIN_ROLE_ID and any(r.id == ADMIN_ROLE_ID for r in member.roles):
-        return True
-    if TRUSTED_ROLE_IDS and any(r.id in TRUSTED_ROLE_IDS for r in member.roles):
-        return True
-    if TRUSTED_ROLE_NAMES and any(r.name.lower() in TRUSTED_ROLE_NAMES for r in member.roles):
-        return True
-    return False
 
 
 def _snippet(s: str | None, n: int = 120) -> str:
     if not s:
         return ""
     s = s.replace("\n", " ").strip()
-    return (s[:n] + "…") if len(s) > n else s
-
-
-def _to_int(x):
-    try:
-        return int(x)
-    except Exception:
-        return None
-
-
-def _ch_mention_from_payload(guild: discord.Guild, d: dict) -> str:
-    cid = d.get("channel_id") or d.get("channel") or d.get("cid")
-    if isinstance(cid, dict):
-        cid = cid.get("id")
-    cid = _to_int(cid)
-    if not cid:
-        return "—"
-    ch = guild.get_channel(cid)
-    return ch.mention if ch else f"<#{cid}>"
+    return (s[:n] + "â€¦") if len(s) > n else s
 
 
 def _ch_label_from_payload(guild: discord.Guild, d: dict) -> str:
-    """Return '#channelname' if found, otherwise <#id> or '—'."""
+    """Return '#channelname' if found, otherwise <#id> or 'â€”'."""
     cid = d.get("channel_id") or d.get("channel") or d.get("cid")
     if isinstance(cid, dict):
         cid = cid.get("id")
-    cid = _to_int(cid)
-    if not cid:
-        return "—"
+    try:
+        cid = int(cid)
+    except Exception:
+        return "â€”"
     ch = guild.get_channel(cid)
     return f"#{ch.name}" if ch else f"<#{cid}>"
 
@@ -204,104 +179,184 @@ def _extract_text(d: dict) -> str:
     return ""
 
 
-def _role_mentions(guild: discord.Guild, ids: list[str] | list[int] | None) -> str:
-    if not ids:
-        return "—"
-    out = []
-    for rid in ids:
-        rid_i = _to_int(rid)
-        if rid_i is None:
-            out.append(f"`{rid}`")
-            continue
-        r = guild.get_role(rid_i)
-        out.append(r.mention if r else f"`{rid_i}`")
-    return ", ".join(out) if out else "—"
+def _is_trusted(member: discord.Member) -> bool:
+    if member.guild_permissions.administrator:
+        return True
+    try:
+        from src.core.perm import user_role, Role
+        return user_role(member) in (Role.ADMIN, Role.MOD)
+    except Exception:
+        return False
 
 
-class LowlifeBot(commands.Bot):
-    async def setup_hook(self):
-        # Ensure audit DB/schema
+# ---------- Global gate via CommandTree ----------
+class LowlifeTree(app_commands.CommandTree):
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        """
+        Global gate: block frozen accounts before any slash command runs.
+        Uses the same DB path as the custodian_cog for consistency.
+        """
         try:
-            res = ensure_db()
-            if asyncio.iscoroutine(res):
-                await res
-            log.info("audit DB ready")
-        except Exception:
-            log.exception("audit DB init failed")
-
-        async def setup_hook(self):
-            # ... your other loads ...
-            await self.load_extension("src.cogs.events")
-            await self.load_extension("src.features.character_sheet.commands")
-            await self.load_extension("src.admin.sync")
-            await self.load_extension("src.admin.export")
-            await self.load_extension("src.admin.audit")
-
-        async def try_load(mod: str):
-            try:
-                await self.load_extension(mod)
-                log.info("loaded extension: %s", mod)
-            except Exception:
-                log.exception("failed to load %s", mod)
-
-        for mod in COGS:
-            await try_load(mod)
-
-        # --- register notes group into the active scope (robust) ---
-        try:
-            mod = importlib.import_module("src.cogs.admin_notes")
-            notes_group = getattr(mod, "notes", None)
-            if notes_group:
-                exists = self.tree.get_command("notes")  # type: ignore
-                if exists is None:
-                    try:
-                        if GUILD_ID:
-                            self.tree.add_command(notes_group, guild=discord.Object(id=GUILD_ID))
-                        else:
-                            self.tree.add_command(notes_group)
-                        log.info("registered notes group")
-                    except Exception as e:
-                        if "already registered" in str(e).lower():
-                            log.info(
-                                "notes group already present; skipping (add_command duplicate)"
-                            )
-                        else:
-                            raise
+            import sqlite3
+            dbp = Path(__file__).parents[2] / "db" / "audit.sqlite"
+            with sqlite3.connect(dbp) as conn:
+                row = conn.execute(
+                    "SELECT reason FROM account_freeze WHERE user_id=?",
+                    (str(getattr(interaction.user, "id", "")),),
+                ).fetchone()
+            if row:
+                msg = f"ðŸš« Your account is temporarily frozen: **{row[0]}**"
+                if not interaction.response.is_done():
+                    await interaction.response.send_message(msg, ephemeral=True)
                 else:
-                    log.info("notes group already present; skipping (found in tree)")
+                    await interaction.followup.send(msg, ephemeral=True)
+                return False
+        except Exception:
+            # fail open; do not block commands on DB hiccups
+            pass
+        return True
+
+
+# ---------- Bot ----------
+class LowlifeBot(commands.Bot):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._heartbeat: Heartbeat | None = None
+        self._bootstrap_synced: bool = False
+
+    async def setup_hook(self):
+        # global crash/error capture
+        setup_error_reporting(self)
+
+        # --- Custodian schema on boot ---
+        try:
+            from src.db.custodian_dal import ensure_custodian_schema
+            ensure_custodian_schema()
+            log.info("custodian schema ensured")
+        except Exception:
+            log.exception("custodian schema init failed")
+
+        try:
+            from src.db.dal import ensure_events_schema
+            ensure_events_schema()
+            log.info("events schema ensured")
         except Exception as e:
-            log.warning("could not register notes group: %s", e)
+            log.warning("events schema ensure failed: %s", e)
 
-        # --- /sync (admin) — tries guild, then global, and reports both ---
-        @app_commands.command(
-            name="sync", description="Admin: resync slash commands (tries guild, then global)"
-        )
-        @audit_event(action_type="admin.sync")
-        async def sync_cmd(interaction: discord.Interaction):
-            if not (
-                isinstance(interaction.user, discord.Member)
-                and interaction.user.guild_permissions.administrator
-            ):
-                await interaction.response.send_message("Nope.", ephemeral=True)
-                return
-
-            await interaction.response.defer(ephemeral=True, thinking=True)
-            parts = []
-
-            if interaction.guild:
-                try:
-                    cmds = await interaction.client.tree.sync(guild=interaction.guild)  # type: ignore
-                    parts.append(f"Guild: {len(cmds)}")
-                except Exception as e:
-                    parts.append(f"Guild sync failed: {type(e).__name__}")
-
+            from src.db.auto_migrate import ensure_all as ensure_auto_migrations
+            ensure_auto_migrations()
+            log.info("auto migrations ensured")
+        
             try:
-                gcmds = await interaction.client.tree.sync()
-                parts.append(f"Global: {len(gcmds)}")
+                from src.db.auto_migrate import ensure_all as ensure_auto_migrations
+                ensure_auto_migrations()
+                log.info("auto migrations ensured")
             except Exception as e:
-                parts.append(f"Global sync failed: {type(e).__name__}")
+                log.warning("auto migrations failed: %s", e)
 
-            await interaction.followup.send("Synced — " + " • ".join(parts), ephemeral=True)
+        # ---- Resolve ONLY the audit_event decorator via module import (robust) ----
+        try:
+            from src.core import audit as _audit_mod
+            audit_event = getattr(_audit_mod, "audit_event")
+        except Exception as e:
+            log.warning("audit decorator unavailable (%s) â€” using no-op.", e)
+
+            def audit_event(*_a, **_k):  # type: ignore
+                def deco(fn):
+                    return fn
+                return deco
+
+        # Base cogs to load
+        COGS = [
+            "src.cogs.activity_logger",
+            "src.cogs.admin_inspector",
+            "src.cogs.analytics",
+            "src.cogs.audit_log",
+            "src.cogs.invite_tracker",
+            "src.cogs.member_intake",
+            "src.cogs.welcome",
+            "src.cogs.duel",
+            "src.cogs.inventory",
+            "src.cogs.admin_tools",
+            "src.cogs.health",
+            "src.cogs.suggestions",
+            "src.cogs.admin_items",
+            "src.cogs.item_magazine",
+            "src.cogs.onboarding",
+            "src.cogs.profile",
+            "src.cogs.admin_backfill",
+            "src.cogs.heartbeat_taps",
+            "src.cogs.tags",
+            "src.cogs.playerlog",
+
+        ]
+
+        async def load_extensions(bot):
+            import importlib
+            for ext in STARTUP_EXTENSIONS:
+                try:
+                    await bot.load_extension(ext)
+                    logging.getLogger("boot").info("loaded extension: %s", ext)
+                except Exception:
+                    logging.getLogger("boot").exception("failed to load extension: %s", ext)
+
+        async def try_load(module: str):
+            try:
+                await self.load_extension(module)
+                log.info("loaded extension: %s", module)
+            except Exception:
+                log.exception("failed to load %s", module)
+
+        for module in COGS:
+            await try_load(module)
+
+        # Extra/feature/admin cogs (best-effort)
+        for module in (
+            "src.cogs.events",
+            "src.admin.sync",
+            "src.admin.export",
+            "src.admin.audit",
+            "src.admin.custodian_cog",
+            "src.admin.custodian_detectors",
+            "src.admin.custodian_anchor",
+            "src.admin.freeze",
+            "src.admin.econ",
+            "src.admin.roles",
+            "src.admin.backup",
+            "src.cogs.event_listener",
+            "src.admin.investigate",
+            "src.admin.events_viewer",
+        ):
+            await try_load(module)
+
+        # ---------- HEARTBEAT ----------
+        try:
+            cfg = HeartbeatConfig(interval_s=0.5, log_every_n=12, label="LOWLIFE")
+            self._heartbeat = Heartbeat(cfg)
+            await self._heartbeat.start()
+            log.info("heartbeat started")
+        except Exception:
+            log.exception("failed to start heartbeat")
+
+        # ---------- Ensure /hb is registered ----------
+        try:
+            hb_cog = self.get_cog("HeartbeatTaps")
+            if hb_cog and hasattr(hb_cog, "hb"):
+                try:
+                    self.tree.add_command(hb_cog.hb)
+                except Exception as e:
+                    if "already registered" not in str(e).lower():
+                        log.warning("add_command(global, /hb) failed: %s", e)
+                if GUILD_ID:
+                    try:
+                        self.tree.add_command(hb_cog.hb, guild=discord.Object(id=GUILD_ID))
+                    except Exception as e:
+                        if "already registered" not in str(e).lower():
+                            log.warning("add_command(guild, /hb) failed: %s", e)
+            else:
+                log.warning("HeartbeatTaps cog not found; /hb not registered.")
+        except Exception:
+            log.exception("failed to register /hb")
 
         # --- /inspect_full (admin) ---
         @app_commands.command(
@@ -372,7 +427,7 @@ class LowlifeBot(commands.Bot):
             pending = getattr(member, "pending", None)
 
             last_acted_raw = last_event_time(member.id)
-            last_acted_pretty = _fmt_ts_local(last_acted_raw) if last_acted_raw else "—"
+            last_acted_pretty = _fmt_ts_local(last_acted_raw) if last_acted_raw else "â€”"
 
             badges = []
             try:
@@ -387,20 +442,20 @@ class LowlifeBot(commands.Bot):
 
             notes = list_admin_notes(interaction.guild.id, member.id, 2)  # type: ignore
             notes_lines = (
-                [f"`{ts}` — <@{aid}> — {note}" for (_nid, ts, aid, note) in notes] if notes else []
+                [f"`{ts}` â€” <@{aid}> â€” {note}" for (_nid, ts, aid, note) in notes] if notes else []
             )
 
             header = "\n".join(
                 [
                     f"{member.mention} --",
                     f"ID -- `{member.id}`",
-                    f"Account Created -- `{created.isoformat().replace('+00:00','Z') if created else '—'}` ({_rel_ymdh(created)})",
-                    f"Joined Guild -- `{joined.isoformat().replace('+00:00','Z') if joined else '—'}` ({_rel_ymdh(joined)})",
+                    f"Account Created -- `{created.isoformat().replace('+00:00','Z') if created else 'â€”'}` ({_rel_ymdh(created)})",
+                    f"Joined Guild -- `{joined.isoformat().replace('+00:00','Z') if joined else 'â€”'}` ({_rel_ymdh(joined)})",
                 ]
             )
 
             e = discord.Embed(
-                title="🛠️ Admin Inspector — Full Profile",
+                title="ðŸ› ï¸ Admin Inspector â€” Full Profile",
                 description=header,
                 colour=discord.Color.blurple(),
             )
@@ -412,20 +467,20 @@ class LowlifeBot(commands.Bot):
             e.add_field(
                 name="Status / Devices",
                 value=f"Current Status: {status} <{last_acted_pretty}>\n"
-                f"🖥 {dev['desktop']}\n📱 {dev['mobile']}\n🌐 {dev['web']}",
+                f"ðŸ–¥ {dev['desktop']}\nðŸ“± {dev['mobile']}\nðŸŒ {dev['web']}",
                 inline=False,
             )
             if activities:
                 e.add_field(name="Activities", value="; ".join(activities)[:1024], inline=False)
 
-            e.add_field(name="Top Roles", value=(", ".join(top3) or "—"), inline=False)
+            e.add_field(name="Top Roles", value=(", ".join(top3) or "â€”"), inline=False)
             e.add_field(
-                name="⚠️ High-Risk Perms (top 5)", value=(", ".join(risky) or "—"), inline=False
+                name="âš ï¸ High-Risk Perms (top 5)", value=(", ".join(risky) or "â€”"), inline=False
             )
 
             trusted = _is_trusted(member)
-            e.add_field(name="Trusted", value=("Yes ✅" if trusted else "No ❌"), inline=True)
-            e.add_field(name="Accent", value=f"`{_hex_color(accent_val) or '—'}`", inline=True)
+            e.add_field(name="Trusted", value=("Yes âœ…" if trusted else "No âŒ"), inline=True)
+            e.add_field(name="Accent", value=f"`{_hex_color(accent_val) or 'â€”'}`", inline=True)
 
             if premium_since:
                 e.add_field(
@@ -446,123 +501,128 @@ class LowlifeBot(commands.Bot):
                     inline=True,
                 )
 
-            e.add_field(name="Badges", value=(", ".join(badges) or "—")[:1024], inline=False)
-            e.add_field(name="Msg Counts", value=f"7d: `{msg7}` • 30d: `{msg30}`", inline=True)
+            e.add_field(name="Badges", value=(", ".join(badges) or "â€”")[:1024], inline=False)
+            e.add_field(name="Msg Counts", value=f"7d: `{msg7}` â€¢ 30d: `{msg30}`", inline=True)
             e.add_field(name="Log DB", value=f"`{str(DB_PATH)}`", inline=True)
 
-            # --- recent actions: explicit formatting here (always show the section) ---
-            # Try to call recent_events with guild first (some versions require it)
+            # recent actions (from your compact events table)
             try:
                 recents = recent_events(member.id, 50, interaction.guild.id)  # type: ignore[attr-defined]
             except TypeError:
                 recents = recent_events(member.id, 50)
 
             def _recent_line(ts, kind, data):
-                ch = _ch_label_from_payload(interaction.guild, data) if interaction.guild else "—"  # type: ignore
+                ch = _ch_label_from_payload(interaction.guild, data) if interaction.guild else "â€”"  # type: ignore
                 txt = _snippet(_extract_text(data))
 
                 if kind == "message":
-                    prefix = "Msg"
-                    body = txt or "—"
+                    prefix = "Msg";  body = txt or "â€”"
                 elif kind == "message_edit":
-                    prefix = "Edit"
-                    body = txt or (data.get("after") or {}).get("content") or "—"
+                    prefix = "Edit"; body = txt or (data.get("after") or {}).get("content") or "â€”"
                 elif kind == "message_delete":
-                    prefix = "Del"
-                    body = txt or (data.get("before") or {}).get("content") or "unknown"
+                    prefix = "Del";  body = txt or (data.get("before") or {}).get("content") or "unknown"
                 elif kind == "message_bulk_delete":
                     prefix = f"BulkDel x{data.get('count', 0)}"
                     cached = data.get("cached_with_text", 0)
                     body = f"{cached} with text" if cached else ""
+                elif kind == "presence":
+                    prefix = "Presence"
+                    body = data.get("text")
+                    if not body:
+                        sb = str(data.get("status_before") or data.get("before") or "").strip()
+                        sa = str(data.get("status_after") or data.get("after") or "").strip()
+
+                        after_snap = data.get("after") if isinstance(data.get("after"), dict) else {}
+                        devbits = []
+                        desk = str(after_snap.get("desktop") or "").strip()
+                        mob = str(after_snap.get("mobile") or "").strip()
+                        web = str(after_snap.get("web") or "").strip()
+                        if desk and desk.lower() != "offline":
+                            devbits.append(f"ðŸ–¥ {desk}")
+                        if mob and mob.lower() != "offline":
+                            devbits.append(f"ðŸ“± {mob}")
+                        if web and web.lower() != "offline":
+                            devbits.append(f"ðŸŒ {web}")
+                        acts = after_snap.get("activities") or []
+                        act_txt = ", ".join([str(a) for a in acts][:2])
+
+                        parts = []
+                        if sb or sa:
+                            parts.append(f"{sb or 'â€”'} â†’ {sa or 'â€”'}")
+                        tail = " â€¢ ".join([p for p in (" | ".join(devbits) if devbits else "", act_txt) if p])
+                        if tail:
+                            parts.append(tail)
+                        body = " â€” ".join(parts) if parts else ""
                 else:
                     prefix = kind.replace("_", " ").title()
                     body = txt or ""
 
-                return f"{_fmt_ts_local(ts)}  {prefix}@{ch} - {body or '—'}"
+                return f"{_fmt_ts_local(ts)}  {prefix}@{ch} - {body or 'â€”'}"
 
             pretty = []
-            for row in recents[:20]:  # cap at 20 lines
-                # tolerate (ts, kind, payload) OR (id, ts, kind, payload)
+            for row in recents[:20]:
                 if len(row) >= 4:
                     _, ts, kind, payload = row[0], row[1], row[2], row[3]
                 elif len(row) >= 3:
                     ts, kind, payload = row[0], row[1], row[2]
                 else:
-                    ts, kind, payload = (
-                        row[0],
-                        (row[1] if len(row) > 1 else "event"),
-                        (row[2] if len(row) > 2 else "{}"),
-                    )
-
+                    ts, kind, payload = row[0], (row[1] if len(row) > 1 else "event"), (row[2] if len(row) > 2 else "{}")
                 try:
-                    data = (
-                        json.loads(payload or "{}")
-                        if isinstance(payload, (str, bytes))
-                        else (payload or {})
-                    )
+                    data = json.loads(payload or "{}") if isinstance(payload, (str, bytes)) else (payload or {})
                 except Exception:
                     data = {}
-
-                # Trim every individual line a bit so the field fits 1024 chars
                 line = _recent_line(ts, kind, data)
                 if len(line) > 120:
-                    line = line[:117] + "…"
+                    line = line[:117] + "â€¦"
                 pretty.append(line)
 
-            # Always show the section (even if empty)
-            out = (
-                "\n".join(pretty)
-                if pretty
-                else "None recorded yet — start chatting to populate this!"
-            )
-            # Ensure Discord field limit (1024 chars)
+            out = "\n".join(pretty) if pretty else "None recorded yet â€” start chatting to populate this!"
             while len(out) > 1024 and len(pretty) > 1:
-                pretty.pop()  # drop the oldest line in our slice
+                pretty.pop()
                 out = "\n".join(pretty)
 
             e.add_field(name="Recent Actions", value=out, inline=False)
+            e.set_footer(text=f"{BUILD_TAG} â€” Use /note_list to view all, /note_add to add, /note_delete to remove")
 
-            e.set_footer(
-                text=f"{BUILD_TAG} — Use /note_list to view all, /note_add to add, /note_delete to remove"
-            )
-
-            out = io.StringIO()
-            w = csv.writer(out)
+            s = io.StringIO()
+            w = csv.writer(s)
             w.writerow(["ts_utc", "kind", "payload"])
             for ts, kind, payload in recents:
                 w.writerow([ts, kind, payload])
-            file = discord.File(
-                io.BytesIO(out.getvalue().encode("utf-8")),
-                filename=f"recent_actions_{member.id}.csv",
-            )
-            await interaction.followup.send(embed=e, file=file, ephemeral=True)
+            f = discord.File(io.BytesIO(s.getvalue().encode("utf-8")), filename=f"recent_actions_{member.id}.csv")
+            await interaction.followup.send(embed=e, file=f, ephemeral=True)
 
-        # ----- register & SYNC with fallback -----
+        # ----- register & SYNC with safe guild handling -----
         async def register_and_sync():
-            # Always add GLOBAL commands locally so dispatch never fails
-            for fn, label in ((sync_cmd, "sync"), (inspect_full, "inspect_full")):
-                try:
-                    self.tree.add_command(fn)
-                except Exception as e:
-                    if "already registered" in str(e).lower():
-                        pass
-                    else:
-                        log.warning("add_command(global,%s) failed: %s", label, e)
+            try:
+                self.tree.add_command(inspect_full)
+            except Exception as e:
+                if "already registered" not in str(e).lower():
+                    log.warning("add_command(global,inspect_full) failed: %s", e)
+
+            # debug inventory
+            try:
+                all_cmds = list(self.tree.get_commands())
+                log.info("pre-sync: tree has %d top-level commands", len(all_cmds))
+                for top in all_cmds:
+                    qname = getattr(top, "qualified_name", getattr(top, "name", "?"))
+                    log.info("pre-sync: /%s", qname)
+            except Exception as e:
+                log.warning("pre-sync inventory failed: %s", e)
 
             guild_added = False
+            target_guild = None
             if GUILD_ID:
-                guild = discord.Object(id=GUILD_ID)
-                for fn, label in ((sync_cmd, "sync"), (inspect_full, "inspect_full")):
+                target_guild = self.get_guild(GUILD_ID)
+                if target_guild:
+                    gobj = discord.Object(id=GUILD_ID)
                     try:
-                        self.tree.add_command(fn, guild=guild)
+                        self.tree.add_command(inspect_full, guild=gobj)
                         guild_added = True
                     except Exception as e:
-                        if "already registered" in str(e).lower():
-                            guild_added = True
-                        else:
-                            log.warning("add_command(guild,%s) failed: %s", label, e)
+                        if "already registered" not in str(e).lower():
+                            log.warning("add_command(guild,inspect_full) failed: %s", e)
 
-            # Try to sync both scopes; report counts
             g_count = "n/a"
             try:
                 gcmds = await self.tree.sync()
@@ -570,38 +630,89 @@ class LowlifeBot(commands.Bot):
             except Exception as e:
                 log.warning("Global sync failed: %s", e)
 
-            if GUILD_ID and guild_added:
+            if GUILD_ID and guild_added and target_guild:
                 try:
                     gcmds = await self.tree.sync(guild=discord.Object(id=GUILD_ID))
-                    log.info(
-                        "startup sync — Guild: %d • Global: %s",
-                        len(gcmds if "gcmds" in locals() else []),
-                        g_count,
-                    )
+                    log.info("startup sync â€” Guild: %d â€¢ Global: %s", len(gcmds), g_count)
                     log.info("slash commands guild-synced: %d cmds to %s", len(gcmds), GUILD_ID)
                 except Exception as e:
                     log.warning("Guild sync failed for %s (%s).", GUILD_ID, e)
-                    log.info("startup sync — Guild: failed • Global: %s", g_count)
+                    log.info("startup sync â€” Guild: failed â€¢ Global: %s", g_count)
             else:
-                log.info("startup sync — Guild: skipped • Global: %s", g_count)
+                log.info(
+                    "startup sync â€” Guild: skipped (%s) â€¢ Global: %s",
+                    ("not in guild" if GUILD_ID else "no GUILD_ID"),
+                    g_count,
+                )
+
+            # Inventory: list what got registered (walk groups safely)
+            def _log_cmd(c: app_commands.Command | app_commands.ContextMenu | app_commands.Group):
+                qname = getattr(c, "qualified_name", getattr(c, "name", "?"))
+                cb = getattr(c, "callback", None)
+                mod = getattr(cb, "__module__", getattr(c, "__module__", "?"))
+                log.info("slash cmd: /%s from %s", qname, mod)
+
+            for top in self.tree.get_commands():
+                if isinstance(top, app_commands.Group):
+                    for sub in top.walk_commands():
+                        _log_cmd(sub)
+                else:
+                    _log_cmd(top)
 
         await register_and_sync()
 
-        # Inventory
-        for cmd in self.tree.walk_commands():
-            mod = getattr(cmd.callback, "__module__", "?")
-            log.info("slash cmd: /%s from %s", cmd.qualified_name, mod)
+    async def _bootstrap_sync_once(self):
+        """
+        One-time emergency sync to break the 'guarded sync' deadlock.
+        We call the ORIGINAL (unwrapped) CommandTree.sync directly, bypassing admin.sync's guard.
+        """
+        if self._bootstrap_synced:
+            return
+        self._bootstrap_synced = True
+
+        # obtain the original (unwrapped) function object
+        try:
+            orig_sync_fn = inspect.unwrap(app_commands.CommandTree.sync)
+            bound_sync = orig_sync_fn.__get__(self.tree, app_commands.CommandTree)
+
+            # Global sync
+            try:
+                gcmds = await bound_sync()
+                log.info("bootstrap sync (unwrapped): global ok â€” %d cmds", len(gcmds))
+            except Exception as e:
+                log.warning("bootstrap sync (unwrapped): global sync failed: %s", e)
+
+            # Guild sync
+            if GUILD_ID:
+                try:
+                    gcmds = await bound_sync(guild=discord.Object(id=GUILD_ID))
+                    log.info("bootstrap sync (unwrapped): guild ok â€” %d cmds to %s", len(gcmds), GUILD_ID)
+                except Exception as e:
+                    log.warning("bootstrap sync (unwrapped): guild sync failed: %s", e)
+        except Exception:
+            log.exception("bootstrap sync (unwrapped) failed completely")
 
     async def on_ready(self):
-        log.info("Logged in as %s (%s) — %s", self.user, getattr(self.user, "id", "?"), BUILD_TAG)
+        log.info("Logged in as %s (%s) â€” %s", self.user, getattr(self.user, "id", "?"), BUILD_TAG)
+        await self._bootstrap_sync_once()
+
+    # ---------- HEARTBEAT: graceful shutdown ----------
+    async def close(self):
+        try:
+            if self._heartbeat:
+                await self._heartbeat.stop()
+                log.info("heartbeat stopped")
+        finally:
+            await super().close()
 
 
 def build_bot() -> LowlifeBot:
     intents = discord.Intents.default()
-    intents.members = True
+    intents.guilds = True
+    intents.members = True         # required for on_member_join
     intents.presences = True
     intents.message_content = True
-    return LowlifeBot(command_prefix="!", intents=intents)
+    return LowlifeBot(command_prefix="!", intents=intents, tree_cls=LowlifeTree)
 
 
 async def main():

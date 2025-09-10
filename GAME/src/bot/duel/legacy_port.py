@@ -1,4 +1,4 @@
-# FILE: src/bot/duel/legacy_port.py
+﻿# FILE: src/bot/duel/legacy_port.py
 from __future__ import annotations
 
 import asyncio
@@ -39,22 +39,22 @@ log = logging.getLogger("duel")
 
 LOG_VISIBLE = 6
 
-GLYPH_A = "🔶"
-GLYPH_B = "🔷"
-GLYPH_A_SMALL = "🔶"
-GLYPH_B_SMALL = "🔷"
-GLYPH_GRAPPLE = "🤼"
+GLYPH_A = "ðŸ”¶"
+GLYPH_B = "ðŸ”·"
+GLYPH_A_SMALL = "ðŸ”¶"
+GLYPH_B_SMALL = "ðŸ”·"
+GLYPH_GRAPPLE = "ðŸ¤¼"
 
-BG_NIGHT = "⠀"  # bottom lane background, night
-BG_DAY = "⠀"  # bottom lane background, day
+BG_NIGHT = "â €"  # bottom lane background, night
+BG_DAY = "â €"  # bottom lane background, day
 TOP_BG = " "  # spacer for the top row
 
-TRAIL_A = "───"
-TRAIL_B = "▪️"
+TRAIL_A = "â”€â”€â”€"
+TRAIL_B = "â–ªï¸"
 
-COVER_DOOR = "🚪"
-COVER_BARRICADE = "🚧"
-COVER_BARREL = "🛢️"
+COVER_DOOR = "ðŸšª"
+COVER_BARRICADE = "ðŸš§"
+COVER_BARREL = "ðŸ›¢ï¸"
 COVER_SET = {COVER_DOOR, COVER_BARRICADE, COVER_BARREL}
 
 COVER_PCT_DEFAULT = 40  # percent to reduce incoming accuracy when "in cover"
@@ -96,7 +96,7 @@ def _init_battlefield(state: DuelState) -> None:
 
     cover: List[Optional[str]] = [None] * segs
 
-    # Randomly sprinkle 5–8 cover items with spacing
+    # Randomly sprinkle 5â€“8 cover items with spacing
     num = random.randint(5, 8)
     placed: set[int] = set()
     for _ in range(num):
@@ -255,22 +255,22 @@ async def _hud_update_with_view(
 # ============================== Bars / glyphs ==============================
 
 
-def hp_bar(hp: int, segments: int = 13, filled_char: str = "🟩") -> str:
+def hp_bar(hp: int, segments: int = 13, filled_char: str = "ðŸŸ©") -> str:
     filled = iclamp(round((hp / 100) * segments), 0, segments)
-    return filled_char * filled + "⬛" * (segments - filled)
+    return filled_char * filled + "â¬›" * (segments - filled)
 
 
 def armor_bar(armor: float, segments: int = 13) -> str:
     _ARMOR_DISPLAY_MAX = 20.0
     pct = clamp(armor / _ARMOR_DISPLAY_MAX, 0.0, 1.0)
     filled = iclamp(round(pct * segments), 0, segments)
-    return "🟦" * filled + "⬛" * (segments - filled)
+    return "ðŸŸ¦" * filled + "â¬›" * (segments - filled)
 
 
-def meter_bar(val: int, segments: int = 13, full: str = "🟦") -> str:
+def meter_bar(val: int, segments: int = 13, full: str = "ðŸŸ¦") -> str:
     v = iclamp(val, 0, 100)
     filled = iclamp(round((v / 100) * segments), 0, segments)
-    return full * filled + "⬛" * (segments - filled)
+    return full * filled + "â¬›" * (segments - filled)
 
 
 def _blood_bar_and_label(blood_lost_l: float):
@@ -278,7 +278,7 @@ def _blood_bar_and_label(blood_lost_l: float):
     remain = clamp(total - blood_lost_l, 0.0, total)
     ticks = 20
     filled = int(round((remain / total) * ticks))
-    bar = "🟥" * filled + "⬛" * (ticks - filled)
+    bar = "ðŸŸ¥" * filled + "â¬›" * (ticks - filled)
     lost = total - remain
     if lost < 0.2:
         wound = "No active bleed"
@@ -290,7 +290,7 @@ def _blood_bar_and_label(blood_lost_l: float):
         wound = "Major bleed"
     else:
         wound = "Severed artery"
-    return bar, f"{remain:.1f} L • {wound}"
+    return bar, f"{remain:.1f} L â€¢ {wound}"
 
 
 def _pos_word(v: int) -> str:
@@ -308,7 +308,7 @@ def _pos_word(v: int) -> str:
 # ======================= seed log & initiative ============================
 
 
-def _seed_combat_log(state: DuelState, rows: int = LOG_VISIBLE - 1, fill_char: str = "◐") -> None:
+def _seed_combat_log(state: DuelState, rows: int = LOG_VISIBLE - 1, fill_char: str = "â—") -> None:
     if not state.log_lines:
         state.log_lines.extend([fill_char] * rows)
         state.full_log_lines.extend([fill_char] * rows)
@@ -329,7 +329,7 @@ def _decide_initiative(state: DuelState) -> None:
     pb = 100 - pa
     state.initiative_note = f"a{pa}_[b{pb}]"
     state.log_lines.append(
-        f"Initiative: {a.name} {pa}% vs {b.name} {pb}% → **{first.name}** starts."
+        f"Initiative: {a.name} {pa}% vs {b.name} {pb}% â†’ **{first.name}** starts."
     )
     state.full_log_lines.append(state.log_lines[-1])
 
@@ -345,11 +345,11 @@ def _distance_block(state: DuelState) -> Tuple[str, str]:
 
 def player_hud_embed(state: DuelState, viewer: discord.User) -> discord.Embed:
     a, b = state.players()
-    header = f"Range: **{range_label(state.rngate())}** • Round: **{state.round_no}**"
-    header += f" • Turn: **{state.current().name if state.active else '—'}** • Map: **{getattr(state, 'map_time', 'Night')}**"
+    header = f"Range: **{range_label(state.rngate())}** â€¢ Round: **{state.round_no}**"
+    header += f" â€¢ Turn: **{state.current().name if state.active else 'â€”'}** â€¢ Map: **{getattr(state, 'map_time', 'Night')}**"
 
     e = discord.Embed(
-        title=f"⚔️ Combat {'🌞' if getattr(state,'map_time','Night')=='Day' else '🌙'}",
+        title=f"âš”ï¸ Combat {'ðŸŒž' if getattr(state,'map_time','Night')=='Day' else 'ðŸŒ™'}",
         description=header,
         color=(
             discord.Color.orange()
@@ -362,8 +362,8 @@ def player_hud_embed(state: DuelState, viewer: discord.User) -> discord.Embed:
         eq = equipped_ids(uid)
         iid = eq.get("primary")
         dis = "primary" in state.disarmed.get(uid, set())
-        name = item_name(iid) or "—"
-        if name == "—":
+        name = item_name(iid) or "â€”"
+        if name == "â€”":
             name = "Fists"
         return f"{name} (disarmed)" if dis else name
 
@@ -374,7 +374,7 @@ def player_hud_embed(state: DuelState, viewer: discord.User) -> discord.Embed:
         name = item_name(iid)
         if (uid == viewer.id) or (uid in state.revealed_secondary):
             return f"{name} (disarmed)" if dis else name
-        return "???" if iid else "—"
+        return "???" if iid else "â€”"
 
     def _armor_val(uid: int) -> float:
         return float(load_player_stats(uid).get("armor", 0.0))
@@ -384,8 +384,8 @@ def player_hud_embed(state: DuelState, viewer: discord.User) -> discord.Embed:
     b_primary = _disp_primary(b.user_id)
     b_secondary = _disp_secondary(b.user_id)
 
-    a_color = "⬜" if (a.user_id in state.unconscious) else "🟩"
-    b_color = "⬜" if (b.user_id in state.unconscious) else "🟩"
+    a_color = "â¬œ" if (a.user_id in state.unconscious) else "ðŸŸ©"
+    b_color = "â¬œ" if (b.user_id in state.unconscious) else "ðŸŸ©"
 
     e.add_field(
         name=f"**{a.name}**",
@@ -414,7 +414,7 @@ def player_hud_embed(state: DuelState, viewer: discord.User) -> discord.Embed:
     if state.log_lines:
         e.add_field(
             name="Combat Log",
-            value="\n".join(f"• {ln}" for ln in state.log_lines[-LOG_VISIBLE:]),
+            value="\n".join(f"â€¢ {ln}" for ln in state.log_lines[-LOG_VISIBLE:]),
             inline=False,
         )
 
@@ -423,15 +423,15 @@ def player_hud_embed(state: DuelState, viewer: discord.User) -> discord.Embed:
 
     s = load_player_stats(viewer.id)
     bar, lbl = _blood_bar_and_label(float(s.get("blood", 0.0)))
-    e.add_field(name=f"Blood — {lbl}", value=f"{bar}", inline=False)
+    e.add_field(name=f"Blood â€” {lbl}", value=f"{bar}", inline=False)
 
     if state.choking:
         choker, target = state.choking
         if viewer.id == target:
             breath = state.breath.get(target, 50)
             flow = state.bloodflow.get(target, 50)
-            e.add_field(name="Breath", value=meter_bar(breath, full="🟦"), inline=True)
-            e.add_field(name="Bloodflow", value=meter_bar(flow, full="🟧"), inline=True)
+            e.add_field(name="Breath", value=meter_bar(breath, full="ðŸŸ¦"), inline=True)
+            e.add_field(name="Bloodflow", value=meter_bar(flow, full="ðŸŸ§"), inline=True)
 
     my_eq = equipped_ids(viewer.id)
     e.add_field(name="Grenade", value=item_name(my_eq.get("grenade")), inline=False)
@@ -495,7 +495,7 @@ async def _update_public_result(
     inter: discord.Interaction, state: DuelState, result_text: str
 ) -> None:
     a, b = state.players()
-    desc = _compose_public_desc(a.name, b.name, state.odds_phrase or "—", result_text)
+    desc = _compose_public_desc(a.name, b.name, state.odds_phrase or "â€”", result_text)
     embed = _make_public_banner(desc)
 
     if getattr(state, "public_msg_id", None):
@@ -541,7 +541,7 @@ async def _resolve_pending_grenade(
     thrower_id = int(pend.get("from", 0))
     record_hit(state, thrower_id, acted.user_id, "grenade", "grenade")
     state.push(
-        f"💥 Grenade detonates on {acted.name}: **{final}** damage{f' (−{mit} armor)' if mit>0 else ''}."
+        f"ðŸ’¥ Grenade detonates on {acted.name}: **{final}** damage{f' (âˆ’{mit} armor)' if mit>0 else ''}."
     )
     state.grenades_pending.pop(acted.user_id, None)
     await _hud_update_auto(inter, state, inter.user)
@@ -581,11 +581,11 @@ def _attack_once(state: DuelState, attacker: Combatant, defender: Combatant) -> 
         defender.hp = max(0, defender.hp - final)
         if weapon_name == "Fists":
             state.push(
-                f"{attacker.name} **swings** and hits {defender.name} for **{final}**{f' (−{mit} armor)' if mit>0 else ''}."
+                f"{attacker.name} **swings** and hits {defender.name} for **{final}**{f' (âˆ’{mit} armor)' if mit>0 else ''}."
             )
         else:
             state.push(
-                f"{attacker.name} hits {defender.name} with **{calc['weapon'].name}** for **{final}**{f' (−{mit} armor)' if mit>0 else ''}."
+                f"{attacker.name} hits {defender.name} with **{calc['weapon'].name}** for **{final}**{f' (âˆ’{mit} armor)' if mit>0 else ''}."
             )
         record_hit(state, attacker.user_id, defender.user_id, "shot", calc["weapon"].name)
     else:
@@ -653,10 +653,10 @@ class DuelMainView(discord.ui.View):
                     "damage": dmg,
                 }
                 self.state.push(
-                    f"💣 {thrower.name} lobs a grenade! It lands near {target.name} and will detonate at the start of their turn."
+                    f"ðŸ’£ {thrower.name} lobs a grenade! It lands near {target.name} and will detonate at the start of their turn."
                 )
             else:
-                self.state.push(f"💣 {thrower.name} throws a grenade but it **misses** the mark.")
+                self.state.push(f"ðŸ’£ {thrower.name} throws a grenade but it **misses** the mark.")
         self.state.end_turn()
         await _maybe_ai_take_turn(inter, self.state)
         await _end_and_update(self.state, inter)
@@ -702,7 +702,7 @@ class DuelMainView(discord.ui.View):
         try:
             if self.state.active:
                 self.state.active = False
-                self.state.push("⏱️ Duel timed out due to inactivity.")
+                self.state.push("â±ï¸ Duel timed out due to inactivity.")
                 for item in self.children:
                     item.disabled = True
                 await _update_public_result(self.client, self.state, "Timed out due to inactivity.")
@@ -729,7 +729,7 @@ class GrappleView(discord.ui.View):
             self.state.choking = (me.user_id, foe.user_id)
             self.state.breath[foe.user_id] = self.state.breath.get(foe.user_id, 50)
             self.state.bloodflow[foe.user_id] = self.state.bloodflow.get(foe.user_id, 50)
-            self.state.push(f"🫵 {me.name} secures a **choke** on {foe.name}!")
+            self.state.push(f"ðŸ«µ {me.name} secures a **choke** on {foe.name}!")
         else:
             self.state.push(f"{me.name} reaches for a choke but **fails**.")
         self.state.end_turn()
@@ -786,7 +786,7 @@ class GrappleView(discord.ui.View):
         if random.random() <= p:
             self.state.grappling = False
             self.state.choking = None
-            self.state.push(f"🧷 {me.name} **breaks free** from the grapple!")
+            self.state.push(f"ðŸ§· {me.name} **breaks free** from the grapple!")
         else:
             self.state.positioning[me.user_id] = iclamp(my_pos - 5, 0, 100)
             self.state.positioning[foe.user_id] = iclamp(their_pos + 5, 0, 100)
@@ -832,14 +832,14 @@ class ChokeView(discord.ui.View):
         self.state.bloodflow[target] = iclamp(
             self.state.bloodflow.get(target, 50) - random.randint(4, 8), 0, 100
         )
-        self.state.push(f"🫀 {self.state.current().name} **tightens the choke**.")
+        self.state.push(f"ðŸ«€ {self.state.current().name} **tightens the choke**.")
         if self.state.breath[target] <= 0 or self.state.bloodflow[target] <= 0:
             self.state.unconscious.add(target)
             record_hit(self.state, choker, target, "strangled", "")
             winner = self.state.winner()
             if winner:
                 self.state.finisher = (winner.user_id, target)
-                msg = "☠️ Your opponent is **unconscious**. Choose their fate."
+                msg = "â˜ ï¸ Your opponent is **unconscious**. Choose their fate."
                 if not self.state.log_lines or self.state.log_lines[-1] != msg:
                     self.state.add_raw(msg)
         self.state.end_turn()
@@ -851,7 +851,7 @@ class ChokeView(discord.ui.View):
         if not self._is_my_turn(inter):
             return
         self.state.choking = None
-        self.state.push(f"🫁 {self.state.current().name} **releases the choke**.")
+        self.state.push(f"ðŸ« {self.state.current().name} **releases the choke**.")
         self.state.end_turn()
         await _maybe_ai_take_turn(inter, self.state)
         await _end_and_update(self.state, inter)
@@ -896,7 +896,7 @@ class FinalizeView(discord.ui.View):
             return
         victor = self.state.a if self.state.a.user_id == self.victor_id else self.state.b
         target = self.state.a if self.state.a.user_id == self.target_id else self.state.b
-        self.state.add_raw(f"🕊️ {victor.name} shows **mercy** to {target.name}.")
+        self.state.add_raw(f"ðŸ•Šï¸ {victor.name} shows **mercy** to {target.name}.")
         self.state.last_hit[self.target_id] = {"by": self.victor_id, "type": "mercy", "weapon": ""}
         self.state.finisher = None
         self.state.active = False
@@ -911,7 +911,7 @@ class FinalizeView(discord.ui.View):
         target = self.state.a if self.state.a.user_id == self.target_id else self.state.b
         dmg = random.randint(1, 7)
         target.hp = max(0, target.hp - dmg)
-        self.state.push(f"👊 {victor.name} **beats** the unconscious {target.name} for **{dmg}**.")
+        self.state.push(f"ðŸ‘Š {victor.name} **beats** the unconscious {target.name} for **{dmg}**.")
         record_hit(self.state, self.victor_id, self.target_id, "punch", "Fists")
         if target.hp <= 0:
             self.state.finisher = None
@@ -937,7 +937,7 @@ class FinalizeView(discord.ui.View):
                 ok_msg = " (added to inventory)"
         except Exception as e:
             log.warning("Kidnap inventory add failed: %s", e)
-        self.state.add_raw(f"🧿 {victor.name} **kidnaps** {target.name}.{ok_msg}")
+        self.state.add_raw(f"ðŸ§¿ {victor.name} **kidnaps** {target.name}.{ok_msg}")
         self.state.last_hit[self.target_id] = {"by": self.victor_id, "type": "kidnap", "weapon": ""}
         self.state.finisher = None
         self.state.active = False
@@ -962,7 +962,7 @@ async def _maybe_offer_finisher(
     if loser.user_id in state.unconscious and state.active:
         if not getattr(state, "finisher", None):
             state.finisher = (w.user_id, loser.user_id)
-        msg = "☠️ Your opponent is **unconscious**. Choose their fate."
+        msg = "â˜ ï¸ Your opponent is **unconscious**. Choose their fate."
         if not state.log_lines or state.log_lines[-1] != msg:
             state.add_raw(msg)
         return FinalizeView(state, inter.client, victor_id=w.user_id, target_id=loser.user_id)
@@ -986,7 +986,7 @@ async def _end_if_finished_or_offer(state: DuelState, inter: discord.Interaction
             state.finisher = None
             state.active = False
             summary = _finish_summary(state)
-            state.push(f"🏆 {winner.name} wins!")
+            state.push(f"ðŸ† {winner.name} wins!")
             await _update_public_result(inter, state, summary)
     await _hud_update_auto(inter, state, inter.user)
 
@@ -1034,21 +1034,21 @@ async def _maybe_ai_take_turn(inter: discord.Interaction, state: DuelState):
             state.bloodflow[target] = iclamp(
                 state.bloodflow.get(target, 50) - self_flow_drop, 0, 100
             )
-            state.push(f"🤖 {ai.name} tightens the choke.")
+            state.push(f"ðŸ¤– {ai.name} tightens the choke.")
             if state.breath[target] <= 0 or state.bloodflow[target] <= 0:
                 state.unconscious.add(target)
                 record_hit(state, choker, target, "strangled", "")
                 winner = state.winner()
                 if winner:
                     state.finisher = (winner.user_id, target)
-                    msg = "☠️ Your opponent is **unconscious**. Choose their fate."
+                    msg = "â˜ ï¸ Your opponent is **unconscious**. Choose their fate."
                     if not state.log_lines or state.log_lines[-1] != msg:
                         state.add_raw(msg)
             state.end_turn()
             await _hud_update_auto(inter, state, inter.user)
             return
         else:
-            state.push(f"🤖 {ai.name} struggles for air…")
+            state.push(f"ðŸ¤– {ai.name} struggles for airâ€¦")
             state.end_turn()
             await _hud_update_auto(inter, state, inter.user)
             return
@@ -1068,12 +1068,12 @@ async def _maybe_ai_take_turn(inter: discord.Interaction, state: DuelState):
                 swing = " Position improved."
             else:
                 swing = ""
-            state.push(f"🤖 {ai.name} wrestles {foe.name} for **{dmg}**.{swing}")
+            state.push(f"ðŸ¤– {ai.name} wrestles {foe.name} for **{dmg}**.{swing}")
             record_hit(state, ai.user_id, foe.user_id, "wrestle", "")
         elif choice == "punch":
             dmg = random.randint(1, 5)
             foe.hp = max(0, foe.hp - dmg)
-            state.push(f"🤖 {ai.name} punches {foe.name} for **{dmg}**.")
+            state.push(f"ðŸ¤– {ai.name} punches {foe.name} for **{dmg}**.")
             record_hit(state, ai.user_id, foe.user_id, "punch", "Fists")
         else:
             my_pos = state.positioning.get(ai.user_id, 50)
@@ -1082,11 +1082,11 @@ async def _maybe_ai_take_turn(inter: discord.Interaction, state: DuelState):
             if random.random() <= p:
                 state.grappling = False
                 state.choking = None
-                state.push(f"🤖 {ai.name} breaks free!")
+                state.push(f"ðŸ¤– {ai.name} breaks free!")
             else:
                 state.positioning[ai.user_id] = iclamp(my_pos - 5, 0, 100)
                 state.positioning[foe.user_id] = iclamp(their_pos + 5, 0, 100)
-                state.push(f"🤖 {ai.name} tries to break free but fails.")
+                state.push(f"ðŸ¤– {ai.name} tries to break free but fails.")
         state.end_turn()
         await _hud_update_auto(inter, state, inter.user)
         return
@@ -1101,7 +1101,7 @@ async def _maybe_ai_take_turn(inter: discord.Interaction, state: DuelState):
             state.micro_move(ai.user_id, step)
             _mark_trail(state, ai.user_id)
             _update_cover_flags(state)
-            state.push(f"🤖 {ai.name} advances **{step} meters**.")
+            state.push(f"ðŸ¤– {ai.name} advances **{step} meters**.")
             took_action = True
         else:
             p = float(calc["accuracy"]) / 100.0
@@ -1120,19 +1120,19 @@ async def _maybe_ai_take_turn(inter: discord.Interaction, state: DuelState):
                 foe.hp = max(0, foe.hp - final)
                 if weapon_name == "Fists":
                     state.push(
-                        f"🤖 {ai.name} **swings** and hits {foe.name} for **{final}**{f' (−{mit} armor)' if mit>0 else ''}."
+                        f"ðŸ¤– {ai.name} **swings** and hits {foe.name} for **{final}**{f' (âˆ’{mit} armor)' if mit>0 else ''}."
                     )
                 else:
                     state.push(
-                        f"🤖 {ai.name} fires **{calc['weapon'].name}** and hits {foe.name} for **{final}**{f' (−{mit} armor)' if mit>0 else ''}."
+                        f"ðŸ¤– {ai.name} fires **{calc['weapon'].name}** and hits {foe.name} for **{final}**{f' (âˆ’{mit} armor)' if mit>0 else ''}."
                     )
                 record_hit(state, ai.user_id, foe.user_id, "shot", calc["weapon"].name)
                 took_action = True
             else:
                 if weapon_name == "Fists":
-                    state.push(f"🤖 {ai.name} **swings** and **misses**.")
+                    state.push(f"ðŸ¤– {ai.name} **swings** and **misses**.")
                 else:
-                    state.push(f"🤖 {ai.name} fires and **misses**.")
+                    state.push(f"ðŸ¤– {ai.name} fires and **misses**.")
                 took_action = True
 
     if not took_action:
@@ -1140,7 +1140,7 @@ async def _maybe_ai_take_turn(inter: discord.Interaction, state: DuelState):
         state.micro_move(ai.user_id, step)
         _mark_trail(state, ai.user_id)
         _update_cover_flags(state)
-        state.push(f"🤖 {ai.name} advances **{step} meters**.")
+        state.push(f"ðŸ¤– {ai.name} advances **{step} meters**.")
 
     state.end_turn()
     await _hud_update_auto(inter, state, inter.user)
@@ -1157,7 +1157,7 @@ async def duel_start(inter: discord.Interaction, opponent: discord.Member):
     if opponent.id == me.id:
         await _safe_reply(
             inter,
-            content="You can’t duel yourself. Try `/duel ai` to test against a bot.",
+            content="You canâ€™t duel yourself. Try `/duel ai` to test against a bot.",
             ephemeral=True,
         )
         return
@@ -1166,7 +1166,7 @@ async def duel_start(inter: discord.Interaction, opponent: discord.Member):
     if key in _DUEL_BY_CHANNEL and _DUEL_BY_CHANNEL[key].active:
         await _safe_reply(
             inter,
-            content="There’s already an active duel in this channel. Use `/duel reset` first.",
+            content="Thereâ€™s already an active duel in this channel. Use `/duel reset` first.",
             ephemeral=True,
         )
         return
@@ -1195,7 +1195,7 @@ async def duel_ai(inter: discord.Interaction):
     if key in _DUEL_BY_CHANNEL and _DUEL_BY_CHANNEL[key].active:
         await _safe_reply(
             inter,
-            content="There’s already an active duel in this channel. Use `/duel reset` first.",
+            content="Thereâ€™s already an active duel in this channel. Use `/duel reset` first.",
             ephemeral=True,
         )
         return
@@ -1229,7 +1229,7 @@ async def duel_reset(inter: discord.Interaction):
         return
     state.finisher = None
     state.active = False
-    state.push("⛔ Duel reset.")
+    state.push("â›” Duel reset.")
     _end_duel_in_channel(state)
     try:
         await _update_public_result(inter, state, "Aborted.")

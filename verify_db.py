@@ -1,4 +1,4 @@
-import sqlite3
+﻿import sqlite3
 
 from src.core.settings import SETTINGS
 

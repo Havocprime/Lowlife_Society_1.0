@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import os
 from datetime import datetime, timezone
@@ -42,14 +42,18 @@ class MemberIntake(commands.Cog):
         invite_code = inviter_id = invite_channel_id = None
         if inv_cog:
             try:
-                invite_code, inviter_id, invite_channel_id = await inv_cog.diff_invites(
-                    member.guild
-                )
+                invite_code, inviter_id, invite_channel_id = await inv_cog.diff_invites(member.guild)
             except Exception:
                 pass
 
-        created = member.created_at.replace(tzinfo=timezone.utc)
+        # Account age
+        created = member.created_at
+        if created.tzinfo is None:  # safety: normalize to UTC-aware
+            created = created.replace(tzinfo=timezone.utc)
         age_days = (now - created).days
+
+        # Safe access: may not exist on some gateway/library combos
+        comm_disabled_until = getattr(member, "communication_disabled_until", None)
 
         snapshot = {
             "user": {
@@ -60,7 +64,7 @@ class MemberIntake(commands.Cog):
                 "system": bool(member.system),
                 "created_at": created.isoformat().replace("+00:00", "Z"),
                 "avatar_url": member.display_avatar.url if member.display_avatar else None,
-                "banner_url": None,  # Safe default; fetching user banner requires an extra API call
+                "banner_url": None,  # fetching user banner requires an extra API call
                 "accent_color": (
                     getattr(member, "accent_color", None).value
                     if getattr(member, "accent_color", None)
@@ -86,29 +90,19 @@ class MemberIntake(commands.Cog):
                     for r in sorted(member.roles, key=lambda r: r.position)
                 ],
                 "status": str(getattr(member, "status", "offline")),
-                "activities": [
-                    getattr(a, "name", str(a)) for a in getattr(member, "activities", [])
-                ],
+                "activities": [getattr(a, "name", str(a)) for a in getattr(member, "activities", [])],
                 "voice": {
                     "channel_id": (
-                        str(member.voice.channel.id)
-                        if member.voice and member.voice.channel
-                        else None
+                        str(member.voice.channel.id) if member.voice and member.voice.channel else None
                     ),
                     "mute": bool(member.voice.mute) if member.voice else False,
                     "deaf": bool(member.voice.deaf) if member.voice else False,
-                    "stream": (
-                        bool(getattr(member.voice, "self_stream", False)) if member.voice else False
-                    ),
+                    "stream": bool(getattr(member.voice, "self_stream", False)) if member.voice else False,
                 },
                 "communication_disabled_until": (
-                    member.communication_disabled_until.isoformat().replace("+00:00", "Z")
-                    if member.communication_disabled_until
-                    else None
+                    comm_disabled_until.isoformat().replace("+00:00", "Z") if comm_disabled_until else None
                 ),
-                "permissions": [
-                    p for p, allowed in dict(member.guild_permissions).items() if allowed
-                ],
+                "permissions": [p for p, allowed in dict(member.guild_permissions).items() if allowed],
             },
             "join_context": {
                 "invite_code": invite_code,
@@ -145,8 +139,8 @@ class MemberIntake(commands.Cog):
         file = discord.File(portrait, filename="mug.png") if portrait else None
 
         e = discord.Embed(
-            title="📸 NEW ARRIVAL — FIRST MUGSHOT",
-            description=f"**Alias:** {member.mention}\n**Rank:** {snap['derived'].get('veteran_rank','—')}",
+            title="ðŸ“¸ NEW ARRIVAL â€” FIRST MUGSHOT",
+            description=f"**Alias:** {member.mention}\n**Rank:** {snap['derived'].get('veteran_rank','â€”')}",
             colour=discord.Color.dark_embed(),
         )
         if member.display_avatar:
@@ -160,14 +154,14 @@ class MemberIntake(commands.Cog):
         inv = snap.get("join_context", {})
         inv_line = f"`{inv.get('invite_code') or 'unknown'}`"
         if inv.get("inviter_id"):
-            inv_line += f" • by <@{inv['inviter_id']}>"
+            inv_line += f" â€¢ by <@{inv['inviter_id']}>"
         e.add_field(name="Referral", value=inv_line, inline=False)
 
         risk = snap["derived"].get("risk_score", 0)
-        reasons = ", ".join(snap["derived"].get("risk_reasons", [])) or "—"
+        reasons = ", ".join(snap["derived"].get("risk_reasons", [])) or "â€”"
         e.add_field(name="Risk Index", value=f"`{risk}` ({reasons})", inline=False)
 
-        e.set_footer(text="LOWLIFE SOCIETY — Intake Bureau")
+        e.set_footer(text="LOWLIFE SOCIETY â€” Intake Bureau")
 
         if file:
             e.set_image(url="attachment://mug.png")

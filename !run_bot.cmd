@@ -1,10 +1,24 @@
 @echo off
 setlocal
-set PYTHONPATH=%~dp0GAME
+REM cd to this .cmd's folder
+cd /d "%~dp0"
 
-REM migrate
-python -m src.db.migrate
-if errorlevel 1 goto :eof
+REM activate venv if present
+if exist ".venv\Scripts\activate.bat" call ".venv\Scripts\activate.bat"
 
-REM start bot
-python -m src.bot.bot
+REM live stdout/stderr + chattier logs
+set PYTHONUNBUFFERED=1
+set LOG_LEVEL=DEBUG
+
+REM run from GAME so src.* imports resolve
+pushd "GAME"
+python -X faulthandler -m src.bot.bot
+set EXITCODE=%ERRORLEVEL%
+popd
+
+echo.
+echo =======================
+echo Bot exited with code %EXITCODE%
+echo =======================
+pause
+endlocal

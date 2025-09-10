@@ -1,4 +1,4 @@
-# FILE: src/core/persist.py
+﻿# FILE: src/core/persist.py
 from __future__ import annotations
 
 import json

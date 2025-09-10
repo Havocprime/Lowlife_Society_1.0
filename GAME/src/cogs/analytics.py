@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import json
 import sqlite3
@@ -63,7 +63,7 @@ class Analytics(commands.Cog):
             await interaction.followup.send("No data in that window.", ephemeral=True)
             return
 
-        lines = [f"{i+1:>2}. <#{cid}> — **{n}**" for i, (cid, (n, _)) in enumerate(items)]
+        lines = [f"{i+1:>2}. <#{cid}> â€” **{n}**" for i, (cid, (n, _)) in enumerate(items)]
         title = f"Top Channels (last {days}d)" if days > 0 else "Top Channels (all time)"
         e = discord.Embed(title=title, description="\n".join(lines), color=0x5865F2)
         await interaction.followup.send(embed=e, ephemeral=True)

@@ -1,4 +1,4 @@
-# FILE: src/core/inventory.py
+﻿# FILE: src/core/inventory.py
 from __future__ import annotations
 
 import logging
