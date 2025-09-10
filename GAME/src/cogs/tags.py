@@ -1,67 +1,70 @@
 # GAME/src/cogs/tags.py
 from __future__ import annotations
 
-# Route all tag creation through the API (which already handles DAL compatibility)
-from src.systems.tags.api import apply_tag
-
-import os, logging, traceback, uuid, difflib, json
+import os, logging, traceback, uuid, difflib
 from typing import Optional, Callable, Tuple
 
 import discord
 from discord import app_commands, Interaction
 from discord.ext import commands
 
-from src.systems.tags.schema import ensure_tags_schema  # runtime schema guard
+# Tag engine (display-name catalog + instances)
+from src.systems.tags.schema import ensure_tags_schema
 from src.systems.tags import dal as tag_dal
 from src.systems.tags.engine import TagEngine
-from src.db import dal as core_dal  # your main DAL
-from src.services import health as health_svc  # ✅ persisted health
+from src.systems.tags.api import apply_tag
+
+# Core DAL (player lookup)
+from src.db import dal as core_dal
+
+# Health service
+from src.services import health as health_svc
+
+# Key-based registry seeds (bruise/scratch/wound.* etc.)
+from src.tags.catalog import get_seed_catalog
+from src.db import dal  # raw connection for our tag_keys seeder
 
 log = logging.getLogger("tags.cog")
 ENGINE = TagEngine()
 
 # ------------------------------ config ------------------------------
 
-
 def _enabled() -> bool:
     return os.getenv("TAGS_ENABLED", "0") == "1"
 
 FALLBACK_OWNER_KIND = os.getenv("TAGS_FALLBACK_OWNER_KIND", "discord")
 
-# ------------------------------ helpers (MODULE SCOPE!) -----------------------------
+# ------------------------------ helpers ------------------------------
 
+def _conn():
+    """Best-effort writer connection to the core DB."""
+    for name in ("write_conn", "conn", "_conn", "get_conn"):
+        fn = getattr(dal, name, None)
+        if callable(fn):
+            return fn()
+    raise RuntimeError("No DAL connection factory found")
 
-class TagsCog(commands.Cog):
-    def __init__(self, bot: commands.Bot):
-        self.bot = bot
-
-    async def cog_load(self):
-        try:
-            ensure_tags_schema()
-            log.info("Tags schema ensured.")
-        except Exception as e:
-            log.exception("Failed to ensure tags schema: %s", e)
-
-        # 🔇 Quiet chatty modules so only death CRITICAL lines hit the console
-        for noisy in (
-            "tags.registry",
-            "tags.engine",
-            "tags.api",     # silences the compat line if TAGS_COMPAT_LOG is not set
-            "health",
-            "heartbeat",    # those periodic pulses
-        ):
-            logging.getLogger(noisy).setLevel(logging.WARNING)
-
-        import logging as _logging
-        _logging.getLogger("tags.registry").setLevel(_logging.WARNING)
-        _logging.getLogger("health").setLevel(_logging.WARNING)
-
-        if _enabled():
-            await ENGINE.start()
-
-    async def cog_unload(self):
-        if _enabled():
-            await ENGINE.stop()
+def ensure_seed_keys():
+    """
+    Create/seed the key registry table used by HP-drain models.
+    NOTE: This writes to `tag_keys` to avoid colliding with `systems.tags.tags`.
+    """
+    cat = get_seed_catalog()
+    con = _conn()
+    cur = con.cursor()
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS tag_keys(
+            key TEXT PRIMARY KEY,
+            family TEXT,
+            max_intensity INTEGER
+        )
+    """)
+    cur.executemany(
+        "INSERT OR IGNORE INTO tag_keys(key, family, max_intensity) VALUES(?, ?, ?)",
+        [(k, v.get("family"), int(v.get("max_intensity", 10))) for k, v in cat.items()]
+    )
+    con.commit()
+    log.info("Seeded %d tag key(s) into tag_keys (idempotent).", len(cat))
 
 # Robust owner resolver (player if available; else discord)
 def _resolve_owner(user: discord.abc.User) -> Tuple[str, int]:
@@ -96,12 +99,27 @@ def _resolve_owner(user: discord.abc.User) -> Tuple[str, int]:
     )
     return (FALLBACK_OWNER_KIND, discord_id)
 
+def _read_hp(owner_kind: str, owner_id: int) -> Tuple[int, int]:
+    """
+    Read HP safely regardless of health service return shape.
+    If owner_kind != 'player', returns a neutral default.
+    """
+    try:
+        if owner_kind != "player":
+            return (0, 100)
+        st = health_svc.get_state(owner_id)
+        if isinstance(st, dict):
+            return int(st.get("hp", 0)), int(st.get("max_hp", 100))
+        if isinstance(st, (tuple, list)) and len(st) >= 2:
+            return int(st[0]), int(st[1])
+    except Exception:
+        log.debug("health.get_state failed for %s:%s", owner_kind, owner_id, exc_info=True)
+    return (0, 100)
 
 def _catalog_names() -> list[str]:
-    """List all tag names from catalog."""
+    """List all tag display-names from the catalog table managed by systems.tags.*"""
     con = tag_dal._conn()
     return [r["name"] for r in con.execute("SELECT name FROM tags").fetchall()]
-
 
 # tolerant name lookup (exact, case-insensitive, a few aliases)
 _ALIASES = {
@@ -191,7 +209,7 @@ async def _apply_gunshot(
         ephemeral=True,
     )
 
-# ------------------------------ seeding -----------------------------
+# ------------------------------ display-name seeding ------------------------------
 
 _DEFAULT_CATALOG = [
     {"name": "Bleeding",       "kind": "dynamic", "polarity": "negative", "config_json": None},
@@ -200,7 +218,7 @@ _DEFAULT_CATALOG = [
 
 def _seed_catalog() -> tuple[int, int]:
     """
-    Insert defaults if missing.
+    Insert defaults if missing into systems.tags.tags (display catalog).
     Returns (inserted_count, total_rows_after).
     """
     con = tag_dal._conn()
@@ -224,10 +242,11 @@ class TagsCog(commands.Cog):
 
     async def cog_load(self):
         try:
-            ensure_tags_schema()
-            log.info("Tags schema ensured.")
+            ensure_tags_schema()   # catalog/instances schema
+            ensure_seed_keys()     # key registry (tag_keys) for HP-drain models
+            log.info("Tags schema ensured and tag_keys seeded.")
         except Exception as e:
-            log.exception("Failed to ensure tags schema: %s", e)
+            log.exception("Startup failed: %s", e)
 
         # Quiet chatty modules; player deaths still appear as CRITICAL via playerlog.kill
         for noisy in ("tags.registry", "tags.engine", "health"):
@@ -379,7 +398,7 @@ class TagsCog(commands.Cog):
             target = user or itx.user
             owner_kind, owner_id = _resolve_owner(target)
 
-            hp, max_hp = health_svc.get_state(owner_kind, owner_id)
+            hp, max_hp = _read_hp(owner_kind, owner_id)
             rows = tag_dal.list_instances(owner_kind, owner_id)
 
             lines = [f"**HP:** {hp}/{max_hp}  ·  **Owner:** `{owner_kind}:{owner_id}`"]
@@ -417,7 +436,6 @@ class TagsCog(commands.Cog):
             return await itx.response.send_message("Tags disabled.", ephemeral=True)
 
         await itx.response.defer(ephemeral=True)
-        trace = uuid.uuid4().hex[:8]
 
         try:
             target = user or itx.user
@@ -432,6 +450,7 @@ class TagsCog(commands.Cog):
                 stacks=stacks,
             )
         except Exception:
+            trace = uuid.uuid4().hex[:8]
             log.error("[dev_gunshot] trace=%s\n%s", trace, traceback.format_exc())
             await itx.followup.send(f"⚠️ Something broke. Trace `{trace}`.", ephemeral=True)
 
@@ -452,7 +471,6 @@ class TagsCog(commands.Cog):
             return await itx.response.send_message("Tags disabled.", ephemeral=True)
 
         await itx.response.defer(ephemeral=True)
-        trace = uuid.uuid4().hex[:8]
 
         try:
             target = user or itx.user
@@ -466,6 +484,7 @@ class TagsCog(commands.Cog):
                 stacks=int(severity),
             )
         except Exception:
+            trace = uuid.uuid4().hex[:8]
             log.error("[wound_gunshot] trace=%s\n%s", trace, traceback.format_exc())
             await itx.followup.send(f"⚠️ Something broke. Trace `{trace}`.", ephemeral=True)
 
@@ -475,7 +494,6 @@ class TagsCog(commands.Cog):
     async def tag_seed(self, itx: Interaction):
         # Intentionally available even if TAGS_ENABLED=0 so you can prepare the DB.
         await itx.response.defer(ephemeral=True)
-        trace = uuid.uuid4().hex[:8]
         try:
             ensure_tags_schema()
             inserted, total = _seed_catalog()
@@ -487,9 +505,11 @@ class TagsCog(commands.Cog):
             ]
             await itx.followup.send("\n".join(lines), ephemeral=True)
         except Exception:
+            trace = uuid.uuid4().hex[:8]
             log.error("[tag_seed] trace=%s\n%s", trace, traceback.format_exc())
             await itx.followup.send(f"⚠️ Seeding failed. Trace `{trace}`. Check logs.", ephemeral=True)
 
+# ------------------------------ setup --------------------------------
+
 async def setup(bot: commands.Bot):
-    # Always register the cog so commands are visible.
     await bot.add_cog(TagsCog(bot))

@@ -10,7 +10,12 @@ import os
 
 import discord
 from discord import app_commands, Interaction
-from discord.ext import commands
+from discord.ext import commands, tasks
+
+from src.services.tags_iter import collect_players_with_damage_tags
+from src.tags import registry as tag_registry
+
+TICK_SECONDS = 5  # HP-drain tick cadence
 
 from src.services import playerlog as plog  # for quiet append_event in /revive
 from src.services.playerlog import (
@@ -127,6 +132,7 @@ class PlayerLogCog(commands.Cog):
         self._death_channel_id: Optional[int] = int(os.getenv("DEATH_CHANNEL_ID", "0")) or None
 
     async def cog_load(self):
+        # Ensure storage and optional instrumentation
         ensure_playerlog_schema()
         install_health_instrumentation()
 
@@ -134,8 +140,9 @@ class PlayerLogCog(commands.Cog):
         logging.getLogger("tags.registry").setLevel(logging.WARNING)
         logging.getLogger("health").setLevel(logging.WARNING)
 
-        # Start expiry watcher
+        # Start expiry watcher and HP-drain loop
         self._watch_task = asyncio.create_task(self._run_expiry_watcher())
+        self.hp_tick_loop.start()
 
     async def cog_unload(self):
         if self._watch_task:
@@ -147,6 +154,32 @@ class PlayerLogCog(commands.Cog):
             except Exception:
                 log.exception("expiry watcher join failed")
 
+        if self.hp_tick_loop.is_running():
+            self.hp_tick_loop.cancel()
+
+    # --------------------------- HP drain loop ---------------------------
+    @tasks.loop(seconds=TICK_SECONDS)
+    async def hp_tick_loop(self):
+        """
+        Periodically drains HP for players with active damage tags by
+        reading tag instances and mapping them to registry keys.
+        """
+        try:
+            for player_id, tags in collect_players_with_damage_tags():
+                tag_registry.on_tick(
+                    player_id,
+                    tags,
+                    elapsed_s=TICK_SECONDS,
+                    death_broadcast=True,
+                )
+        except Exception:
+            log.exception("hp_tick_loop failed")
+
+    @hp_tick_loop.before_loop
+    async def _wait_ready_hp(self):
+        await self.bot.wait_until_ready()
+
+    # ---------------------- death broadcast helper ----------------------
     async def _broadcast_death(self, owner_kind: str, owner_id: int, tag_name: str, instance_id: Optional[int]):
         """Optionally announce a death to a configured channel."""
         if not self._death_channel_id:
@@ -160,6 +193,7 @@ class PlayerLogCog(commands.Cog):
         except Exception:
             log.exception("death broadcast failed")
 
+    # ------------------------- expiry watcher loop ----------------------
     async def _run_expiry_watcher(self):
         """
         Polls our watch table and emits tag.expired (+ optional death) events.
