@@ -66,6 +66,39 @@ def ensure_seed_keys():
     con.commit()
     log.info("Seeded %d tag key(s) into tag_keys (idempotent).", len(cat))
 
+# Add near the other helpers in src/cogs/tags.py
+def _ensure_tag_keys_table(con):
+    con.execute("""
+        CREATE TABLE IF NOT EXISTS tag_keys(
+            key TEXT PRIMARY KEY,
+            family TEXT,
+            max_intensity INTEGER
+        )
+    """)
+
+def _migrate_seed_catalog_into_tag_keys(con):
+    # Only populate when empty
+    cur = con.execute("SELECT COUNT(*) FROM tag_keys")
+    if int(cur.fetchone()[0]) > 0:
+        return
+    from src.tags.catalog import get_seed_catalog
+    cat = get_seed_catalog()
+    rows = [(k, v.get("family"), int(v.get("max_intensity", 10))) for k, v in cat.items()]
+    con.executemany(
+        "INSERT OR IGNORE INTO tag_keys(key, family, max_intensity) VALUES(?, ?, ?)",
+        rows
+    )
+    con.commit()
+
+def _which_db(con) -> str:
+    try:
+        # sqlite only; safe to ignore errors for other backends
+        row = con.execute("PRAGMA database_list").fetchone()
+        return row["file"] if isinstance(row, dict) and "file" in row else str(row)
+    except Exception:
+        return "<unknown>"
+
+
 # Robust owner resolver (player if available; else discord)
 def _resolve_owner(user: discord.abc.User) -> Tuple[str, int]:
     """
@@ -490,24 +523,113 @@ class TagsCog(commands.Cog):
 
     # ----------------------- Seeder (always available) -----------------------
 
-    @app_commands.command(name="tag_seed", description="Seed the tag catalog with defaults (Bleeding, Gunshot Wound)")
+    @app_commands.command(name="tag_seed", description="Seed the tag catalog / keys and show what's installed")
     async def tag_seed(self, itx: Interaction):
         # Intentionally available even if TAGS_ENABLED=0 so you can prepare the DB.
         await itx.response.defer(ephemeral=True)
+        trace = uuid.uuid4().hex[:8]
         try:
+            # Ensure base schema + seed keys (idempotent)
             ensure_tags_schema()
-            inserted, total = _seed_catalog()
+            try:
+                # If present in your build, this seeds tag_keys (key,family,max_intensity)
+                from src.cogs.tags import ensure_seed_tags as _ensure_seed_keys  # type: ignore
+                _ensure_seed_keys()
+                log.info("tag_seed: ensured tag_keys via ensure_seed_tags()")
+            except Exception:
+                # Not fatal; older builds may not export ensure_seed_tags at module level
+                pass
+
+                # inside tag_seed(...)
+                con = tag_dal._conn()
+
+                # show which DB we’re actually talking to
+                db_path = _which_db(con)
+                lines = [f"🗄️ DB: `{db_path}`"]
+
+                # create tag_keys if it doesn't exist yet
+                has_tag_keys = bool(con.execute(
+                    "SELECT 1 FROM sqlite_master WHERE type='table' AND name='tag_keys'"
+                ).fetchone())
+
+                if not has_tag_keys:
+                    lines.append("ℹ️ `tag_keys` not found — creating and seeding from seed catalog.")
+                    _ensure_tag_keys_table(con)
+                    _migrate_seed_catalog_into_tag_keys(con)
+                    has_tag_keys = True
+
+                # list tag_keys (primary) and tags (legacy) if present
+                if has_tag_keys:
+                    c = con.execute("SELECT COUNT(*) FROM tag_keys").fetchone()[0]
+                    lines.append(f"🔧 `tag_keys` present — {c} key(s).")
+                    for r in con.execute("SELECT key, family, max_intensity FROM tag_keys ORDER BY key").fetchall():
+                        lines.append(f"- **{r['key']}**  (family:`{r['family']}`, max:{int(r['max_intensity'])})")
+
+                if con.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='tags'").fetchone():
+                    c = con.execute("SELECT COUNT(*) FROM tags").fetchone()[0]
+                    lines.append(f"\n📚 `tags` table present — {c} row(s).")
+                    for r in con.execute("SELECT name, COALESCE(kind,'dynamic') AS kind, polarity FROM tags ORDER BY name").fetchall():
+                        pol = f" · {r['polarity']}" if r['polarity'] else ""
+                        lines.append(f"- **{r['name']}**  ({r['kind']}{pol})")
+
+                msg = "\n".join(lines)
+                if len(msg) > 1900: msg = msg[:1900] + "\n…"
+                await itx.followup.send(msg, ephemeral=True)
+
+
             con = tag_dal._conn()
-            rows = con.execute("SELECT name, kind, polarity FROM tags ORDER BY name").fetchall()
-            lines = [
-                f"Seeded {inserted} tag(s). Catalog now has {total} rows.",
-                *[f"- **{r['name']}**  ({(r['kind'] or 'dynamic')}{(' · ' + r['polarity']) if r['polarity'] else ''})" for r in rows]
-            ]
-            await itx.followup.send("\n".join(lines), ephemeral=True)
+            lines: list[str] = []
+
+            # Count tables if they exist
+            def _count(sql: str) -> Optional[int]:
+                try:
+                    return int(con.execute(sql).fetchone()[0])
+                except Exception:
+                    return None
+
+            c_keys = _count("SELECT COUNT(*) FROM tag_keys")
+            c_tags = _count("SELECT COUNT(*) FROM tags")
+
+            if c_keys is not None:
+                lines.append(f"🔧 `tag_keys` present — {c_keys} key(s).")
+                try:
+                    rows = con.execute(
+                        "SELECT key, family, max_intensity FROM tag_keys ORDER BY key"
+                    ).fetchall()
+                    # print a compact list
+                    for r in rows:
+                        lines.append(f"- **{r['key']}**  (family:`{r['family']}`, max:{int(r['max_intensity'])})")
+                except Exception:
+                    lines.append("⚠️ Failed to enumerate `tag_keys` rows (see logs).")
+            else:
+                lines.append("ℹ️ `tag_keys` not found.")
+
+            if c_tags is not None:
+                lines.append(f"\n📚 `tags` table present — {c_tags} row(s).")
+                try:
+                    rows = con.execute("SELECT name, COALESCE(kind,'dynamic') AS kind, polarity FROM tags ORDER BY name").fetchall()
+                    for r in rows:
+                        pol = f" · {r['polarity']}" if r['polarity'] else ""
+                        lines.append(f"- **{r['name']}**  ({r['kind']}{pol})")
+                except Exception:
+                    lines.append("⚠️ Failed to enumerate `tags` rows (see logs).")
+
+            if c_keys is None and c_tags is None:
+                lines.append("❌ No known catalog tables found (`tag_keys` or `tags`). Did migrations run?")
+
+            # keep under Discord 2k limit
+            msg = "\n".join(lines)
+            if len(msg) > 1900:
+                msg = msg[:1900] + "\n…"
+            await itx.followup.send(msg or "Done.", ephemeral=True)
+
         except Exception:
-            trace = uuid.uuid4().hex[:8]
             log.error("[tag_seed] trace=%s\n%s", trace, traceback.format_exc())
-            await itx.followup.send(f"⚠️ Seeding failed. Trace `{trace}`. Check logs.", ephemeral=True)
+            try:
+                await itx.followup.send(f"⚠️ Seeding failed. Trace `{trace}`. Check logs.", ephemeral=True)
+            except Exception:
+                pass
+
 
 # ------------------------------ setup --------------------------------
 
