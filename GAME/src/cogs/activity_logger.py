@@ -1,4 +1,4 @@
-# GAME/src/cogs/activity_logger.py
+﻿# GAME/src/cogs/activity_logger.py
 from __future__ import annotations
 
 import json
@@ -49,7 +49,7 @@ def _insert(kind: str, user_id: int, guild_id: int, payload: dict[str, Any]) -> 
                 ),
             )
     except Exception:
-        # swallow logging errors; the bot shouldn’t crash on telemetry issues
+        # swallow logging errors; the bot shouldnâ€™t crash on telemetry issues
         pass
 
 
@@ -600,7 +600,7 @@ class ActivityLogger(commands.Cog):
                     self.alert_channel_id
                 )
                 if isinstance(ch, discord.abc.Messageable):
-                    e = discord.Embed(title="⚠ Risky permissions changed", color=0xFD9644)
+                    e = discord.Embed(title="âš  Risky permissions changed", color=0xFD9644)
                     e.add_field(name="User", value=f"{after.mention} (`{after.id}`)", inline=False)
                     if gained:
                         e.add_field(name="Gained", value=", ".join(gained), inline=False)

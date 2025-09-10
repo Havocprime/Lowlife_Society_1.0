@@ -1,4 +1,4 @@
-# GAME/src/cogs/tags_seed_cmd.py
+﻿# GAME/src/cogs/tags_seed_cmd.py
 from __future__ import annotations
 import inspect, sqlite3, traceback
 import discord
@@ -33,13 +33,13 @@ class TagSeedCog(commands.Cog):
             with sqlite3.connect(dal.DB_PATH) as con:
                 (n_tags,) = con.execute("SELECT COUNT(*) FROM tags").fetchone()
             await itx.response.send_message(
-                f"✅ Seeded **{n}** tag(s). Catalog now has **{n_tags}** rows. DB=`{dal.DB_PATH}`",
+                f"âœ… Seeded **{n}** tag(s). Catalog now has **{n_tags}** rows. DB=`{dal.DB_PATH}`",
                 ephemeral=True,
             )
         except Exception:
             tb = traceback.format_exc()
             await itx.response.send_message(
-                f"⚠️ Seeding failed. Check logs.\n```\n{tb}\n```",
+                f"âš ï¸ Seeding failed. Check logs.\n```\n{tb}\n```",
                 ephemeral=True,
             )
 

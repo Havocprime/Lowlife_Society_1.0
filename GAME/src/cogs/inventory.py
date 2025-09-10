@@ -1,4 +1,4 @@
-# =========================
+﻿# =========================
 # GAME/src/cogs/inventory.py
 # =========================
 from __future__ import annotations
@@ -100,9 +100,9 @@ def _apply_item_thumbnail(emb, item=None, *, item_class=None, subcategory=None):
         return emb
 
 
-# ──────────────────────────────────────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 # Helpers (choices/autocomplete)
-# ──────────────────────────────────────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def _enum_choices(enum_cls) -> list[app_commands.Choice[str]]:
     try:
@@ -131,7 +131,7 @@ except Exception:
             ic = item_class
         return ALLOWED_SUBCATEGORIES.get(ic, [])
 
-# Lenient fallback used only if model map isn’t available
+# Lenient fallback used only if model map isnâ€™t available
 SUBCATS: dict[str, list[str]] = {
     "weapon": ["melee", "firearm", "thrown", "tool"],
     "currency": ["usd", "$", "cash", "bitcoin", "btc", "crypto"],
@@ -213,9 +213,9 @@ async def _ac_subcategory(interaction: Interaction, current: str) -> List[app_co
         log.warning("subcategory autocomplete failed: %s", e)
         return []
 
-# ──────────────────────────────────────────────────────────────────────────────
-# Announce helpers — card style with optional thumbnail
-# ──────────────────────────────────────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# Announce helpers â€” card style with optional thumbnail
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def _active_work_channel(guild: discord.Guild) -> Optional[discord.TextChannel]:
     from src.core.settings import SETTINGS
@@ -246,19 +246,19 @@ def _class_emoji(cls_str: str, sub: str | None = None) -> str:
     s = (cls_str or "").lower()
     sub = (sub or "").lower()
     if s == "weapon":
-        if sub in ("firearm", "gun", "pistol", "rifle", "smg", "sniper"): return "🔫"
-        if sub in ("thrown", "grenade"): return "🎯"
-        if sub in ("tool", "improvised"): return "🧰"
-        return "🔪"
-    if s in ("gear", "armor", "clothing"): return "🧥"
-    if s == "tool": return "🧰"
+        if sub in ("firearm", "gun", "pistol", "rifle", "smg", "sniper"): return "ðŸ”«"
+        if sub in ("thrown", "grenade"): return "ðŸŽ¯"
+        if sub in ("tool", "improvised"): return "ðŸ§°"
+        return "ðŸ”ª"
+    if s in ("gear", "armor", "clothing"): return "ðŸ§¥"
+    if s == "tool": return "ðŸ§°"
     if s == "currency":
-        if sub in ("bitcoin", "btc", "crypto"): return "🪙"
-        return "💵"
-    if s in ("food", "consumable"): return "🍖"
-    if s in ("drink", "beverage"): return "🥤"
-    if s in ("medical", "med") or s == "drugs": return "💊"
-    return "📦"
+        if sub in ("bitcoin", "btc", "crypto"): return "ðŸª™"
+        return "ðŸ’µ"
+    if s in ("food", "consumable"): return "ðŸ–"
+    if s in ("drink", "beverage"): return "ðŸ¥¤"
+    if s in ("medical", "med") or s == "drugs": return "ðŸ’Š"
+    return "ðŸ“¦"
 
 def _bool_word(v) -> str:
     return "Yes" if bool(v) else "No"
@@ -276,7 +276,7 @@ async def _announce_item_card(
         return
 
     name = getattr(item_obj, "name", None) or (extra or {}).get("name", "Unknown")
-    iid = getattr(item_obj, "id", None) or (extra or {}).get("id", "—")
+    iid = getattr(item_obj, "id", None) or (extra or {}).get("id", "â€”")
     cls_val = getattr(item_obj, "item_class", None)
     cls_str = _normalize_class(cls_val or (extra or {}).get("class"))
     sub = getattr(item_obj, "subcategory", None) or (extra or {}).get("subcategory")
@@ -298,16 +298,16 @@ async def _announce_item_card(
     _apply_item_thumbnail(e, item=item_obj)
 
     # Description
-    line1 = f"**{name}** · `ID {iid}`"
+    line1 = f"**{name}** Â· `ID {iid}`"
     cls_line = f"{cls_str}" + (f" / {sub}" if sub else "")
-    line2 = f"*{cls_line} • {rarity}*"
+    line2 = f"*{cls_line} â€¢ {rarity}*"
     if action == "delete":
         line3 = f"Removed by **{getattr(author, 'display_name', author)}**"
     else:
         line3 = (
-            f"Durability **{int(dura)}** • "
-            f"Stack **{int(stack_max)}** • "
-            f"Cash **{int(cash)}** • "
+            f"Durability **{int(dura)}** â€¢ "
+            f"Stack **{int(stack_max)}** â€¢ "
+            f"Cash **{int(cash)}** â€¢ "
             f"Equippable **{_bool_word(equippable)}**"
         )
     e.description = "\n".join([line1, line2, line3])
@@ -329,9 +329,9 @@ async def _announce_item_card(
     if not used_attachment:
         await ch.send(embed=e)
 
-# ──────────────────────────────────────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 # Small formatting helpers
-# ──────────────────────────────────────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def _quality_word(q: float) -> str:
     q = float(q)
@@ -343,7 +343,7 @@ def _quality_word(q: float) -> str:
 
 def _ellipsis(s: str, max_len: int) -> str:
     s = str(s or "")
-    return (s[: max_len - 1] + "…") if len(s) > max_len else s
+    return (s[: max_len - 1] + "â€¦") if len(s) > max_len else s
 
 def _emoji_for(row: dict) -> str:
     cls = str(row.get("item_class", "")).lower()
@@ -372,7 +372,7 @@ def _render_inventory_table(rows: List[dict], page: int = 1, page_size: int = 20
     def qty_text(r: dict) -> str:
         qty = int(r.get("qty") or 1)
         stack_max = int(r.get("stack_max") or 1)
-        return "–" if stack_max <= 1 else str(qty)
+        return "â€“" if stack_max <= 1 else str(qty)
 
     header = (
         f"{'ID':>{w_id}}  {'':>{w_eq}}  "
@@ -381,13 +381,13 @@ def _render_inventory_table(rows: List[dict], page: int = 1, page_size: int = 20
         f"{'RAR':<{w_rar}}  "
         f"{'QUAL':<{w_qual}}"
     )
-    hr = "─" * len(header)
+    hr = "â”€" * len(header)
     lines = [header, hr]
 
     for r in chunk:
         inv_id = int(r["inv_id"])
         name = _ellipsis(r["name"], w_name)
-        eq = "✓" if int(r.get("equipped") or 0) else " "
+        eq = "âœ“" if int(r.get("equipped") or 0) else " "
         rar = (r.get("rarity") or "common").capitalize()
         qual = _quality_word(r.get("quality_float") or 100.0)
         line = (
@@ -402,7 +402,7 @@ def _render_inventory_table(rows: List[dict], page: int = 1, page_size: int = 20
     if pages > 1:
         lines.append("")
         lines.append(
-            f"page {page}/{pages} · items={total} · equipped on page: "
+            f"page {page}/{pages} Â· items={total} Â· equipped on page: "
             f"{sum(1 for r in chunk if int(r.get('equipped') or 0))}"
         )
 
@@ -431,7 +431,7 @@ def _render_catalog_table(rows: List[dict]) -> str:
         f"{'DURA':>{w_dura}}  "
         f"{'QTY':>{w_qty}}"
     )
-    hr = "─" * len(header)
+    hr = "â”€" * len(header)
     lines = [header, hr]
 
     for r in rows:
@@ -455,9 +455,9 @@ def _render_catalog_table(rows: List[dict]) -> str:
 
     return f"```\n{'\n'.join(lines)}\n```"
 
-# ──────────────────────────────────────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 # Autocompletes
-# ──────────────────────────────────────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async def _ac_item_name(
     interaction: Interaction, current: str
@@ -492,9 +492,9 @@ async def _ac_item_name(
         log.warning("name autocomplete (fallback) failed: %s", e)
         return []
 
-# ──────────────────────────────────────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 # Cog
-# ──────────────────────────────────────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class InventoryCog(commands.Cog):
     def __init__(self, bot: commands.Bot):
@@ -543,7 +543,7 @@ class InventoryCog(commands.Cog):
             item = get_item_by_name(name)
             if not item:
                 await interaction.followup.send(
-                    f"❌ Unknown item **{name}**. Use `/createitem2` first, then try again.",
+                    f"âŒ Unknown item **{name}**. Use `/createitem2` first, then try again.",
                     ephemeral=True,
                 )
                 return
@@ -554,7 +554,7 @@ class InventoryCog(commands.Cog):
                 interaction.user, member, name, qty, equipped, inv_id,
             )
             await interaction.followup.send(
-                f"✅ Gave **{item.name}** x{qty} to {member.mention} (inv_id **{inv_id}**)",
+                f"âœ… Gave **{item.name}** x{qty} to {member.mention} (inv_id **{inv_id}**)",
                 ephemeral=True,
             )
         except Exception as e:
@@ -618,7 +618,7 @@ class InventoryCog(commands.Cog):
             existing = None
         if existing:
             await interaction.followup.send(
-                f"❌ The name **{name}** is already in use (id **{getattr(existing, 'id', '—')}**). "
+                f"âŒ The name **{name}** is already in use (id **{getattr(existing, 'id', 'â€”')}**). "
                 f"Use `/item_edit name:{name}` to modify it, `/item_delete name:{name}` to remove it, "
                 f"or choose a different name.",
                 ephemeral=True,
@@ -661,11 +661,11 @@ class InventoryCog(commands.Cog):
             ch = _active_work_channel(interaction.guild) if interaction.guild else None
             dest = ch.mention if ch else "#active-work"
             await interaction.followup.send(
-                f"🆕 Item **{name}** created with id **{iid}** → logged to {dest}", ephemeral=False
+                f"ðŸ†• Item **{name}** created with id **{iid}** â†’ logged to {dest}", ephemeral=False
             )
 
         except ValueError as ve:
-            allowed = ", ".join(allowed_subcategories_for(ic)) or "—"
+            allowed = ", ".join(allowed_subcategories_for(ic)) or "â€”"
             await interaction.followup.send(
                 f"Create failed: {ve}\nAllowed subcategories for **{ic.value}**: {allowed}",
                 ephemeral=True,
@@ -674,7 +674,7 @@ class InventoryCog(commands.Cog):
             msg = str(e)
             if "UNIQUE constraint failed: items.name" in msg:
                 await interaction.followup.send(
-                    f"❌ Create failed: an item named **{name}** already exists. "
+                    f"âŒ Create failed: an item named **{name}** already exists. "
                     f"Use `/item_edit name:{name}` or choose a different name.",
                     ephemeral=True,
                 )
@@ -724,7 +724,7 @@ class InventoryCog(commands.Cog):
         try:
             item = get_item_by_name(name)
             if not item:
-                await interaction.followup.send(f"❌ Unknown item **{name}**.", ephemeral=False)
+                await interaction.followup.send(f"âŒ Unknown item **{name}**.", ephemeral=False)
                 return
 
             changed: dict = {}
@@ -769,7 +769,7 @@ class InventoryCog(commands.Cog):
             ch = _active_work_channel(interaction.guild) if interaction.guild else None
             dest = ch.mention if ch else "#active-work"
             await interaction.followup.send(
-                f"✏️ Item **{item.name}** updated → logged to {dest}", ephemeral=False
+                f"âœï¸ Item **{item.name}** updated â†’ logged to {dest}", ephemeral=False
             )
 
         except Exception as e:
@@ -802,9 +802,9 @@ class InventoryCog(commands.Cog):
 
             ch = _active_work_channel(interaction.guild) if interaction.guild else None
             dest = ch.mention if ch else "#active-work"
-            nid = getattr(pre, "id", "—")
+            nid = getattr(pre, "id", "â€”")
             await interaction.followup.send(
-                f"🗑️ Soft-deleted **{name}** (id **{nid}**) → logged to {dest}", ephemeral=False
+                f"ðŸ—‘ï¸ Soft-deleted **{name}** (id **{nid}**) â†’ logged to {dest}", ephemeral=False
             )
 
         except Exception as e:
@@ -856,8 +856,8 @@ class InventoryCog(commands.Cog):
             table = render()
 
             view = discord.ui.View()
-            prev_btn = discord.ui.Button(label="◀ Prev", style=discord.ButtonStyle.secondary)
-            next_btn = discord.ui.Button(label="Next ▶", style=discord.ButtonStyle.secondary)
+            prev_btn = discord.ui.Button(label="â—€ Prev", style=discord.ButtonStyle.secondary)
+            next_btn = discord.ui.Button(label="Next â–¶", style=discord.ButtonStyle.secondary)
 
             async def _flip(i: Interaction, delta: int):
                 if i.user.id != interaction.user.id:
@@ -921,8 +921,8 @@ class InventoryCog(commands.Cog):
         try:
             table = render()
             view = discord.ui.View()
-            prev_btn = discord.ui.Button(label="◀ Prev", style=discord.ButtonStyle.secondary)
-            next_btn = discord.ui.Button(label="Next ▶", style=discord.ButtonStyle.secondary)
+            prev_btn = discord.ui.Button(label="â—€ Prev", style=discord.ButtonStyle.secondary)
+            next_btn = discord.ui.Button(label="Next â–¶", style=discord.ButtonStyle.secondary)
 
             async def _flip(i: Interaction, delta: int):
                 if i.user.id != interaction.user.id:
@@ -944,7 +944,7 @@ class InventoryCog(commands.Cog):
 
     # ---------- Player: inventory & equip/unequip
 
-    @app_commands.command(name="inventory", description="View your inventory (or a member’s).")
+    @app_commands.command(name="inventory", description="View your inventory (or a memberâ€™s).")
     @app_commands.describe(member="Optional member to inspect", page="Optional page number (1-based)")
     async def inventory_cmd(
         self,
@@ -974,9 +974,9 @@ class InventoryCog(commands.Cog):
         await interaction.response.defer(ephemeral=True, thinking=True)
         try:
             set_equipped(inv_id, True)
-            await interaction.followup.send("✅ Equipped", ephemeral=True)
+            await interaction.followup.send("âœ… Equipped", ephemeral=True)
         except ValueError as e:
-            await interaction.followup.send(f"❌ {e}", ephemeral=True)
+            await interaction.followup.send(f"âŒ {e}", ephemeral=True)
         except Exception as e:
             log.exception("equip failed")
             await interaction.followup.send(
@@ -988,7 +988,7 @@ class InventoryCog(commands.Cog):
         await interaction.response.defer(ephemeral=True, thinking=True)
         try:
             set_equipped(inv_id, False)
-            await interaction.followup.send("✅ Unequipped", ephemeral=True)
+            await interaction.followup.send("âœ… Unequipped", ephemeral=True)
         except Exception as e:
             log.exception("unequip failed")
             await interaction.followup.send(

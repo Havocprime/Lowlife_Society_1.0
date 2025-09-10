@@ -1,13 +1,13 @@
-# GAME/src/inventory/serializers.py
+﻿# GAME/src/inventory/serializers.py
 from __future__ import annotations
 from typing import Iterable, Mapping
 
 # simple icons per item class
 ICON = {
-    "weapon": "🗡️",
-    "armor": "🛡️",
-    "consumable": "🧪",
-    "misc": "📦",
+    "weapon": "ðŸ—¡ï¸",
+    "armor": "ðŸ›¡ï¸",
+    "consumable": "ðŸ§ª",
+    "misc": "ðŸ“¦",
 }
 
 def as_embed_lines(rows: Iterable[Mapping]) -> list[str]:
@@ -21,7 +21,7 @@ def as_embed_lines(rows: Iterable[Mapping]) -> list[str]:
         qty = int(r.get("qty") or 1)
         equipped = bool(r.get("equipped"))
         iclass = str(r.get("item_class") or "").lower()
-        icon = ICON.get(iclass, "•")
+        icon = ICON.get(iclass, "â€¢")
 
         parts = [icon, f"**{name}**"]
         if qty > 1:

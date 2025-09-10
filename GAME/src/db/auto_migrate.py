@@ -1,4 +1,4 @@
-# =========================================
+﻿# =========================================
 # FILE: GAME/src/db/auto_migrate.py
 # =========================================
 from __future__ import annotations
@@ -57,7 +57,7 @@ def ensure_characters_mvp_schema(conn: sqlite3.Connection) -> None:
     _add_column_if_missing(conn, "characters", "alias TEXT")
     _add_column_if_missing(conn, "characters", "avatar_url TEXT")
 
-    # Stats — keep your existing 'hp' but also add split max/current
+    # Stats â€” keep your existing 'hp' but also add split max/current
     _add_column_if_missing(conn, "characters", "luck INTEGER DEFAULT 5")  # in case older rows missed it
     _add_column_if_missing(conn, "characters", "hp_max INTEGER DEFAULT 60")
     _add_column_if_missing(conn, "characters", "hp_current INTEGER DEFAULT 60")

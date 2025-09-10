@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import csv
 import io
@@ -75,7 +75,7 @@ def _hex_color(v):
 
 def _rel_ymdh(a: datetime | None, b: datetime | None = None) -> str:
     if not a:
-        return "—"
+        return "â€”"
     if b is None:
         b = datetime.now(timezone.utc)
     from calendar import monthrange
@@ -164,7 +164,7 @@ def _ch_mention_from_payload(guild: discord.Guild, d: dict) -> str:
         cid = cid.get("id")
     cid = _to_int(cid)
     if not cid:
-        return "—"
+        return "â€”"
     ch = guild.get_channel(cid)
     return ch.mention if ch else f"<#{cid}>"
 
@@ -185,7 +185,7 @@ def _snippet(s: str | None, n: int = 120) -> str:
     if not s:
         return ""
     s = s.replace("\n", " ").strip()
-    return (s[:n] + "…") if len(s) > n else s
+    return (s[:n] + "â€¦") if len(s) > n else s
 
 
 def _emoji_name(d: dict) -> str:
@@ -198,7 +198,7 @@ def _emoji_name(d: dict) -> str:
 
 def _role_list(guild: discord.Guild, ids) -> str:
     if not ids:
-        return "—"
+        return "â€”"
     out = []
     for rid in ids:
         rid = _to_int(rid)
@@ -207,7 +207,7 @@ def _role_list(guild: discord.Guild, ids) -> str:
             continue
         r = guild.get_role(rid)
         out.append(r.mention if r else f"`{rid}`")
-    return ", ".join(out) if out else "—"
+    return ", ".join(out) if out else "â€”"
 
 
 # ---- Cog ----
@@ -256,7 +256,7 @@ class AdminInspector(commands.Cog):
             "mobile": str(getattr(member, "mobile_status", "offline")),
             "web": str(getattr(member, "web_status", "offline")),
         }
-        last_acted = last_event_time(member.id) or "—"
+        last_acted = last_event_time(member.id) or "â€”"
         badges = _flag_names(getattr(member, "public_flags", None))
         accent = getattr(member, "accent_color", None)
         accent_val = getattr(accent, "value", None)
@@ -266,13 +266,13 @@ class AdminInspector(commands.Cog):
             [
                 f"{member.mention} --",
                 f"ID -- `{member.id}`",
-                f"Account Created -- `{created.isoformat().replace('+00:00','Z') if created else '—'}` ({_rel_ymdh(created)})",
-                f"Joined Guild -- `{joined.isoformat().replace('+00:00','Z') if joined else '—'}` ({_rel_ymdh(joined)})",
+                f"Account Created -- `{created.isoformat().replace('+00:00','Z') if created else 'â€”'}` ({_rel_ymdh(created)})",
+                f"Joined Guild -- `{joined.isoformat().replace('+00:00','Z') if joined else 'â€”'}` ({_rel_ymdh(joined)})",
             ]
         )
 
         e = discord.Embed(
-            title="🛠️ Admin Inspector — Full Profile",
+            title="ðŸ› ï¸ Admin Inspector â€” Full Profile",
             description=header,
             colour=discord.Color.blurple(),
         )
@@ -281,21 +281,21 @@ class AdminInspector(commands.Cog):
         if banner_url:
             e.set_image(url=banner_url)
 
-        last_acted_pretty = _fmt_ts_local(last_acted) if last_acted != "—" else "—"
+        last_acted_pretty = _fmt_ts_local(last_acted) if last_acted != "â€”" else "â€”"
         e.add_field(
             name="Status / Devices",
             value=f"Current Status: {status} <{last_acted_pretty}>\n"
-            f"🖥 {dev['desktop']}\n📱 {dev['mobile']}\n🌐 {dev['web']}",
+            f"ðŸ–¥ {dev['desktop']}\nðŸ“± {dev['mobile']}\nðŸŒ {dev['web']}",
             inline=False,
         )
 
-        e.add_field(name="Top Roles", value=(", ".join(top3) or "—"), inline=False)
+        e.add_field(name="Top Roles", value=(", ".join(top3) or "â€”"), inline=False)
         e.add_field(
-            name="⚠️ High-Risk Perms (top 5)", value=(", ".join(high_risk) or "—"), inline=False
+            name="âš ï¸ High-Risk Perms (top 5)", value=(", ".join(high_risk) or "â€”"), inline=False
         )
-        e.add_field(name="Trusted", value=("Yes ✅" if trusted else "No ❌"), inline=True)
-        e.add_field(name="Accent", value=f"`{_hex_color(accent_val) or '—'}`", inline=True)
-        e.add_field(name="Badges", value=(", ".join(badges) or "—")[:1024], inline=False)
+        e.add_field(name="Trusted", value=("Yes âœ…" if trusted else "No âŒ"), inline=True)
+        e.add_field(name="Accent", value=f"`{_hex_color(accent_val) or 'â€”'}`", inline=True)
+        e.add_field(name="Badges", value=(", ".join(badges) or "â€”")[:1024], inline=False)
 
         # -------- Recent actions (comprehensive tag@target) --------
         recents = recent_events(member.id, 50)
@@ -311,96 +311,96 @@ class AdminInspector(commands.Cog):
                 if kind == "message":
                     ch = _ch_mention_from_payload(interaction.guild, d)  # type: ignore
                     text = _snippet(_extract_text(d))
-                    desc = f"msg@{ch} — “{text or '—'}”"
+                    desc = f"msg@{ch} â€” â€œ{text or 'â€”'}â€"
                 elif kind == "message_edit":
                     ch = _ch_mention_from_payload(interaction.guild, d)
                     after = _snippet(
                         _extract_text(d) or (d.get("after") or {}).get("content") or ""
                     )
-                    desc = f"edit@{ch} — “{after or '—'}”"
+                    desc = f"edit@{ch} â€” â€œ{after or 'â€”'}â€"
                 elif kind == "message_delete":
                     ch = _ch_mention_from_payload(interaction.guild, d)
                     txt = _snippet(_extract_text(d) or (d.get("before") or {}).get("content") or "")
-                    desc = f"del@{ch} — “{txt or 'unknown'}”"
+                    desc = f"del@{ch} â€” â€œ{txt or 'unknown'}â€"
                 elif kind == "message_bulk_delete":
                     ch = _ch_mention_from_payload(interaction.guild, d)
                     cnt = d.get("count", 0)
                     cached = d.get("cached_with_text", 0)
                     extra = f", {cached} with text" if cached else ""
-                    desc = f"bulkdel@{ch} — {cnt} msgs{extra}"
+                    desc = f"bulkdel@{ch} â€” {cnt} msgs{extra}"
 
                 # Reactions
                 elif kind == "reaction_add":
                     ch = _ch_mention_from_payload(interaction.guild, d)
-                    desc = f"react+@{ch} — { _emoji_name(d) }"
+                    desc = f"react+@{ch} â€” { _emoji_name(d) }"
                 elif kind == "reaction_remove":
                     ch = _ch_mention_from_payload(interaction.guild, d)
-                    desc = f"react-@{ch} — { _emoji_name(d) }"
+                    desc = f"react-@{ch} â€” { _emoji_name(d) }"
 
                 # Presence / activity
                 elif kind == "presence":
-                    desc = f"presence@self — {d.get('before')} → {d.get('after')}"
+                    desc = f"presence@self â€” {d.get('before')} â†’ {d.get('after')}"
                 elif kind == "activity":
                     b, a = d.get("before"), d.get("after")
-                    desc = f"activity@self — {b or '—'} → {a or '—'}"
+                    desc = f"activity@self â€” {b or 'â€”'} â†’ {a or 'â€”'}"
 
                 # Voice
                 elif kind == "voice_channel":
                     b = d.get("before")
                     a = d.get("after")
-                    desc = f"voice@self — {b or '—'} → {a or '—'}"
+                    desc = f"voice@self â€” {b or 'â€”'} â†’ {a or 'â€”'}"
                 elif kind == "voice_mute":
-                    desc = f"voice@mute — self={d.get('self')} server={d.get('server')}"
+                    desc = f"voice@mute â€” self={d.get('self')} server={d.get('server')}"
                 elif kind == "voice_deaf":
-                    desc = f"voice@deaf — self={d.get('self')} server={d.get('server')}"
+                    desc = f"voice@deaf â€” self={d.get('self')} server={d.get('server')}"
                 elif kind == "voice_stream":
-                    desc = f"voice@stream — {d.get('streaming')}"
+                    desc = f"voice@stream â€” {d.get('streaming')}"
 
                 # Roles / perms
                 elif kind == "roles":
                     added = _role_list(interaction.guild, d.get("added"))  # type: ignore
                     removed = _role_list(interaction.guild, d.get("removed"))  # type: ignore
-                    desc = f"roles@self — +{added}  −{removed}"
+                    desc = f"roles@self â€” +{added}  âˆ’{removed}"
                 elif kind == "perm_diff":
-                    g = ", ".join(d.get("gained") or []) or "—"
-                    l = ", ".join(d.get("lost") or []) or "—"
-                    desc = f"perms@self — +{g}  −{l}"
+                    g = ", ".join(d.get("gained") or []) or "â€”"
+                    l = ", ".join(d.get("lost") or []) or "â€”"
+                    desc = f"perms@self â€” +{g}  âˆ’{l}"
 
                 # Moderation / membership
                 elif kind == "timeout":
-                    desc = f"timeout@self — until {d.get('after') or 'cleared'}"
+                    desc = f"timeout@self â€” until {d.get('after') or 'cleared'}"
                 elif kind == "boost":
-                    desc = f"boost@self — {'started' if d.get('after') else 'ended'}"
+                    desc = f"boost@self â€” {'started' if d.get('after') else 'ended'}"
                 elif kind == "member_join":
-                    desc = "member@self — joined"
+                    desc = "member@self â€” joined"
                 elif kind == "member_leave":
-                    desc = "member@self — left"
+                    desc = "member@self â€” left"
 
                 # Invites / channels / pins
                 elif kind == "invite_create":
                     ch = _ch_mention_from_payload(interaction.guild, d)
-                    desc = f"invite@{ch} — code {d.get('code')}"
+                    desc = f"invite@{ch} â€” code {d.get('code')}"
                 elif kind == "invite_delete":
-                    desc = f"invite@deleted — code {d.get('code')}"
+                    desc = f"invite@deleted â€” code {d.get('code')}"
                 elif kind == "channel_update":
                     ch = _ch_mention_from_payload(interaction.guild, d)
-                    desc = f"channel@{ch} — updated"
+                    desc = f"channel@{ch} â€” updated"
                 elif kind == "pins_update":
                     ch = _ch_mention_from_payload(interaction.guild, d)
-                    desc = f"pins@{ch} — updated"
+                    desc = f"pins@{ch} â€” updated"
 
                 # Channel create/delete (if logged)
                 elif kind == "channel_create":
                     ch = _ch_mention_from_payload(interaction.guild, d)
-                    desc = f"channel@{ch} — created"
+                    desc = f"channel@{ch} â€” created"
                 elif kind == "channel_delete":
                     ch = _ch_mention_from_payload(interaction.guild, d)
-                    desc = f"channel@{ch} — deleted"
+                    desc = f"channel@{ch} â€” deleted"
 
                 else:
                     desc = kind.replace("_", " ")
 
-                lines.append(f"{_fmt_ts_local(ts)} — {desc}")
+                lines.append(f"{_fmt_ts_local(ts)} â€” {desc}")
 
             e.add_field(name="Recent Actions", value="\n".join(lines)[:1024], inline=False)
 

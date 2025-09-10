@@ -1,4 +1,4 @@
-# GAME/src/cogs/duel.py
+﻿# GAME/src/cogs/duel.py
 from __future__ import annotations
 import discord
 from discord import app_commands
@@ -30,7 +30,7 @@ class DuelCog(commands.Cog):
             lines.append(f"WINNER: {state.winner}")
         out = "\n".join(lines)
         if len(out) > 1900:
-            out = out[:1900] + "\n…"
+            out = out[:1900] + "\nâ€¦"
         await interaction.response.send_message(out, ephemeral=True)
 
 async def setup(bot: commands.Bot):

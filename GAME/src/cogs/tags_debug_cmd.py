@@ -1,4 +1,4 @@
-# GAME/src/cogs/tags_debug_cmd.py
+﻿# GAME/src/cogs/tags_debug_cmd.py
 from __future__ import annotations
 import discord
 from discord import app_commands

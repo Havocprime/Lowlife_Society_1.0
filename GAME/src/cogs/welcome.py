@@ -1,4 +1,4 @@
-# GAME/src/cogs/welcome.py
+﻿# GAME/src/cogs/welcome.py
 from __future__ import annotations
 
 import logging
@@ -96,14 +96,14 @@ class WelcomeCog(commands.Cog):
         # NPC + intro text
         npc_name = random_name(gender=gender or "any")
 
-        # Your intro builder — assumes it returns (intro_text, handoff_type, contact, extra_json)
+        # Your intro builder â€” assumes it returns (intro_text, handoff_type, contact, extra_json)
         intro_text, handoff_type, contact_value, extra = build_intro(gender)
 
         # Compose embed
         title = f"Welcome to The City: {member.display_name}"
         embed = discord.Embed(title=title, colour=discord.Color.gold())
         embed.description = intro_text
-        embed.set_footer(text=f"– {npc_name}.\nLowlife Society")
+        embed.set_footer(text=f"â€“ {npc_name}.\nLowlife Society")
 
         file = discord.File(img_path, filename=filename)
         embed.set_image(url=f"attachment://{filename}")
@@ -209,7 +209,7 @@ class WelcomeCog(commands.Cog):
                 await interaction.response.defer(ephemeral=True)
 
             if GUILD_ID and interaction.guild and interaction.guild.id != GUILD_ID:
-                await interaction.followup.send("This isn’t the configured Welcome guild.", ephemeral=True)
+                await interaction.followup.send("This isnâ€™t the configured Welcome guild.", ephemeral=True)
                 return
 
             target_user = user or interaction.user  # type: ignore
@@ -223,7 +223,7 @@ class WelcomeCog(commands.Cog):
             await self._send_welcome(target_user, target_channel, forced_gender)
 
             try:
-                await interaction.followup.send(f"Preview sent ✅ {suffix}", ephemeral=True)
+                await interaction.followup.send(f"Preview sent âœ… {suffix}", ephemeral=True)
             except discord.HTTPException:
                 pass
         except Exception as e:  # best-effort error reporting
@@ -231,7 +231,7 @@ class WelcomeCog(commands.Cog):
                 if not interaction.response.is_done():
                     await interaction.response.defer(ephemeral=True)
                 await interaction.followup.send(
-                    f"Welcome preview failed — **{type(e).__name__}**: {e}\n"
+                    f"Welcome preview failed â€” **{type(e).__name__}**: {e}\n"
                     f"Folder: `{self.folder}`\n"
                     f"Tip: set **WELCOME_IMAGES_DIR** and optional subfolders `male/` and `female/`.",
                     ephemeral=True,

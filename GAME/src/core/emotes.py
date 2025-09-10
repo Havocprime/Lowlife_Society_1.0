@@ -1,11 +1,11 @@
-# FILE: src/core/emotes.py
+﻿# FILE: src/core/emotes.py
 from __future__ import annotations
 
 from dataclasses import dataclass, field
 from typing import Dict, Optional, Union
 
 # Type for an emoji spec:
-# - str: a literal Unicode emoji like "🔷" or "🛡️"
+# - str: a literal Unicode emoji like "ðŸ”·" or "ðŸ›¡ï¸"
 # - int: a custom Discord emoji ID (uploaded to your server)
 EmojiSpec = Union[str, int]
 
@@ -34,45 +34,45 @@ class Tileset:
 UNICODE_TILESET = Tileset(
     name="unicode",
     categories={
-        # You’re already using 🔶 (orange diamond) and 🔷 (blue diamond)
+        # Youâ€™re already using ðŸ”¶ (orange diamond) and ðŸ”· (blue diamond)
         "players": {
-            "p1": "🔶",
-            "p2": "🔷",
-            "p3": "🔺",
-            "p4": "🔻",
+            "p1": "ðŸ”¶",
+            "p2": "ðŸ”·",
+            "p3": "ðŸ”º",
+            "p4": "ðŸ”»",
         },
         "enemies": {
-            "default": "✖",  # defeat marker / enemy
-            "boss": "☠️",
-            "npc": "◼️",
+            "default": "âœ–",  # defeat marker / enemy
+            "boss": "â˜ ï¸",
+            "npc": "â—¼ï¸",
         },
         "cover": {
-            "sandbag": "🧱",
-            "barricade": "🚧",
-            "dumpster": "🗑️",
-            "blank": "🗑️",  # placeholder tile (visible)
-            "transparent": ":blank_square_emoji:",  # stand-in; real “blank” should be a custom transparent emoji
+            "sandbag": "ðŸ§±",
+            "barricade": "ðŸš§",
+            "dumpster": "ðŸ—‘ï¸",
+            "blank": "ðŸ—‘ï¸",  # placeholder tile (visible)
+            "transparent": ":blank_square_emoji:",  # stand-in; real â€œblankâ€ should be a custom transparent emoji
         },
         "hazards": {
-            "fire": "🔥",
-            "explosion": "💥",
-            "electric": "⚡",
-            "toxic": "☣️",
-            "radioactive": "☢️",
+            "fire": "ðŸ”¥",
+            "explosion": "ðŸ’¥",
+            "electric": "âš¡",
+            "toxic": "â˜£ï¸",
+            "radioactive": "â˜¢ï¸",
         },
         "ui": {
-            "cursor": "◉",
-            "move": "🏃",
-            "cover": "🛡️",
-            "range": "🎯",
-            "wait": "⏳",
+            "cursor": "â—‰",
+            "move": "ðŸƒ",
+            "cover": "ðŸ›¡ï¸",
+            "range": "ðŸŽ¯",
+            "wait": "â³",
         },
         "status": {
-            "ok": "🟢",
-            "hurt": "🟠",
-            "down": "🔴",
-            "hidden": "🕶️",
-            "alert": "🚨",
+            "ok": "ðŸŸ¢",
+            "hurt": "ðŸŸ ",
+            "down": "ðŸ”´",
+            "hidden": "ðŸ•¶ï¸",
+            "alert": "ðŸš¨",
         },
     },
 )
@@ -89,8 +89,8 @@ CUSTOM_DEFAULT = Tileset(
     custom_prefix="ll_",
     categories={
         "players": {
-            "p1": 111111111111111111,  # 🔶-style custom
-            "p2": 222222222222222222,  # 🔷-style custom
+            "p1": 111111111111111111,  # ðŸ”¶-style custom
+            "p2": 222222222222222222,  # ðŸ”·-style custom
             "p3": 333333333333333333,  # triangle-up (colored) custom
             "p4": 444444444444444444,  # triangle-down (colored) custom
         },
@@ -194,13 +194,13 @@ def _resolve_spec(category: str, key: str) -> EmojiSpec:
     if fallback is not None:
         return fallback
     # final safety
-    return "❓"
+    return "â“"
 
 
 def emoji_string(category: str, key: str) -> str:
     """
     Return a renderable emoji string for text/embeds.
-    - If spec is Unicode -> returns it directly (e.g., '🔷').
+    - If spec is Unicode -> returns it directly (e.g., 'ðŸ”·').
     - If spec is int (custom ID) -> returns <:ll_{category}_{key}:{id}> with the tileset's prefix.
     """
     spec = _resolve_spec(category, key)
@@ -297,4 +297,4 @@ def register_unicode(category: str, key: str, emoji: str, tileset: str | None = 
 
 # If you want to ensure transparent background tile works even before IDs are set,
 # you can temporarily map it to a visible placeholder:
-# register_unicode("cover", "transparent", "▫️", tileset="unicode")
+# register_unicode("cover", "transparent", "â–«ï¸", tileset="unicode")

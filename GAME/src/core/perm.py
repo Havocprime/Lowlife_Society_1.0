@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import functools
 import os
@@ -50,7 +50,7 @@ def require_role(min_role: str):
             member: discord.Member = t.cast(discord.Member, interaction.user)
             if order[user_role(member)] < order[min_role]:
                 await interaction.response.send_message(
-                    f"🚫 You need **{min_role}** to use this.", ephemeral=True
+                    f"ðŸš« You need **{min_role}** to use this.", ephemeral=True
                 )
                 return
             return await func(self, interaction, *a, **kw)
@@ -76,7 +76,7 @@ def dangerous_op_cooldown(key_name: str, seconds: int = 30):
             if now - last < seconds:
                 remain = seconds - int(now - last)
                 await interaction.response.send_message(
-                    f"⏳ Slow down. Try again in **{remain}s**.", ephemeral=True
+                    f"â³ Slow down. Try again in **{remain}s**.", ephemeral=True
                 )
                 return
             _COOLDOWNS[k] = now

@@ -1,4 +1,4 @@
-# GAME/src/tags/registry.py
+﻿# GAME/src/tags/registry.py
 from __future__ import annotations
 import math
 import re
@@ -63,7 +63,7 @@ EFFECTS: List[EffectSpec] = [
     EffectSpec(re.compile(r"^scratch(\.|$)"),    _linear(0.00, 0.004), "Scratch"),
     EffectSpec(re.compile(r"^bruise(\.|$)"),     _linear(0.00, 0.002), "Bruise"),
 
-    # Fractures typically don’t bleed; broken bones may cause small systemic drain
+    # Fractures typically donâ€™t bleed; broken bones may cause small systemic drain
     EffectSpec(re.compile(r"^fractured_bone(\.|$)"), _zero,              "Fractured Bone"),
     EffectSpec(re.compile(r"^broken_bone(\.|$)"),    _linear(0.002, 0.002), "Broken Bone"),
 

@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import os
 from datetime import datetime, timezone
@@ -139,8 +139,8 @@ class MemberIntake(commands.Cog):
         file = discord.File(portrait, filename="mug.png") if portrait else None
 
         e = discord.Embed(
-            title="📸 NEW ARRIVAL — FIRST MUGSHOT",
-            description=f"**Alias:** {member.mention}\n**Rank:** {snap['derived'].get('veteran_rank','—')}",
+            title="ðŸ“¸ NEW ARRIVAL â€” FIRST MUGSHOT",
+            description=f"**Alias:** {member.mention}\n**Rank:** {snap['derived'].get('veteran_rank','â€”')}",
             colour=discord.Color.dark_embed(),
         )
         if member.display_avatar:
@@ -154,14 +154,14 @@ class MemberIntake(commands.Cog):
         inv = snap.get("join_context", {})
         inv_line = f"`{inv.get('invite_code') or 'unknown'}`"
         if inv.get("inviter_id"):
-            inv_line += f" • by <@{inv['inviter_id']}>"
+            inv_line += f" â€¢ by <@{inv['inviter_id']}>"
         e.add_field(name="Referral", value=inv_line, inline=False)
 
         risk = snap["derived"].get("risk_score", 0)
-        reasons = ", ".join(snap["derived"].get("risk_reasons", [])) or "—"
+        reasons = ", ".join(snap["derived"].get("risk_reasons", [])) or "â€”"
         e.add_field(name="Risk Index", value=f"`{risk}` ({reasons})", inline=False)
 
-        e.set_footer(text="LOWLIFE SOCIETY — Intake Bureau")
+        e.set_footer(text="LOWLIFE SOCIETY â€” Intake Bureau")
 
         if file:
             e.set_image(url="attachment://mug.png")

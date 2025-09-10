@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 import discord
 from discord import app_commands
 from discord.ext import commands
@@ -28,7 +28,7 @@ class EconAdmin(commands.Cog):
         s = ensure_cid(src); d = ensure_cid(dst)
         b1, b2 = actions.transfer(s, d, amount, reason=memo)
         await interaction.followup.send(
-            f"✅ {src.mention} → {dst.mention} **{amount}**. Balances: {b1}/{b2}",
+            f"âœ… {src.mention} â†’ {dst.mention} **{amount}**. Balances: {b1}/{b2}",
             ephemeral=True
         )
 
@@ -39,7 +39,7 @@ class EconAdmin(commands.Cog):
         await interaction.response.defer(ephemeral=True)
         cid = ensure_cid(buyer)
         bal = actions.purchase(cid, amount, reason=memo)
-        await interaction.followup.send(f"🛒 Debited **{amount}** from {buyer.mention}. Balance: {bal}", ephemeral=True)
+        await interaction.followup.send(f"ðŸ›’ Debited **{amount}** from {buyer.mention}. Balance: {bal}", ephemeral=True)
 
     @app_commands.command(name="econ_refund", description="ADMIN: simulate a refund (credit).")
     @require_role(Role.ADMIN)
@@ -48,7 +48,7 @@ class EconAdmin(commands.Cog):
         await interaction.response.defer(ephemeral=True)
         cid = ensure_cid(buyer)
         bal = actions.refund(cid, amount, reason=memo)
-        await interaction.followup.send(f"↩️ Refunded **{amount}** to {buyer.mention}. Balance: {bal}", ephemeral=True)
+        await interaction.followup.send(f"â†©ï¸ Refunded **{amount}** to {buyer.mention}. Balance: {bal}", ephemeral=True)
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(EconAdmin(bot))

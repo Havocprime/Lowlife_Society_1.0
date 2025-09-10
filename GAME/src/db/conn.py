@@ -1,4 +1,4 @@
-# GAME/src/db/conn.py
+﻿# GAME/src/db/conn.py
 from __future__ import annotations
 import os
 import sqlite3

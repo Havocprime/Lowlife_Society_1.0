@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import uuid
 
@@ -79,7 +79,7 @@ class CharacterSheetCmds(commands.Cog):
         char = dal.get_characters(player["id"])[0]
         embed = ui.character_embed(player, char)
         await interaction.followup.send(
-            f"✅ Granted **{qty}× {item_name}** to {member.mention}.", ephemeral=True
+            f"âœ… Granted **{qty}Ã— {item_name}** to {member.mention}.", ephemeral=True
         )
         await interaction.followup.send(embed=embed, ephemeral=True)
         

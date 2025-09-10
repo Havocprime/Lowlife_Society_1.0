@@ -1,12 +1,12 @@
-# src/cogs/tags/cog.py
+﻿# src/cogs/tags/cog.py
 from __future__ import annotations
 import time, sqlite3, discord
 from discord import app_commands
 from discord.ext import commands
 from .schema import ensure_schema, seed
 from .catalog import LIVE_PRESETS
-from ..util.db import get_db  # tiny helper we’ll add below
-from ..util.owners import owner_tuple  # tiny helper we’ll add below
+from ..util.db import get_db  # tiny helper weâ€™ll add below
+from ..util.owners import owner_tuple  # tiny helper weâ€™ll add below
 
 class TagsCog(commands.Cog):
     """Tag system with seed + apply/list/clear and dev helpers."""
@@ -29,7 +29,7 @@ class TagsCog(commands.Cog):
             ensure_schema(db)
             n_keys, n_live = seed(db)
         await interaction.response.send_message(
-            f"📚 `tag_keys` present — {n_keys} key(s).\n🧪 `tags` table present — seeded {n_live} live preset(s).",
+            f"ðŸ“š `tag_keys` present â€” {n_keys} key(s).\nðŸ§ª `tags` table present â€” seeded {n_live} live preset(s).",
             ephemeral=True,
         )
 
@@ -37,8 +37,8 @@ class TagsCog(commands.Cog):
     async def tag_catalog(self, interaction: discord.Interaction):
         with get_db() as db:
             rows = db.execute("SELECT name, family, kind, max_stacks FROM tag_keys ORDER BY name").fetchall()
-        lines = [f"• **{r[0]}** *(family: {r[1]}, {r[2]}, max:{r[3]})*" for r in rows]
-        msg = "📚 **tag_keys present** — " + f"{len(rows)} key(s).\n" + "\n".join(lines[:25])
+        lines = [f"â€¢ **{r[0]}** *(family: {r[1]}, {r[2]}, max:{r[3]})*" for r in rows]
+        msg = "ðŸ“š **tag_keys present** â€” " + f"{len(rows)} key(s).\n" + "\n".join(lines[:25])
         await interaction.response.send_message(msg, ephemeral=True)
 
     @group.command(name="add", description="Apply a live tag to yourself")
@@ -49,7 +49,7 @@ class TagsCog(commands.Cog):
             row = db.execute("SELECT name, family, kind, max_stacks, negative, duration_s, fatal_on_expire, tick_s "
                              "FROM tag_keys WHERE name = ?", (key,)).fetchone()
             if not row:
-                await interaction.response.send_message(f"❌ Tag `{key}` not found in catalog.", ephemeral=True)
+                await interaction.response.send_message(f"âŒ Tag `{key}` not found in catalog.", ephemeral=True)
                 return
             now = int(time.time())
             expires = None
@@ -66,7 +66,7 @@ class TagsCog(commands.Cog):
                 (owner[0], owner[1], row[0], row[1], row[2], int(row[4]), expires, int(row[6]), row[3]),
             )
             db.commit()
-        await interaction.response.send_message(f"✅ **{key}** ×1 ➜ **{interaction.user.mention}**", ephemeral=True)
+        await interaction.response.send_message(f"âœ… **{key}** Ã—1 âžœ **{interaction.user.mention}**", ephemeral=True)
 
     @group.command(name="list", description="List your active tags")
     async def tag_list(self, interaction: discord.Interaction):
@@ -78,13 +78,13 @@ class TagsCog(commands.Cog):
                 owner,
             ).fetchall()
         if not rows:
-            await interaction.response.send_message("ℹ️ No active tags.", ephemeral=True)
+            await interaction.response.send_message("â„¹ï¸ No active tags.", ephemeral=True)
             return
         lines = []
         for k, kind, neg, s, exp in rows:
             pol = "negative" if neg else "positive"
-            exp_t = "∞" if exp == 0 else f"{max(0, exp - int(time.time()))}s"
-            lines.append(f"• **{k}**  *({kind} – {pol})*  ×{s}  • expires in {exp_t}")
+            exp_t = "âˆž" if exp == 0 else f"{max(0, exp - int(time.time()))}s"
+            lines.append(f"â€¢ **{k}**  *({kind} â€“ {pol})*  Ã—{s}  â€¢ expires in {exp_t}")
         await interaction.response.send_message("\n".join(lines), ephemeral=True)
 
     @group.command(name="clear", description="Clear ALL your tags")
@@ -93,7 +93,7 @@ class TagsCog(commands.Cog):
         with get_db() as db:
             n = db.execute("DELETE FROM tags WHERE owner_type=? AND owner_id=?", owner).rowcount
             db.commit()
-        await interaction.response.send_message(f"🧹 Cleared **{n}** tag(s).", ephemeral=True)
+        await interaction.response.send_message(f"ðŸ§¹ Cleared **{n}** tag(s).", ephemeral=True)
 
     # --- Dev helpers you used in testing ------------------------------------
 

@@ -1,4 +1,4 @@
-# FILE: src/bot/duel/__init__.py
+﻿# FILE: src/bot/duel/__init__.py
 from __future__ import annotations
 
 """

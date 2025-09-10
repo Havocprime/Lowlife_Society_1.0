@@ -1,4 +1,4 @@
-# GAME/src/cogs/admin_tools.py  (only the name changed)
+﻿# GAME/src/cogs/admin_tools.py  (only the name changed)
 from __future__ import annotations
 import discord
 from discord import app_commands

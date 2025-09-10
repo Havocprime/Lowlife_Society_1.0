@@ -1,4 +1,4 @@
-# GAME/src/admin/audit.py
+﻿# GAME/src/admin/audit.py
 from __future__ import annotations
 
 import os
@@ -29,7 +29,7 @@ def is_admin():
 
 def _chan_mention(guild: Optional[discord.Guild], channel_id: Optional[int]) -> str:
     if not guild or not channel_id:
-        return "—"
+        return "â€”"
     ch = guild.get_channel(channel_id) or guild.get_thread(channel_id)
     return ch.mention if ch else f"#deleted({channel_id})"
 
@@ -38,7 +38,7 @@ def _preview(text: Optional[str], limit: int = 180) -> str:
     if not text:
         return ""
     t = text.replace("\n", " ").strip()
-    return (t[:limit] + "…") if len(t) > limit else t
+    return (t[:limit] + "â€¦") if len(t) > limit else t
 
 
 def _ts_iso(ts_ms: Optional[int]) -> str:
@@ -185,10 +185,10 @@ class AuditPager(discord.ui.View):
         lines: List[str] = []
         for r in self._page_slice():
             ts = _ts_iso(r.get("ts"))
-            et = r.get("action_type") or "—"
+            et = r.get("action_type") or "â€”"
             chid = r.get("channel_id")
             msg = _preview(r.get("content") or "")
-            line = f"`{ts}` • **{et}** • {_chan_mention(self.guild, chid)}\n{msg}"
+            line = f"`{ts}` â€¢ **{et}** â€¢ {_chan_mention(self.guild, chid)}\n{msg}"
             lines.append(line)
         desc = "\n\n".join(lines) if lines else "_No events._"
         emb = discord.Embed(
@@ -196,7 +196,7 @@ class AuditPager(discord.ui.View):
             description=desc,
             color=discord.Color.blurple()
         )
-        emb.set_footer(text=f"{total} events • page size {self.page_size}")
+        emb.set_footer(text=f"{total} events â€¢ page size {self.page_size}")
         return emb
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
@@ -251,10 +251,10 @@ class AuditCog(commands.Cog):
         lines: List[str] = []
         for r in rows:
             ts = _ts_iso(r.get("ts"))
-            et = r.get("action_type") or "—"
+            et = r.get("action_type") or "â€”"
             chid = r.get("channel_id")
             msg = _preview(r.get("content") or "")
-            lines.append(f"`{ts}` • **{et}** • {_chan_mention(inter.guild, chid)}\n{msg}")
+            lines.append(f"`{ts}` â€¢ **{et}** â€¢ {_chan_mention(inter.guild, chid)}\n{msg}")
         emb = discord.Embed(
             title="Audit Recent",
             description="\n\n".join(lines) if lines else "_No events._",

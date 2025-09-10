@@ -1,4 +1,4 @@
-# GAME/src/models/character.py
+﻿# GAME/src/models/character.py
 from __future__ import annotations
 from dataclasses import dataclass
 from typing import Optional

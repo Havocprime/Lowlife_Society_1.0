@@ -1,4 +1,4 @@
-# GAME/src/cogs/events.py
+﻿# GAME/src/cogs/events.py
 from __future__ import annotations
 
 import json

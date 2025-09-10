@@ -1,4 +1,4 @@
-# GAME/src/cogs/profile.py
+﻿# GAME/src/cogs/profile.py
 from __future__ import annotations
 
 from datetime import datetime
@@ -13,7 +13,7 @@ from src.db import dal
 
 def _fmt_dt(s: Optional[str]) -> str:
     if not s:
-        return "—"
+        return "â€”"
     try:
         dt = datetime.fromisoformat(s.replace("Z", "+00:00")) if "T" in s else datetime.fromisoformat(s)
         return dt.strftime("%Y-%m-%d %H:%M UTC")
@@ -45,18 +45,18 @@ class Profile(commands.Cog):
         if not ch:
             embed = discord.Embed(
                 title="No character found",
-                description="You don’t have a LOWLIFE character yet. Run **/onboard** to create one.",
+                description="You donâ€™t have a LOWLIFE character yet. Run **/onboard** to create one.",
                 color=0xFD9644,
             )
             await itx.followup.send(embed=embed, ephemeral=True)
             return
 
         name = getattr(ch, "name", "Unknown")
-        char_code = getattr(ch, "char_id", "—")
+        char_code = getattr(ch, "char_id", "â€”")
         pronouns_display = _pronoun_label(getattr(ch, "pronouns", None))
-        district = getattr(ch, "starting_district", None) or "—"
-        arche = getattr(ch, "archetypes", None) or "—"
-        background = getattr(ch, "background", None) or "—"
+        district = getattr(ch, "starting_district", None) or "â€”"
+        arche = getattr(ch, "archetypes", None) or "â€”"
+        background = getattr(ch, "background", None) or "â€”"
 
         s_str = getattr(ch, "str", 5)
         s_vit = getattr(ch, "vit", 5)
@@ -74,7 +74,7 @@ class Profile(commands.Cog):
 
         embed = discord.Embed(
             title=f"{name}",
-            description=background if background != "—" else "",
+            description=background if background != "â€”" else "",
             color=0x7C4DFF,
         )
         embed.set_author(name=f"{itx.user.display_name}", icon_url=getattr(itx.user.display_avatar, "url", None))
@@ -82,7 +82,7 @@ class Profile(commands.Cog):
         embed.add_field(name="Char Code", value=f"`{char_code}`", inline=True)
         embed.add_field(name="District", value=district, inline=True)
 
-        if arche != "—":
+        if arche != "â€”":
             embed.add_field(name="Archetypes", value=arche, inline=False)
 
         stats_lines = [
@@ -92,11 +92,11 @@ class Profile(commands.Cog):
             f"**HP** {hp}",
         ]
         embed.add_field(name="Stats", value="\n".join(stats_lines), inline=False)
-        embed.set_footer(text=f"Created {created} • Updated {updated}")
+        embed.set_footer(text=f"Created {created} â€¢ Updated {updated}")
 
         await itx.followup.send(embed=embed)
 
-    @app_commands.command(name="profile_of", description="Show another member’s LOWLIFE character profile.")
+    @app_commands.command(name="profile_of", description="Show another memberâ€™s LOWLIFE character profile.")
     @app_commands.describe(member="The member to view")
     async def profile_of(self, itx: discord.Interaction, member: Optional[discord.Member] = None):
         member = member or itx.user
@@ -107,11 +107,11 @@ class Profile(commands.Cog):
             return
 
         name = getattr(ch, "name", "Unknown")
-        char_code = getattr(ch, "char_id", "—")
+        char_code = getattr(ch, "char_id", "â€”")
         pronouns_display = _pronoun_label(getattr(ch, "pronouns", None))
-        district = getattr(ch, "starting_district", None) or "—"
-        arche = getattr(ch, "archetypes", None) or "—"
-        background = getattr(ch, "background", None) or "—"
+        district = getattr(ch, "starting_district", None) or "â€”"
+        arche = getattr(ch, "archetypes", None) or "â€”"
+        background = getattr(ch, "background", None) or "â€”"
         s_str = getattr(ch, "str", 5)
         s_vit = getattr(ch, "vit", 5)
         s_end = getattr(ch, "end", 5)
@@ -127,14 +127,14 @@ class Profile(commands.Cog):
 
         embed = discord.Embed(
             title=f"{name}",
-            description=background if background != "—" else "",
+            description=background if background != "â€”" else "",
             color=0x7C4DFF,
         )
         embed.set_author(name=f"{member.display_name}", icon_url=getattr(member.display_avatar, "url", None))
         embed.add_field(name="Pronouns", value=pronouns_display, inline=True)
         embed.add_field(name="Char Code", value=f"`{char_code}`", inline=True)
         embed.add_field(name="District", value=district, inline=True)
-        if arche != "—":
+        if arche != "â€”":
             embed.add_field(name="Archetypes", value=arche, inline=False)
         stats_lines = [
             f"**STR** {s_str}  **VIT** {s_vit}  **END** {s_end}",
@@ -143,7 +143,7 @@ class Profile(commands.Cog):
             f"**HP** {hp}",
         ]
         embed.add_field(name="Stats", value="\n".join(stats_lines), inline=False)
-        embed.set_footer(text=f"Created {created} • Updated {updated}")
+        embed.set_footer(text=f"Created {created} â€¢ Updated {updated}")
         await itx.followup.send(embed=embed)
 
 

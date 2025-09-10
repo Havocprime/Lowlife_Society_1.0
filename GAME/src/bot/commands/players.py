@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import discord
 from discord import app_commands
@@ -23,4 +23,4 @@ def register(tree: app_commands.CommandTree):
         if not prof:
             await interaction.response.send_message("No profile. Use /create first.")
             return
-        await interaction.response.send_message(f"**{prof['name']}** — XP: {prof['xp']}")
+        await interaction.response.send_message(f"**{prof['name']}** â€” XP: {prof['xp']}")

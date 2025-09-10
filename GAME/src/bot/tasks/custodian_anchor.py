@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 import os, asyncio
 import discord
 from discord.ext import commands, tasks
@@ -24,7 +24,7 @@ class CustodianAnchor(commands.Cog):
                 return
             summary = ledger.verify_chain(limit=5000)
             broken = summary.get("broken_ids", [])
-            status = "OK ✅" if not broken else f"ALERT ❌ broken={len(broken)} (e.g., {broken[:5]})"
+            status = "OK âœ…" if not broken else f"ALERT âŒ broken={len(broken)} (e.g., {broken[:5]})"
             # Post the last chain hash (newest row)
             import sqlite3
             from pathlib import Path
@@ -32,7 +32,7 @@ class CustodianAnchor(commands.Cog):
             with sqlite3.connect(DBP) as conn:
                 row = conn.execute("SELECT id, chain_hash FROM audit_log ORDER BY id DESC LIMIT 1").fetchone()
             if row:
-                await ch.send(f"⛓️ Custodian anchor — last id `{row[0]}`, hash `{row[1][:16]}…` — {status}")
+                await ch.send(f"â›“ï¸ Custodian anchor â€” last id `{row[0]}`, hash `{row[1][:16]}â€¦` â€” {status}")
         except Exception:
             # keep silent; try again next cycle
             pass

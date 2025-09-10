@@ -1,4 +1,4 @@
-# GAME/src/core/heartbeat.py
+﻿# GAME/src/core/heartbeat.py
 from __future__ import annotations
 import sys
 import asyncio
@@ -10,7 +10,7 @@ from collections import deque
 log = logging.getLogger("heartbeat")
 
 # Safe in most terminals; for pure ASCII use: ("-","\\","|","/")
-SPINNER = ("⠋","⠙","⠸","⠴","⠦","⠇")
+SPINNER = ("â ‹","â ™","â ¸","â ´","â ¦","â ‡")
 
 @dataclass
 class HeartbeatConfig:
@@ -153,9 +153,9 @@ class Heartbeat:
             if self.cfg.enable_spinner:
                 glyph = SPINNER[spinner_i]
                 spinner_i = (spinner_i + 1) % len(SPINNER)
-                # Example line: LOWLIFE ⏳ 12s ⌁ work/60s=3  ⠙  tick=127  lag=2ms
+                # Example line: LOWLIFE â³ 12s âŒ work/60s=3  â ™  tick=127  lag=2ms
                 msg = (
-                    f"{self.cfg.label} ⏳{idle_s:>3}s ⌁ work/60s={work_cnt:<3d}  "
+                    f"{self.cfg.label} â³{idle_s:>3}s âŒ work/60s={work_cnt:<3d}  "
                     f"{glyph}  tick={self._tick}  lag={int(loop_lag*1000)}ms"
                 )
                 try:

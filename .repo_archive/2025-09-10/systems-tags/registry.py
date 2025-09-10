@@ -1,4 +1,4 @@
-# GAME/src/systems/tags/registry.py
+﻿# GAME/src/systems/tags/registry.py
 from __future__ import annotations
 import logging
 from typing import Any, Dict, Callable
@@ -73,7 +73,7 @@ REGISTRY: Dict[str, Handler] = {}   # <- engine reads from here
 
 
 def _norm_key(s: str) -> str:
-    """normalize names like 'Bleeding' or 'Gunshot Wound' ⇒ script keys."""
+    """normalize names like 'Bleeding' or 'Gunshot Wound' â‡’ script keys."""
     s = s.strip().lower()
     # keep underscores, convert spaces and non-alnum to underscores, collapse repeats
     out = []
@@ -132,7 +132,7 @@ def handle(tag: str, phase: str):
 def _tick_bleeding(ctx: Dict[str, Any]) -> None:
     """
     Every tick_ms:
-      - Base model: 1 HP per stack per tick, scaled by intensity (floored to ≥1).
+      - Base model: 1 HP per stack per tick, scaled by intensity (floored to â‰¥1).
       - Easy to rebalance later or flip to % MaxHP if desired.
     """
     stacks = max(1, int(ctx.get("stacks") or 1))
@@ -155,7 +155,7 @@ def _tick_bleeding(ctx: Dict[str, Any]) -> None:
 def _on_apply_gunshot(ctx: Dict[str, Any]) -> None:
     """
     When Gunshot Wound is applied, seed Bleeding automatically.
-    Severity → stacks curve: light=1, medium=2, heavy=3.
+    Severity â†’ stacks curve: light=1, medium=2, heavy=3.
     """
     meta = ctx.get("metadata") or {}
     severity = str(meta.get("severity") or "medium").lower()

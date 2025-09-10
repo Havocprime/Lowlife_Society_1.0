@@ -1,4 +1,4 @@
-# src/models/item.py
+﻿# src/models/item.py
 from __future__ import annotations
 
 from dataclasses import dataclass

@@ -1,4 +1,4 @@
-# GAME/scripts/seed_tags.py
+﻿# GAME/scripts/seed_tags.py
 from __future__ import annotations
 
 # Make "src" importable whether run as a module (-m GAME.scripts.seed_tags)

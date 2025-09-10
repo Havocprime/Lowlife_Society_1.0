@@ -1,4 +1,4 @@
-# GAME/src/cogs/admin_items.py
+﻿# GAME/src/cogs/admin_items.py
 from __future__ import annotations
 
 import os
@@ -51,9 +51,9 @@ class AdminItems(commands.Cog):
         await interaction.response.defer(ephemeral=True, thinking=True)
         ok = restore_item_by_name(name)
         if ok:
-            await interaction.followup.send(f"✅ Restored **{name}**.", ephemeral=True)
+            await interaction.followup.send(f"âœ… Restored **{name}**.", ephemeral=True)
         else:
-            await interaction.followup.send(f"ℹ️ '{name}' was not deleted or not found.", ephemeral=True)
+            await interaction.followup.send(f"â„¹ï¸ '{name}' was not deleted or not found.", ephemeral=True)
 
     @item_restore.autocomplete("name")
     async def _ac_restore_name(self, interaction: discord.Interaction, current: str):
@@ -69,7 +69,7 @@ class AdminItems(commands.Cog):
 
         await interaction.response.defer(ephemeral=True, thinking=True)
         n = purge_item_by_name(name)
-        await interaction.followup.send(f"🗑️ Purged **{name}** ({n} row(s)).", ephemeral=True)
+        await interaction.followup.send(f"ðŸ—‘ï¸ Purged **{name}** ({n} row(s)).", ephemeral=True)
 
     @item_purge.autocomplete("name")
     async def _ac_purge_name(self, interaction: discord.Interaction, current: str):

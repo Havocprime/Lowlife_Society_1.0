@@ -1,4 +1,4 @@
-# scripts/db_maintenance.py
+﻿# scripts/db_maintenance.py
 from __future__ import annotations
 import os, sqlite3, subprocess, sys
 from pathlib import Path

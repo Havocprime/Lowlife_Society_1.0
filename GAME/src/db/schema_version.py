@@ -1,4 +1,4 @@
-# ===== FILE: GAME/src/db/schema_version.py ===================================
+﻿# ===== FILE: GAME/src/db/schema_version.py ===================================
 from __future__ import annotations
 
 import sqlite3

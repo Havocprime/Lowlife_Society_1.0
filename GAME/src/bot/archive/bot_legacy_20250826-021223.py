@@ -1,4 +1,4 @@
-from __future__ import annotations 
+﻿from __future__ import annotations 
 
 import os, sys, asyncio, logging, io, csv, json
 from pathlib import Path
@@ -32,7 +32,7 @@ ADMIN_ROLE_ID = int(os.getenv("ADMIN_ROLE_ID", "0") or "0")
 TRUSTED_ROLE_IDS = {int(x) for x in os.getenv("TRUSTED_ROLE_IDS", "").split(",") if x.strip().isdigit()}
 TRUSTED_ROLE_NAMES = {x.strip().lower() for x in os.getenv("TRUSTED_ROLE_NAMES", "").split(",") if x.strip()}
 
-# ✅ import AFTER sys.path is set
+# âœ… import AFTER sys.path is set
 from src.core.audit import ensure_db, audit_event
 
 # event/db helpers
@@ -64,7 +64,7 @@ def _hex_color(v):
 
 def _rel_ymdh(a: datetime | None, b: datetime | None = None) -> str:
     if not a:
-        return "—"
+        return "â€”"
     if b is None:
         b = datetime.now(timezone.utc)
     from calendar import monthrange
@@ -136,7 +136,7 @@ def _snippet(s: str | None, n: int = 120) -> str:
     if not s:
         return ""
     s = s.replace("\n", " ").strip()
-    return (s[:n] + "…") if len(s) > n else s
+    return (s[:n] + "â€¦") if len(s) > n else s
 
 def _to_int(x):
     try:
@@ -150,7 +150,7 @@ def _ch_mention_from_payload(guild: discord.Guild, d: dict) -> str:
         cid = cid.get("id")
     cid = _to_int(cid)
     if not cid:
-        return "—"
+        return "â€”"
     ch = guild.get_channel(cid)
     return ch.mention if ch else f"<#{cid}>"
 
@@ -167,7 +167,7 @@ def _extract_text(d: dict) -> str:
 
 def _role_mentions(guild: discord.Guild, ids: list[str] | list[int] | None) -> str:
     if not ids:
-        return "—"
+        return "â€”"
     out = []
     for rid in ids:
         rid_i = _to_int(rid)
@@ -176,7 +176,7 @@ def _role_mentions(guild: discord.Guild, ids: list[str] | list[int] | None) -> s
             continue
         r = guild.get_role(rid_i)
         out.append(r.mention if r else f"`{rid_i}`")
-    return ", ".join(out) if out else "—"
+    return ", ".join(out) if out else "â€”"
 
 # ---------- bot ----------
 class LowlifeBot(commands.Bot):
@@ -296,7 +296,7 @@ class LowlifeBot(commands.Bot):
             pending = getattr(member, "pending", None)
 
             last_acted_raw = last_event_time(member.id)
-            last_acted_pretty = _fmt_ts_local(last_acted_raw) if last_acted_raw else "—"
+            last_acted_pretty = _fmt_ts_local(last_acted_raw) if last_acted_raw else "â€”"
 
             badges = []
             try:
@@ -311,34 +311,34 @@ class LowlifeBot(commands.Bot):
 
             # admin notes preview
             notes = list_admin_notes(interaction.guild.id, member.id, 2)  # type: ignore
-            notes_lines = [f"`{ts}` — <@{aid}> — {note}" for (_nid, ts, aid, note) in notes] if notes else []
+            notes_lines = [f"`{ts}` â€” <@{aid}> â€” {note}" for (_nid, ts, aid, note) in notes] if notes else []
 
             header = "\n".join([
                 f"{member.mention} --",
                 f"ID -- `{member.id}`",
-                f"Account Created -- `{created.isoformat().replace('+00:00','Z') if created else '—'}` ({_rel_ymdh(created)})",
-                f"Joined Guild -- `{joined.isoformat().replace('+00:00','Z') if joined else '—'}` ({_rel_ymdh(joined)})",
+                f"Account Created -- `{created.isoformat().replace('+00:00','Z') if created else 'â€”'}` ({_rel_ymdh(created)})",
+                f"Joined Guild -- `{joined.isoformat().replace('+00:00','Z') if joined else 'â€”'}` ({_rel_ymdh(joined)})",
             ])
 
-            e = discord.Embed(title="🛠️ Admin Inspector — Full Profile", description=header, colour=discord.Color.blurple())
+            e = discord.Embed(title="ðŸ› ï¸ Admin Inspector â€” Full Profile", description=header, colour=discord.Color.blurple())
             if avatar_url: e.set_thumbnail(url=avatar_url)
             if banner_url: e.set_image(url=banner_url)
 
             e.add_field(
                 name="Status / Devices",
                 value=f"Current Status: {status} <{last_acted_pretty}>\n"
-                      f"🖥 {dev['desktop']}\n📱 {dev['mobile']}\n🌐 {dev['web']}",
+                      f"ðŸ–¥ {dev['desktop']}\nðŸ“± {dev['mobile']}\nðŸŒ {dev['web']}",
                 inline=False
             )
             if activities:
                 e.add_field(name="Activities", value="; ".join(activities)[:1024], inline=False)
 
-            e.add_field(name="Top Roles", value=(", ".join(top3) or "—"), inline=False)
-            e.add_field(name="⚠️ High-Risk Perms (top 5)", value=(", ".join(risky) or "—"), inline=False)
+            e.add_field(name="Top Roles", value=(", ".join(top3) or "â€”"), inline=False)
+            e.add_field(name="âš ï¸ High-Risk Perms (top 5)", value=(", ".join(risky) or "â€”"), inline=False)
 
             trusted = _is_trusted(member)
-            e.add_field(name="Trusted", value=("Yes ✅" if trusted else "No ❌"), inline=True)
-            e.add_field(name="Accent", value=f"`{_hex_color(accent_val) or '—'}`", inline=True)
+            e.add_field(name="Trusted", value=("Yes âœ…" if trusted else "No âŒ"), inline=True)
+            e.add_field(name="Accent", value=f"`{_hex_color(accent_val) or 'â€”'}`", inline=True)
 
             if premium_since:
                 e.add_field(name="Boosting Since", value=f"`{premium_since.isoformat().replace('+00:00','Z')}`", inline=True)
@@ -347,12 +347,12 @@ class LowlifeBot(commands.Bot):
             if timeout_until:
                 e.add_field(name="Timeout Until", value=f"`{timeout_until.isoformat().replace('+00:00','Z')}`", inline=True)
 
-            e.add_field(name="Badges", value=(", ".join(badges) or "—")[:1024], inline=False)
-            e.add_field(name="Msg Counts", value=f"7d: `{msg7}` • 30d: `{msg30}`", inline=True)
+            e.add_field(name="Badges", value=(", ".join(badges) or "â€”")[:1024], inline=False)
+            e.add_field(name="Msg Counts", value=f"7d: `{msg7}` â€¢ 30d: `{msg30}`", inline=True)
             e.add_field(name="Log DB", value=f"`{str(DB_PATH)}`", inline=True)
 
             if notes_lines:
-                e.add_field(name=f"Admin Notes — latest {len(notes_lines)}", value="\n".join(notes_lines), inline=False)
+                e.add_field(name=f"Admin Notes â€” latest {len(notes_lines)}", value="\n".join(notes_lines), inline=False)
 
             # ---- recent actions: explicit formatting here ----
             recents = recent_events(member.id, 50)
@@ -367,31 +367,31 @@ class LowlifeBot(commands.Bot):
                 if kind == "message":
                     ch = _ch_mention_from_payload(interaction.guild, data)  # type: ignore
                     text = _snippet(_extract_text(data))
-                    desc = f"message in {ch} — “{text or '—'}”"
+                    desc = f"message in {ch} â€” â€œ{text or 'â€”'}â€"
                 elif kind == "message_edit":
                     ch = _ch_mention_from_payload(interaction.guild, data)  # type: ignore
                     after = _snippet(_extract_text(data) or (data.get("after") or {}).get("content") or "")
-                    desc = f"edited message in {ch} — “{after or '—'}”"
+                    desc = f"edited message in {ch} â€” â€œ{after or 'â€”'}â€"
                 elif kind == "message_delete":
                     ch = _ch_mention_from_payload(interaction.guild, data)  # type: ignore
                     txt = _snippet(_extract_text(data) or (data.get("before") or {}).get("content") or "")
-                    desc = f"deleted message in {ch} — “{txt or 'unknown'}”"
+                    desc = f"deleted message in {ch} â€” â€œ{txt or 'unknown'}â€"
                 elif kind == "message_bulk_delete":
                     ch = _ch_mention_from_payload(interaction.guild, data)  # type: ignore
                     cnt = data.get("count", 0)
                     cached = data.get("cached_with_text", 0)
                     extra = f" ({cached} with text)" if cached else ""
-                    desc = f"bulk delete in {ch} — {cnt} messages{extra}"
+                    desc = f"bulk delete in {ch} â€” {cnt} messages{extra}"
                 else:
                     # Compact fallback for non-message events
                     desc = kind.replace("_", " ")
 
-                pretty.append(f"{_fmt_ts_local(ts)} — {desc}")
+                pretty.append(f"{_fmt_ts_local(ts)} â€” {desc}")
 
             if pretty:
                 e.add_field(name="Recent Actions", value="\n".join(pretty), inline=False)
 
-            e.set_footer(text=f"{BUILD_TAG} — Use /note_list to view all, /note_add to add, /note_delete to remove")
+            e.set_footer(text=f"{BUILD_TAG} â€” Use /note_list to view all, /note_add to add, /note_delete to remove")
 
             # CSV attachment
             out = io.StringIO()
@@ -429,7 +429,7 @@ class LowlifeBot(commands.Bot):
         log.info("tree.walk_commands(): %s", [c.qualified_name for c in self.tree.walk_commands()])
 
     async def on_ready(self):
-        log.info("Logged in as %s (%s) — %s", self.user, getattr(self.user, "id", "?"), BUILD_TAG)
+        log.info("Logged in as %s (%s) â€” %s", self.user, getattr(self.user, "id", "?"), BUILD_TAG)
 
 def build_bot() -> LowlifeBot:
     intents = discord.Intents.default()

@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+﻿from datetime import datetime, timezone
 
 
 def compute_risk(snapshot: dict) -> tuple[int, list[str]]:
@@ -20,7 +20,7 @@ def compute_risk(snapshot: dict) -> tuple[int, list[str]]:
         except Exception:
             pass
 
-    # Default avatar (no custom) — Discord always has a display avatar, so this is more of a heuristic.
+    # Default avatar (no custom) â€” Discord always has a display avatar, so this is more of a heuristic.
     if not user.get("avatar_url"):
         score += 15
         reasons.append("default_avatar")

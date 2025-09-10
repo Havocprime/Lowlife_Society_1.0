@@ -1,4 +1,4 @@
-# FILE: src/bot/duel/ui.py
+﻿# FILE: src/bot/duel/ui.py
 from __future__ import annotations
 
 import math
@@ -13,21 +13,21 @@ from .state import DuelState, RangeGate
 
 # ----------------------------- constants / glyphs ------------------------------
 
-SUN = "🌞"
-CLOUD = "⛅"
-RAIN = "🌧️"
-NIGHT = "🌙"
+SUN = "ðŸŒž"
+CLOUD = "â›…"
+RAIN = "ðŸŒ§ï¸"
+NIGHT = "ðŸŒ™"
 
-GLYPH_P1 = "🔷"  # trail for player 1
-GLYPH_P2 = "🔶"  # trail for player 2
-GLYPH_COVER = "🧱"  # cover cell indicator
-GLYPH_SEG = "·"  # empty cell dot
-GLYPH_MEET = "✖"  # both in same cell
+GLYPH_P1 = "ðŸ”·"  # trail for player 1
+GLYPH_P2 = "ðŸ”¶"  # trail for player 2
+GLYPH_COVER = "ðŸ§±"  # cover cell indicator
+GLYPH_SEG = "Â·"  # empty cell dot
+GLYPH_MEET = "âœ–"  # both in same cell
 
-HEART = "❤️"
-ARMOR = "🛡️"
-BLOOD = "🩸"
-GRENADE = "💣"
+HEART = "â¤ï¸"
+ARMOR = "ðŸ›¡ï¸"
+BLOOD = "ðŸ©¸"
+GRENADE = "ðŸ’£"
 
 # Approximate range meters (min, max) for header text
 RANGE_METERS = {
@@ -64,30 +64,30 @@ def _weather_icon(state: DuelState) -> str:
 def _hp_bar(cur: int, maxhp: int = 100, width: int = 22) -> str:
     cur = max(0, min(maxhp, int(cur)))
     fill = math.floor((cur / maxhp) * width)
-    return "█" * fill + "░" * (width - fill)
+    return "â–ˆ" * fill + "â–‘" * (width - fill)
 
 
 def _blood_bar(liters: float, max_l: float = 5.0, width: int = 24) -> str:
     liters = max(0.0, min(max_l, float(liters)))
     fill = math.floor((liters / max_l) * width)
-    return "█" * fill + "░" * (width - fill)
+    return "â–ˆ" * fill + "â–‘" * (width - fill)
 
 
 def _kit_name(kit: dict | None, primary: bool = True) -> str:
     if not isinstance(kit, dict):
-        return "—"
+        return "â€”"
     if primary:
         return str(
-            kit.get("primary_name") or kit.get("primary") or kit.get("primary_weapon") or "—"
+            kit.get("primary_name") or kit.get("primary") or kit.get("primary_weapon") or "â€”"
         )
     return str(
-        kit.get("secondary_name") or kit.get("secondary") or kit.get("secondary_weapon") or "—"
+        kit.get("secondary_name") or kit.get("secondary") or kit.get("secondary_weapon") or "â€”"
     )
 
 
 def _cover_name(n: int) -> str:
     if n <= 0:
-        return "—"
+        return "â€”"
     if n == 1:
         return "Partial"
     return "Full"
@@ -99,7 +99,7 @@ def _cover_name(n: int) -> str:
 def _render_map_rows(state: DuelState) -> List[str]:
     """
     Compose up to 3 rows for the "visual map":
-    - Lane with A/B (or ✖ if same cell)
+    - Lane with A/B (or âœ– if same cell)
     - Trails row (recent path marks)
     - Cover row (cells with cover)
     Uses only attributes we know to exist or are provided by back-compat shims.
@@ -188,16 +188,16 @@ def player_hud_embed(state: DuelState, viewer: discord.abc.User | discord.Member
             pass
 
     # Header
-    title = f"⚔️ Combat {icon}"
+    title = f"âš”ï¸ Combat {icon}"
     turn_name = (
         getattr(a, "display", "A")
         if getattr(state, "turn_of", 1) == 1
         else getattr(b, "display", "B")
     )
     desc_header = (
-        f"**Range:** {r_name} **{r_lo}–{r_hi}m** (≈{approx}m)  •  "
-        f"**Round:** {getattr(state, 'round_no', 1)}  •  "
-        f"**Turn:** {turn_name}  •  "
+        f"**Range:** {r_name} **{r_lo}â€“{r_hi}m** (â‰ˆ{approx}m)  â€¢  "
+        f"**Round:** {getattr(state, 'round_no', 1)}  â€¢  "
+        f"**Turn:** {turn_name}  â€¢  "
         f"**Map:** {'Day' if icon in (SUN, CLOUD, RAIN) else 'Night'}"
     )
     em = discord.Embed(title=title, description=desc_header, color=discord.Color.blurple())
@@ -241,7 +241,7 @@ def player_hud_embed(state: DuelState, viewer: discord.abc.User | discord.Member
     rows = _render_map_rows(state)
     if rows:
         em.add_field(
-            name=f"Distance: **{r_name}** ({r_lo}–{r_hi}m, ≈{approx}m)",
+            name=f"Distance: **{r_name}** ({r_lo}â€“{r_hi}m, â‰ˆ{approx}m)",
             value="\n".join(f"`{r}`" for r in rows),
             inline=False,
         )
@@ -253,7 +253,7 @@ def player_hud_embed(state: DuelState, viewer: discord.abc.User | discord.Member
     elif hasattr(state, "log_lines") and isinstance(state.log_lines, list):
         lines = [str(x) for x in state.log_lines[-6:]]
     if lines:
-        em.add_field(name="Combat Log", value="• " + "\n• ".join(lines), inline=False)
+        em.add_field(name="Combat Log", value="â€¢ " + "\nâ€¢ ".join(lines), inline=False)
 
     # --- Initiative -------------------------------------------------------------
     init_text = getattr(state, "initiative_text", None)
@@ -267,7 +267,7 @@ def player_hud_embed(state: DuelState, viewer: discord.abc.User | discord.Member
     liters = float(getattr(state, "blood_liters", 5.0))
     bleed_note = str(getattr(state, "bleed_note", "No active bleed"))
     em.add_field(
-        name=f"{BLOOD} Blood — {liters:.1f} L • {bleed_note}",
+        name=f"{BLOOD} Blood â€” {liters:.1f} L â€¢ {bleed_note}",
         value=f"`{_blood_bar(liters)}`",
         inline=False,
     )

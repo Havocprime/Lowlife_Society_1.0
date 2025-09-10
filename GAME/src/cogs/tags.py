@@ -1,4 +1,4 @@
-# GAME/src/cogs/tags.py
+﻿# GAME/src/cogs/tags.py
 from __future__ import annotations
 
 import os, logging, traceback, uuid, difflib
@@ -21,7 +21,7 @@ from src.db import dal as core_dal
 from src.services import health as health_svc
 
 # Key-based registry seeds (bruise/scratch/wound.* etc.)
-from src.tags.catalog import get_seed_catalog
+from src.cogs.tags.catalog import get_seed_catalog
 from src.db import dal  # raw connection for our tag_keys seeder
 
 log = logging.getLogger("tags.cog")
@@ -81,7 +81,7 @@ def _migrate_seed_catalog_into_tag_keys(con):
     cur = con.execute("SELECT COUNT(*) FROM tag_keys")
     if int(cur.fetchone()[0]) > 0:
         return
-    from src.tags.catalog import get_seed_catalog
+    from src.cogs.tags.catalog import get_seed_catalog
     cat = get_seed_catalog()
     rows = [(k, v.get("family"), int(v.get("max_intensity", 10))) for k, v in cat.items()]
     con.executemany(
@@ -127,7 +127,7 @@ def _resolve_owner(user: discord.abc.User) -> Tuple[str, int]:
 
     # Fallback: treat Discord user as the owner directly
     log.warning(
-        "Tags: falling back to (%s, %s) — no player DAL helper succeeded",
+        "Tags: falling back to (%s, %s) â€” no player DAL helper succeeded",
         FALLBACK_OWNER_KIND, discord_id
     )
     return (FALLBACK_OWNER_KIND, discord_id)
@@ -181,7 +181,7 @@ def _suggest_names(requested: str, limit: int = 3) -> list[str]:
     return difflib.get_close_matches(requested, choices, n=limit, cutoff=0.5)
 
 def _parse_severity(value: str | int | None) -> int:
-    """Map 'light/medium/heavy' or '1/2/3' (as str/int) → 1..3, default 3."""
+    """Map 'light/medium/heavy' or '1/2/3' (as str/int) â†’ 1..3, default 3."""
     if value is None:
         return 3
     s = str(value).strip().lower()
@@ -209,7 +209,7 @@ async def _apply_gunshot(
     """Core implementation used by both /dev_gunshot and /wound_gunshot."""
     gsw_name = _canonical_tag_name("Gunshot Wound")
     if not gsw_name:
-        await itx.followup.send("❌ `Gunshot Wound` is not in the catalog. Run **/tag_seed** first.", ephemeral=True)
+        await itx.followup.send("âŒ `Gunshot Wound` is not in the catalog. Run **/tag_seed** first.", ephemeral=True)
         return
 
     iid = apply_tag(
@@ -237,7 +237,7 @@ async def _apply_gunshot(
         )
 
     await itx.followup.send(
-        f"🟢 Applied **Gunshot Wound** (sev {stacks}) @ `{anchor_path}` on {target.mention} "
+        f"ðŸŸ¢ Applied **Gunshot Wound** (sev {stacks}) @ `{anchor_path}` on {target.mention} "
         f"(owner=`{owner_kind}:{owner_id}`, instance #{iid})",
         ephemeral=True,
     )
@@ -308,14 +308,14 @@ class TagsCog(commands.Cog):
             if not rows:
                 return await itx.followup.send("Catalog is empty. Run /tag_seed.", ephemeral=True)
             lines = [
-                f"- **{r['name']}**  ({(r['kind'] or 'dynamic')}{(' · ' + r['polarity']) if r['polarity'] else ''})"
+                f"- **{r['name']}**  ({(r['kind'] or 'dynamic')}{(' Â· ' + r['polarity']) if r['polarity'] else ''})"
                 for r in rows
             ]
             await itx.followup.send("\n".join(lines), ephemeral=True)
         except Exception:
             trace = uuid.uuid4().hex[:8]
             log.error("[tag_catalog] trace=%s\n%s", trace, traceback.format_exc())
-            await itx.followup.send(f"⚠️ Catalog read failed. Trace `{trace}`.", ephemeral=True)
+            await itx.followup.send(f"âš ï¸ Catalog read failed. Trace `{trace}`.", ephemeral=True)
 
     @app_commands.command(name="tag_add", description="[DEV] Apply a tag to an anchor on a player/discord user")
     @app_commands.describe(
@@ -348,7 +348,7 @@ class TagsCog(commands.Cog):
             if not canon:
                 suggestions = _suggest_names(tag_name)
                 hint = f" Did you mean: {', '.join(f'`{s}`' for s in suggestions)}?" if suggestions else ""
-                return await itx.followup.send(f"❌ Tag `{tag_name}` not found in catalog.{hint}", ephemeral=True)
+                return await itx.followup.send(f"âŒ Tag `{tag_name}` not found in catalog.{hint}", ephemeral=True)
 
             iid = apply_tag(
                 owner_kind=owner_kind,
@@ -362,14 +362,14 @@ class TagsCog(commands.Cog):
             )
 
             await itx.followup.send(
-                f"✅ `{canon}` x{stacks} → `{anchor_path}` on {target.mention} "
+                f"âœ… `{canon}` x{stacks} â†’ `{anchor_path}` on {target.mention} "
                 f"(owner=`{owner_kind}:{owner_id}`, instance #{iid})",
                 ephemeral=True,
             )
 
         except Exception:
             log.error("[tag_add] trace=%s\n%s", trace, traceback.format_exc())
-            await itx.followup.send(f"⚠️ Something broke. Trace `{trace}`. (See server logs.)", ephemeral=True)
+            await itx.followup.send(f"âš ï¸ Something broke. Trace `{trace}`. (See server logs.)", ephemeral=True)
 
     @app_commands.command(name="tag_list", description="List your active tags")
     async def tag_list(self, itx: Interaction, user: Optional[discord.Member] = None):
@@ -389,8 +389,8 @@ class TagsCog(commands.Cog):
 
             lines = []
             for r in rows:
-                timer = f"⏱ {int(r['tick_ms'])}ms" if r["tick_ms"] else ""
-                state = f" · state:`{r['state']}`" if r["state"] else ""
+                timer = f"â± {int(r['tick_ms'])}ms" if r["tick_ms"] else ""
+                state = f" Â· state:`{r['state']}`" if r["state"] else ""
                 anchor = r["anchor_path"]
                 lines.append(f"- **{r['name']}** x{r['stacks']} @ `{anchor}` {timer}{state}")
 
@@ -398,7 +398,7 @@ class TagsCog(commands.Cog):
 
         except Exception:
             log.error("[tag_list] trace=%s\n%s", trace, traceback.format_exc())
-            await itx.followup.send(f"⚠️ Something broke. Trace `{trace}`.", ephemeral=True)
+            await itx.followup.send(f"âš ï¸ Something broke. Trace `{trace}`.", ephemeral=True)
 
     @app_commands.command(name="tag_clear", description="[DEV] Clear all tags from a player/discord user")
     async def tag_clear(self, itx: Interaction, user: Optional[discord.Member] = None):
@@ -413,12 +413,12 @@ class TagsCog(commands.Cog):
             owner_kind, owner_id = _resolve_owner(target)
             n = tag_dal.clear_owner(owner_kind, owner_id)
             await itx.followup.send(
-                f"🧹 Cleared {n} tag(s) from {target.mention} (owner=`{owner_kind}:{owner_id}`).",
+                f"ðŸ§¹ Cleared {n} tag(s) from {target.mention} (owner=`{owner_kind}:{owner_id}`).",
                 ephemeral=True
             )
         except Exception:
             log.error("[tag_clear] trace=%s\n%s", trace, traceback.format_exc())
-            await itx.followup.send(f"⚠️ Something broke. Trace `{trace}`.", ephemeral=True)
+            await itx.followup.send(f"âš ï¸ Something broke. Trace `{trace}`.", ephemeral=True)
 
     @app_commands.command(name="status", description="Show HP and active tags for you (or a target user)")
     async def status(self, itx: Interaction, user: Optional[discord.Member] = None):
@@ -434,11 +434,11 @@ class TagsCog(commands.Cog):
             hp, max_hp = _read_hp(owner_kind, owner_id)
             rows = tag_dal.list_instances(owner_kind, owner_id)
 
-            lines = [f"**HP:** {hp}/{max_hp}  ·  **Owner:** `{owner_kind}:{owner_id}`"]
+            lines = [f"**HP:** {hp}/{max_hp}  Â·  **Owner:** `{owner_kind}:{owner_id}`"]
             if rows:
                 for r in rows:
-                    timer = f"⏱ {int(r['tick_ms'])}ms" if r["tick_ms"] else ""
-                    state = f" · state:`{r['state']}`" if r["state"] else ""
+                    timer = f"â± {int(r['tick_ms'])}ms" if r["tick_ms"] else ""
+                    state = f" Â· state:`{r['state']}`" if r["state"] else ""
                     anchor = r["anchor_path"]
                     lines.append(f"- **{r['name']}** x{r['stacks']} @ `{anchor}` {timer}{state}")
             else:
@@ -448,7 +448,7 @@ class TagsCog(commands.Cog):
 
         except Exception:
             log.error("[status] trace=%s\n%s", trace, traceback.format_exc())
-            await itx.followup.send(f"⚠️ Something broke. Trace `{trace}`.", ephemeral=True)
+            await itx.followup.send(f"âš ï¸ Something broke. Trace `{trace}`.", ephemeral=True)
 
     # ----------------------- DEV Utilities -----------------------
 
@@ -485,9 +485,9 @@ class TagsCog(commands.Cog):
         except Exception:
             trace = uuid.uuid4().hex[:8]
             log.error("[dev_gunshot] trace=%s\n%s", trace, traceback.format_exc())
-            await itx.followup.send(f"⚠️ Something broke. Trace `{trace}`.", ephemeral=True)
+            await itx.followup.send(f"âš ï¸ Something broke. Trace `{trace}`.", ephemeral=True)
 
-    @app_commands.command(name="wound_gunshot", description="[DEV] Numeric version of /dev_gunshot (1–3)")
+    @app_commands.command(name="wound_gunshot", description="[DEV] Numeric version of /dev_gunshot (1â€“3)")
     @app_commands.describe(
         severity="1 (light), 2 (medium), 3 (heavy)",
         anchor_path="Where to attach (e.g., body:Left Bicep)",
@@ -519,7 +519,7 @@ class TagsCog(commands.Cog):
         except Exception:
             trace = uuid.uuid4().hex[:8]
             log.error("[wound_gunshot] trace=%s\n%s", trace, traceback.format_exc())
-            await itx.followup.send(f"⚠️ Something broke. Trace `{trace}`.", ephemeral=True)
+            await itx.followup.send(f"âš ï¸ Something broke. Trace `{trace}`.", ephemeral=True)
 
     # ----------------------- Seeder (always available) -----------------------
 
@@ -543,9 +543,9 @@ class TagsCog(commands.Cog):
             # inside tag_seed(...)
             con = tag_dal._conn()
 
-            # show which DB we’re actually talking to
+            # show which DB weâ€™re actually talking to
             db_path = _which_db(con)
-            lines = [f"🗄️ DB: `{db_path}`"]
+            lines = [f"ðŸ—„ï¸ DB: `{db_path}`"]
 
             # create tag_keys if it doesn't exist yet
             has_tag_keys = bool(con.execute(
@@ -553,7 +553,7 @@ class TagsCog(commands.Cog):
             ).fetchone())
 
             if not has_tag_keys:
-                lines.append("ℹ️ `tag_keys` not found — creating and seeding from seed catalog.")
+                lines.append("â„¹ï¸ `tag_keys` not found â€” creating and seeding from seed catalog.")
                 _ensure_tag_keys_table(con)
                 _migrate_seed_catalog_into_tag_keys(con)
                 has_tag_keys = True
@@ -561,19 +561,19 @@ class TagsCog(commands.Cog):
             # list tag_keys (primary) and tags (legacy) if present
             if has_tag_keys:
                 c = con.execute("SELECT COUNT(*) FROM tag_keys").fetchone()[0]
-                lines.append(f"🔧 `tag_keys` present — {c} key(s).")
+                lines.append(f"ðŸ”§ `tag_keys` present â€” {c} key(s).")
                 for r in con.execute("SELECT key, family, max_intensity FROM tag_keys ORDER BY key").fetchall():
                     lines.append(f"- **{r['key']}**  (family:`{r['family']}`, max:{int(r['max_intensity'])})")
 
             if con.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='tags'").fetchone():
                 c = con.execute("SELECT COUNT(*) FROM tags").fetchone()[0]
-                lines.append(f"\n📚 `tags` table present — {c} row(s).")
+                lines.append(f"\nðŸ“š `tags` table present â€” {c} row(s).")
                 for r in con.execute("SELECT name, COALESCE(kind,'dynamic') AS kind, polarity FROM tags ORDER BY name").fetchall():
-                    pol = f" · {r['polarity']}" if r['polarity'] else ""
+                    pol = f" Â· {r['polarity']}" if r['polarity'] else ""
                     lines.append(f"- **{r['name']}**  ({r['kind']}{pol})")
 
             msg = "\n".join(lines)
-            if len(msg) > 1900: msg = msg[:1900] + "\n…"
+            if len(msg) > 1900: msg = msg[:1900] + "\nâ€¦"
             await itx.followup.send(msg, ephemeral=True)
 
 
@@ -591,7 +591,7 @@ class TagsCog(commands.Cog):
             c_tags = _count("SELECT COUNT(*) FROM tags")
 
             if c_keys is not None:
-                lines.append(f"🔧 `tag_keys` present — {c_keys} key(s).")
+                lines.append(f"ðŸ”§ `tag_keys` present â€” {c_keys} key(s).")
                 try:
                     rows = con.execute(
                         "SELECT key, family, max_intensity FROM tag_keys ORDER BY key"
@@ -600,33 +600,33 @@ class TagsCog(commands.Cog):
                     for r in rows:
                         lines.append(f"- **{r['key']}**  (family:`{r['family']}`, max:{int(r['max_intensity'])})")
                 except Exception:
-                    lines.append("⚠️ Failed to enumerate `tag_keys` rows (see logs).")
+                    lines.append("âš ï¸ Failed to enumerate `tag_keys` rows (see logs).")
             else:
-                lines.append("ℹ️ `tag_keys` not found.")
+                lines.append("â„¹ï¸ `tag_keys` not found.")
 
             if c_tags is not None:
-                lines.append(f"\n📚 `tags` table present — {c_tags} row(s).")
+                lines.append(f"\nðŸ“š `tags` table present â€” {c_tags} row(s).")
                 try:
                     rows = con.execute("SELECT name, COALESCE(kind,'dynamic') AS kind, polarity FROM tags ORDER BY name").fetchall()
                     for r in rows:
-                        pol = f" · {r['polarity']}" if r['polarity'] else ""
+                        pol = f" Â· {r['polarity']}" if r['polarity'] else ""
                         lines.append(f"- **{r['name']}**  ({r['kind']}{pol})")
                 except Exception:
-                    lines.append("⚠️ Failed to enumerate `tags` rows (see logs).")
+                    lines.append("âš ï¸ Failed to enumerate `tags` rows (see logs).")
 
             if c_keys is None and c_tags is None:
-                lines.append("❌ No known catalog tables found (`tag_keys` or `tags`). Did migrations run?")
+                lines.append("âŒ No known catalog tables found (`tag_keys` or `tags`). Did migrations run?")
 
             # keep under Discord 2k limit
             msg = "\n".join(lines)
             if len(msg) > 1900:
-                msg = msg[:1900] + "\n…"
+                msg = msg[:1900] + "\nâ€¦"
             await itx.followup.send(msg or "Done.", ephemeral=True)
 
         except Exception:
             log.error("[tag_seed] trace=%s\n%s", trace, traceback.format_exc())
             try:
-                await itx.followup.send(f"⚠️ Seeding failed. Trace `{trace}`. Check logs.", ephemeral=True)
+                await itx.followup.send(f"âš ï¸ Seeding failed. Trace `{trace}`. Check logs.", ephemeral=True)
             except Exception:
                 pass
 

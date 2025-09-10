@@ -1,4 +1,4 @@
-# GAME/src/admin/custodian_cog.py
+﻿# GAME/src/admin/custodian_cog.py
 from __future__ import annotations
 
 import os
@@ -117,9 +117,9 @@ class CustodianCog(commands.Cog):
                     (str(user.id), datetime.now(timezone.utc).isoformat(timespec="seconds"), reason, str(interaction.user.id))
                 )
                 conn.commit()
-            await interaction.followup.send(f"✅ Frozen <@{user.id}> — **{reason}**", ephemeral=True)
+            await interaction.followup.send(f"âœ… Frozen <@{user.id}> â€” **{reason}**", ephemeral=True)
         except Exception as e:
-            await interaction.followup.send(f"❌ Freeze failed: `{type(e).__name__}: {e}`", ephemeral=True)
+            await interaction.followup.send(f"âŒ Freeze failed: `{type(e).__name__}: {e}`", ephemeral=True)
 
     @app_commands.command(name="unfreeze_user", description="Remove a freeze from a user.")
     @app_commands.describe(user="User to unfreeze")
@@ -132,9 +132,9 @@ class CustodianCog(commands.Cog):
             with sqlite3.connect(dbp) as conn:
                 conn.execute("DELETE FROM account_freeze WHERE user_id=?", (str(user.id),))
                 conn.commit()
-            await interaction.followup.send(f"✅ Unfrozen <@{user.id}>", ephemeral=True)
+            await interaction.followup.send(f"âœ… Unfrozen <@{user.id}>", ephemeral=True)
         except Exception as e:
-            await interaction.followup.send(f"❌ Unfreeze failed: `{type(e).__name__}: {e}`", ephemeral=True)
+            await interaction.followup.send(f"âŒ Unfreeze failed: `{type(e).__name__}: {e}`", ephemeral=True)
 
     @app_commands.command(name="freeze_status", description="Show if a user is frozen and why.")
     @app_commands.describe(user="User to check (defaults to you)")
@@ -153,13 +153,13 @@ class CustodianCog(commands.Cog):
             if row:
                 ts, reason, by_admin = row
                 await interaction.followup.send(
-                    f"🚫 <@{target.id}> is **FROZEN** since `{ts}` — **{reason}** (by <@{by_admin}>).",
+                    f"ðŸš« <@{target.id}> is **FROZEN** since `{ts}` â€” **{reason}** (by <@{by_admin}>).",
                     ephemeral=True
                 )
             else:
-                await interaction.followup.send(f"✅ <@{target.id}> is **not frozen**.", ephemeral=True)
+                await interaction.followup.send(f"âœ… <@{target.id}> is **not frozen**.", ephemeral=True)
         except Exception as e:
-            await interaction.followup.send(f"❌ Status check failed: `{type(e).__name__}: {e}`", ephemeral=True)
+            await interaction.followup.send(f"âŒ Status check failed: `{type(e).__name__}: {e}`", ephemeral=True)
 
     # ---------- Evidence helpers ----------
     @app_commands.command(name="evidence_text", description="Store a text note as audit evidence.")
@@ -176,11 +176,11 @@ class CustodianCog(commands.Cog):
             text = note if not context else f'note:"{note}" context:"{context}"'
             ref = evidence.save_text(text)
             await interaction.followup.send(
-                f"🧾 Evidence saved: id `{ref.id}` sha `{ref.sha256[:12]}…`",
+                f"ðŸ§¾ Evidence saved: id `{ref.id}` sha `{ref.sha256[:12]}â€¦`",
                 ephemeral=True
             )
         except Exception as e:
-            await interaction.followup.send(f"❌ Save failed: `{type(e).__name__}: {e}`", ephemeral=True)
+            await interaction.followup.send(f"âŒ Save failed: `{type(e).__name__}: {e}`", ephemeral=True)
 
     @app_commands.command(name="evidence_json", description="Store JSON key/value as audit evidence.")
     @app_commands.describe(json_payload='Example: {"case":"narwhal","status":"open"}')
@@ -192,9 +192,9 @@ class CustodianCog(commands.Cog):
             from src.core.custodian import evidence
             obj = _json.loads(json_payload)
             ref = evidence.save_json(obj)
-            await interaction.followup.send(f"🧾 Evidence saved: id `{ref.id}` sha `{ref.sha256[:12]}…`", ephemeral=True)
+            await interaction.followup.send(f"ðŸ§¾ Evidence saved: id `{ref.id}` sha `{ref.sha256[:12]}â€¦`", ephemeral=True)
         except Exception as e:
-            await interaction.followup.send(f"❌ Save failed: `{type(e).__name__}: {e}`", ephemeral=True)
+            await interaction.followup.send(f"âŒ Save failed: `{type(e).__name__}: {e}`", ephemeral=True)
 
     @app_commands.command(
         name="evidence_message",
@@ -257,12 +257,12 @@ class CustodianCog(commands.Cog):
             except Exception:
                 pass
 
-            text = f"🧾 Message snapshot saved: id `{ref.id}` sha `{ref.sha256[:12]}…`"
+            text = f"ðŸ§¾ Message snapshot saved: id `{ref.id}` sha `{ref.sha256[:12]}â€¦`"
             if att_ref:
-                text += f"\n📎 Attachment saved: id `{att_ref.id}` sha `{att_ref.sha256[:12]}…`"
+                text += f"\nðŸ“Ž Attachment saved: id `{att_ref.id}` sha `{att_ref.sha256[:12]}â€¦`"
             await interaction.followup.send(text, ephemeral=True)
         except Exception as e:
-            await interaction.followup.send(f"❌ Snapshot failed: `{type(e).__name__}: {e}`", ephemeral=True)
+            await interaction.followup.send(f"âŒ Snapshot failed: `{type(e).__name__}: {e}`", ephemeral=True)
 
     @app_commands.command(name="evidence_get", description="Download an evidence blob by id.")
     @app_commands.describe(evidence_id="ID returned by /evidence_*")
@@ -356,7 +356,7 @@ class CustodianCog(commands.Cog):
             for rid, ts, sid, reason, sev, opened_by, closed_ts in rows:
                 status = "OPEN" if not closed_ts else f"closed {closed_ts}"
                 lines.append(
-                    f"`#{rid}` • `{ts}` • <@{sid}> • sev {sev} • {status}\n{reason}"
+                    f"`#{rid}` â€¢ `{ts}` â€¢ <@{sid}> â€¢ sev {sev} â€¢ {status}\n{reason}"
                 )
             desc = "\n\n".join(lines)[:4096]
             emb = discord.Embed(title="Admin Flags", description=desc, colour=discord.Color.orange())
@@ -388,7 +388,7 @@ class CustodianCog(commands.Cog):
                 conn.commit()
                 changed = conn.total_changes
             if changed:
-                await interaction.followup.send(f"✅ Closed flag `#{flag_id}`", ephemeral=True)
+                await interaction.followup.send(f"âœ… Closed flag `#{flag_id}`", ephemeral=True)
             else:
                 await interaction.followup.send(f"Nothing changed (flag may not exist or is already closed).", ephemeral=True)
         except Exception as e:
@@ -408,7 +408,7 @@ async def audit_verify_full(interaction: discord.Interaction, batch_size: int = 
         from src.core.custodian import ledger as _ledger
         res = _ledger.verify_chain_full(batch_size=batch_size)
         broken = res.get("broken_ids", [])
-        msg = f"Scanned **{res.get('checked', 0)}** rows • Broken: **{len(broken)}**"
+        msg = f"Scanned **{res.get('checked', 0)}** rows â€¢ Broken: **{len(broken)}**"
         if broken:
             msg += f"\nFirst few broken ids: {broken[:10]}"
         await interaction.followup.send(msg, ephemeral=True)

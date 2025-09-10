@@ -1,4 +1,4 @@
-# GAME/src/cogs/item_magazine.py
+﻿# GAME/src/cogs/item_magazine.py
 from __future__ import annotations
 
 import os
@@ -360,7 +360,7 @@ class ItemMagazine(commands.Cog):
             self._save_cursor()
             self._save_processed()
             if origin_channel:
-                await origin_channel.send(f"ℹ️ Magazine idle (cursor={self._cursor}).")
+                await origin_channel.send(f"â„¹ï¸ Magazine idle (cursor={self._cursor}).")
             return
 
         try:
@@ -396,7 +396,7 @@ class ItemMagazine(commands.Cog):
             # Acknowledge where the command was run (plain text, shows the id)
             if origin_channel:
                 try:
-                    await origin_channel.send(f"✅ Created item: {item_obj.name} (ID {item_obj.id})")
+                    await origin_channel.send(f"âœ… Created item: {item_obj.name} (ID {item_obj.id})")
                 except Exception:
                     pass
 
@@ -409,7 +409,7 @@ class ItemMagazine(commands.Cog):
             self._save_cursor()
             print(f"[ItemMagazine] Failed to create item at cursor {self._cursor}: {e!r}")
             if origin_channel:
-                await origin_channel.send(f"❌ Failed to create at cursor {self._cursor}: `{e!r}`")
+                await origin_channel.send(f"âŒ Failed to create at cursor {self._cursor}: `{e!r}`")
 
     # ---------- icon CDN ----------
     async def _load_icon_cache_from_pins(self) -> int:
@@ -521,8 +521,8 @@ class ItemMagazine(commands.Cog):
             cls_label = _item_class_label(item.item_class)
             embed = discord.Embed(title="NEW Item", color=0xE74C3C)
             embed.description = (
-                f"**\"{item.name}\"** — **ID** `{item.id}`\n"
-                f"*{cls_label}* / *{item.subcategory or 'Utility'}* · **{item.rarity or 'common'}**\n\n"
+                f"**\"{item.name}\"** â€” **ID** `{item.id}`\n"
+                f"*{cls_label}* / *{item.subcategory or 'Utility'}* Â· **{item.rarity or 'common'}**\n\n"
                 f"**Durability** {item.durability}   **Stack** {item.stack_max}   **Cash** {item.cash_value}\n"
                 f"**Equippable** {'Yes' if item.equippable else 'No'}"
             )
@@ -551,7 +551,7 @@ class ItemMagazine(commands.Cog):
         # Also acknowledge in the invoking channel (if any)
         if origin_channel:
             try:
-                await origin_channel.send(f"✅ Created item: {item.name}")
+                await origin_channel.send(f"âœ… Created item: {item.name}")
             except Exception:
                 pass
 
@@ -571,10 +571,10 @@ class ItemMagazine(commands.Cog):
     @commands.has_permissions(manage_guild=True)
     async def mag_status(self, ctx: commands.Context):
         ann = self.bot.get_channel(self._announce_channel_id) if self._announce_channel_id else None
-        ann_str = f"<#{self._announce_channel_id}>" if isinstance(ann, (discord.TextChannel, discord.Thread)) else "—"
+        ann_str = f"<#{self._announce_channel_id}>" if isinstance(ann, (discord.TextChannel, discord.Thread)) else "â€”"
 
         cdn = self.bot.get_channel(self._cdn_channel_id) if self._cdn_channel_id else None
-        cdn_str = f"<#{self._cdn_channel_id}>" if isinstance(cdn, (discord.TextChannel, discord.Thread)) else "—"
+        cdn_str = f"<#{self._cdn_channel_id}>" if isinstance(cdn, (discord.TextChannel, discord.Thread)) else "â€”"
 
         await ctx.reply(
             f"**File:** `{MAG_FILE}`\n"
@@ -582,7 +582,7 @@ class ItemMagazine(commands.Cog):
             f"**Cursor:** {self._cursor}\n"
             f"**Processed:** {len(self._processed)}\n"
             f"**Announce:** {ann_str}\n"
-            f"**CDN:** {cdn_str} • **Icons cached:** {len(self._icon_cache)}"
+            f"**CDN:** {cdn_str} â€¢ **Icons cached:** {len(self._icon_cache)}"
         )
 
     @commands.hybrid_command(description="Preview the next actionable line without creating it.")
@@ -590,7 +590,7 @@ class ItemMagazine(commands.Cog):
     async def mag_preview(self, ctx: commands.Context):
         mapped, name_key, _, raw = self._find_next_line()
         if not mapped:
-            await ctx.reply("ℹ️ No actionable line found (EOF).")
+            await ctx.reply("â„¹ï¸ No actionable line found (EOF).")
             return
         preview = " ".join(f"{k}:{v!r}" for k, v in mapped.items())
         await ctx.reply(f"**Next line @ index {self._cursor}:**\n{preview}\n*(internal key: {name_key})*")
@@ -600,7 +600,7 @@ class ItemMagazine(commands.Cog):
     async def mag_set_channel(self, ctx: commands.Context, channel: discord.TextChannel):
         self._announce_channel_id = channel.id
         self._save_channel()
-        await ctx.reply(f"🔊 Announcements will post in {channel.mention}.")
+        await ctx.reply(f"ðŸ”Š Announcements will post in {channel.mention}.")
 
     @commands.hybrid_command(description="Set the CDN (icons) channel; pinned images become your icon library.")
     @commands.has_permissions(manage_guild=True)
@@ -608,14 +608,14 @@ class ItemMagazine(commands.Cog):
         self._cdn_channel_id = channel.id
         self._save_cdn_channel()
         added = await self._load_icon_cache_from_pins()
-        await ctx.reply(f"🖼️ CDN set to {channel.mention}. Cached **{added}** icon(s) from pins.")
+        await ctx.reply(f"ðŸ–¼ï¸ CDN set to {channel.mention}. Cached **{added}** icon(s) from pins.")
 
     @commands.hybrid_command(description="Clear & rebuild the icon cache from the CDN channel's pinned images.")
     @commands.has_permissions(manage_guild=True)
     async def mag_icons_cache_clear(self, ctx: commands.Context):
         self._icon_cache.clear()
         added = await self._load_icon_cache_from_pins()
-        await ctx.reply(f"🧹 Icon cache rebuilt — **{added}** icon(s) loaded.")
+        await ctx.reply(f"ðŸ§¹ Icon cache rebuilt â€” **{added}** icon(s) loaded.")
 
 
 async def setup(bot: commands.Bot):

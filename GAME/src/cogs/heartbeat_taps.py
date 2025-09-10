@@ -1,4 +1,4 @@
-# GAME/src/cogs/heartbeat_taps.py
+﻿# GAME/src/cogs/heartbeat_taps.py
 from __future__ import annotations
 
 import logging
@@ -91,7 +91,7 @@ class HeartbeatTaps(commands.Cog):
             await interaction.response.send_message("Heartbeat ticked (activity+work).", ephemeral=True)
         else:
             await interaction.response.send_message(
-                f"Heartbeat — spinner:`{h.cfg.enable_spinner}` "
+                f"Heartbeat â€” spinner:`{h.cfg.enable_spinner}` "
                 f"logging:`{h.cfg.enable_logging}` tick:`{h.tick}`",
                 ephemeral=True,
             )

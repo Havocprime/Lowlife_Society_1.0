@@ -1,4 +1,4 @@
-# GAME/src/cogs/event_listener.py
+﻿# GAME/src/cogs/event_listener.py
 from __future__ import annotations
 
 from typing import Any, Optional, List
@@ -7,7 +7,7 @@ from importlib import import_module
 import discord
 from discord.ext import commands
 
-# We import the module (not the symbol) so early import order won’t explode.
+# We import the module (not the symbol) so early import order wonâ€™t explode.
 from src.core import audit as audit_core
 
 
@@ -21,7 +21,7 @@ def _sid(x: Any) -> Optional[int]:
 async def _audit_log_action(**kwargs):
     """
     Robust wrapper around src.core.audit.log_action(...).
-    If the module hasn’t finished initializing yet, we late-import and try again.
+    If the module hasnâ€™t finished initializing yet, we late-import and try again.
     Never raise out of event dispatch.
     """
     try:
@@ -247,7 +247,7 @@ class EventListener(commands.Cog):
 
     @commands.Cog.listener()
     async def on_presence_update(self, before: discord.Member, after: discord.Member):
-        # Reduce noise — only log when something truly changed.
+        # Reduce noise â€” only log when something truly changed.
         if not _presence_changed(before, after):
             return
 
@@ -257,17 +257,17 @@ class EventListener(commands.Cog):
         # Short human-readable summary so the generic text extractor shows content.
         devbits = []
         if after_snap["desktop"] != "offline":
-            devbits.append(f"🖥 {after_snap['desktop']}")
+            devbits.append(f"ðŸ–¥ {after_snap['desktop']}")
         if after_snap["mobile"] != "offline":
-            devbits.append(f"📱 {after_snap['mobile']}")
+            devbits.append(f"ðŸ“± {after_snap['mobile']}")
         if after_snap["web"] != "offline":
-            devbits.append(f"🌐 {after_snap['web']}")
+            devbits.append(f"ðŸŒ {after_snap['web']}")
         devs = " | ".join(devbits)
         acts = ", ".join(after_snap["activities"][:2])
-        tail = " • ".join([p for p in (devs, acts) if p])
-        summary = f"{before_snap['status']} → {after_snap['status']}"
+        tail = " â€¢ ".join([p for p in (devs, acts) if p])
+        summary = f"{before_snap['status']} â†’ {after_snap['status']}"
         if tail:
-            summary += f" — {tail}"
+            summary += f" â€” {tail}"
 
         await _audit_log_action(
             guild_id=_sid(after.guild),

@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import discord
 from discord import app_commands
@@ -34,7 +34,7 @@ def register_duel(tree: app_commands.CommandTree) -> None:
     async def duel_cmd(interaction: discord.Interaction, opponent: discord.Member) -> None:
         if opponent.id == interaction.user.id:
             await interaction.response.send_message(
-                "Pick an opponent who isn’t you 😅", ephemeral=True
+                "Pick an opponent who isnâ€™t you ðŸ˜…", ephemeral=True
             )
             return
         ch_id = interaction.channel_id
@@ -58,7 +58,7 @@ def register_duel(tree: app_commands.CommandTree) -> None:
             await interaction.response.send_message("No duel in this channel.", ephemeral=True)
             return
         if not _ensure_participant(interaction, s):
-            await interaction.response.send_message("You’re not in this duel.", ephemeral=True)
+            await interaction.response.send_message("Youâ€™re not in this duel.", ephemeral=True)
             return
         s["range"] = next_range_after_advance(s["range"])
         s["log"].append(f"<@{interaction.user.id}> advances.")
@@ -71,7 +71,7 @@ def register_duel(tree: app_commands.CommandTree) -> None:
             await interaction.response.send_message("No duel in this channel.", ephemeral=True)
             return
         if not _ensure_participant(interaction, s):
-            await interaction.response.send_message("You’re not in this duel.", ephemeral=True)
+            await interaction.response.send_message("Youâ€™re not in this duel.", ephemeral=True)
             return
         s["range"] = next_range_after_retreat(s["range"])
         s["log"].append(f"<@{interaction.user.id}> retreats.")
@@ -84,7 +84,7 @@ def register_duel(tree: app_commands.CommandTree) -> None:
             await interaction.response.send_message("No duel in this channel.", ephemeral=True)
             return
         if not _ensure_participant(interaction, s):
-            await interaction.response.send_message("You’re not in this duel.", ephemeral=True)
+            await interaction.response.send_message("Youâ€™re not in this duel.", ephemeral=True)
             return
 
         attacker = interaction.user.id
@@ -116,7 +116,7 @@ def register_duel(tree: app_commands.CommandTree) -> None:
             await interaction.response.send_message("No duel in this channel.", ephemeral=True)
             return
         if not _ensure_participant(interaction, s):
-            await interaction.response.send_message("You’re not in this duel.", ephemeral=True)
+            await interaction.response.send_message("Youâ€™re not in this duel.", ephemeral=True)
             return
 
         allowed = allowed_grapple_moves(s["grapple"])

@@ -1,4 +1,4 @@
-from pathlib import Path
+﻿from pathlib import Path
 
 PORTRAIT_DIR = Path("game/assets/portraits")
 

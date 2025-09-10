@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 from pathlib import Path
 from src.db.verify_db import DB_PATH
 from src.db.schema_version import ensure_schema

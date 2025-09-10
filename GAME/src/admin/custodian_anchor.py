@@ -1,4 +1,4 @@
-# GAME/src/admin/custodian_anchor.py
+﻿# GAME/src/admin/custodian_anchor.py
 from __future__ import annotations
 import os
 import sqlite3
@@ -31,14 +31,14 @@ def _status_text() -> str:
         from src.core.custodian import ledger as _ledger
         summary = _ledger.verify_chain(limit=5000)
         broken = summary.get("broken_ids", [])
-        ok = "OK ✅" if not broken else f"ALERT ❌ broken={len(broken)} (e.g., {broken[:5]})"
+        ok = "OK âœ…" if not broken else f"ALERT âŒ broken={len(broken)} (e.g., {broken[:5]})"
     except Exception:
-        ok = "status unavailable ⚠️"
+        ok = "status unavailable âš ï¸"
         broken = []
     rid, ch = _last_chain()
     if rid and ch:
-        return f"⛓️ Custodian anchor — last id `{rid}`, hash `{ch[:16]}…` — {ok}"
-    return f"⛓️ Custodian anchor — no rows yet — {ok}"
+        return f"â›“ï¸ Custodian anchor â€” last id `{rid}`, hash `{ch[:16]}â€¦` â€” {ok}"
+    return f"â›“ï¸ Custodian anchor â€” no rows yet â€” {ok}"
 
 class CustodianAnchor(commands.Cog):
     """Posts a periodic tamper-evident anchor of the audit chain to a private channel."""
@@ -81,7 +81,7 @@ class CustodianAnchor(commands.Cog):
         try:
             msg = _status_text()
             await ch.send(msg, silent=True, allowed_mentions=ALLOWED_NONE)
-            await interaction.followup.send("Anchor posted ✅", ephemeral=True)
+            await interaction.followup.send("Anchor posted âœ…", ephemeral=True)
         except Exception as e:
             await interaction.followup.send(f"Failed to post anchor: `{type(e).__name__}: {e}`", ephemeral=True)
 

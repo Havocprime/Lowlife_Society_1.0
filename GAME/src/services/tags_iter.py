@@ -1,4 +1,4 @@
-# GAME/src/services/tags_iter.py
+﻿# GAME/src/services/tags_iter.py
 from __future__ import annotations
 import json, logging
 from collections import defaultdict

@@ -1,4 +1,4 @@
-# src/core/debug.py
+﻿# src/core/debug.py
 from __future__ import annotations
 
 import functools
@@ -73,11 +73,11 @@ def slash_try(fn):
             try:
                 if inter.response.is_done():
                     await inter.followup.send(
-                        f"💥 Something went wrong. Error ID **{err_id}**.", ephemeral=True
+                        f"ðŸ’¥ Something went wrong. Error ID **{err_id}**.", ephemeral=True
                     )
                 else:
                     await inter.response.send_message(
-                        f"💥 Something went wrong. Error ID **{err_id}**.", ephemeral=True
+                        f"ðŸ’¥ Something went wrong. Error ID **{err_id}**.", ephemeral=True
                     )
             except Exception:
                 # last resort: swallow

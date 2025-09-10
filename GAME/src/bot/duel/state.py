@@ -1,4 +1,4 @@
-# FILE: src/bot/duel/state.py
+﻿# FILE: src/bot/duel/state.py
 from __future__ import annotations
 
 import math

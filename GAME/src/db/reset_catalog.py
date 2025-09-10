@@ -1,4 +1,4 @@
-
+﻿
 # =========================================
 # File: src/db/reset_catalog.py
 # (optional convenience script to clear catalog & counters)

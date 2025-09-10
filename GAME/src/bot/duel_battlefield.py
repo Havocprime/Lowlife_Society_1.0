@@ -1,4 +1,4 @@
-# FILE: src/bot/duel_battlefield.py
+﻿# FILE: src/bot/duel_battlefield.py
 from __future__ import annotations
 
 import random
@@ -8,25 +8,25 @@ from typing import Deque, Dict, List
 from src.core.duel_core import iclamp, range_label
 
 # ---- Glyphs & tiles ----
-GLYPH_A = "🔶"
-GLYPH_B = "🔷"
-GLYPH_A_SMALL = "🔸"  # peek icon when A is inside cover
-GLYPH_B_SMALL = "🔹"  # peek icon when B is inside cover
-GLYPH_GRAPPLE = "🤼"
+GLYPH_A = "ðŸ”¶"
+GLYPH_B = "ðŸ”·"
+GLYPH_A_SMALL = "ðŸ”¸"  # peek icon when A is inside cover
+GLYPH_B_SMALL = "ðŸ”¹"  # peek icon when B is inside cover
+GLYPH_GRAPPLE = "ðŸ¤¼"
 
 # Background (stored internally per cell as a char; rendered to UI as TILE_BG_VIS)
-TILE_BG_DAY = "◽"
-TILE_BG_NIGHT = "◾"
+TILE_BG_DAY = "â—½"
+TILE_BG_NIGHT = "â—¾"
 TILE_BG_VIS = "..."  # what the user sees for any background cell
 
 # Cover & props
-TILE_COVER = "🚧"
-TILE_DOOR = "🚪"
-TILE_BARREL = "🛢️"
+TILE_COVER = "ðŸš§"
+TILE_DOOR = "ðŸšª"
+TILE_BARREL = "ðŸ›¢ï¸"
 
 # Trails (lightweight markers placed on bottom row on background cells only)
-TRAIL_A = "▫"
-TRAIL_B = "▪"
+TRAIL_A = "â–«"
+TRAIL_B = "â–ª"
 
 # How many historical indices to keep per fighter
 TRAIL_LEN = 10
@@ -62,8 +62,8 @@ def init_battlefield(state) -> None:
     place(TILE_DOOR, (0, 2))
     place(TILE_BARREL, (1, 3))
 
-    state.map_tiles = tiles  # internal per-cell e.g. "◽", "🚧", ...
-    state.map_bg = bg  # "◽" or "◾"
+    state.map_tiles = tiles  # internal per-cell e.g. "â—½", "ðŸš§", ...
+    state.map_bg = bg  # "â—½" or "â—¾"
     state.bf_ready = True
 
 
@@ -106,9 +106,9 @@ def _is_cover(sym: str) -> bool:
 def battlefield_text(state) -> str:
     """
     Returns the two-row battlefield string with label:
-      1) TOP row: background (rendered as "...") with *mini* icons (🔸/🔹) ONLY if that fighter is in cover.
-      2) BOTTOM row: features + background ("..."). Big icons (🔶/🔷) placed if not in cover.
-         Trails (▫ / ▪) appear on background cells only, never overriding cover or players.
+      1) TOP row: background (rendered as "...") with *mini* icons (ðŸ”¸/ðŸ”¹) ONLY if that fighter is in cover.
+      2) BOTTOM row: features + background ("..."). Big icons (ðŸ”¶/ðŸ”·) placed if not in cover.
+         Trails (â–« / â–ª) appear on background cells only, never overriding cover or players.
     """
     init_battlefield(state)
     segs = state.vis_segments

@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 from datetime import datetime, timezone
 from pathlib import Path
 import hashlib, json, sqlite3
@@ -89,7 +89,7 @@ def verify_chain(limit: int = 10000) -> dict:
 
 
 def verify_chain(limit: int = 10000) -> dict:
-    # verify oldest → newest so the rolling 'prev' matches write-time behavior
+    # verify oldest â†’ newest so the rolling 'prev' matches write-time behavior
     with sqlite3.connect(DB_PATH) as conn:
         rows = conn.execute(
             "SELECT id, row_hash, chain_hash FROM audit_log ORDER BY id ASC LIMIT ?",
@@ -108,7 +108,7 @@ def verify_chain(limit: int = 10000) -> dict:
 
 def verify_chain_full(batch_size: int = 20000) -> dict:
     """
-    Verify the entire audit chain oldest→newest in streaming batches.
+    Verify the entire audit chain oldestâ†’newest in streaming batches.
     Returns: {"checked": int, "broken_ids": [ids]}
     """
     import sqlite3

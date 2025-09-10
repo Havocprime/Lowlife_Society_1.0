@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 from dataclasses import dataclass
 from typing import Literal
 import random
@@ -11,8 +11,8 @@ Action = Literal["advance", "retreat", "wait", "attack"]
 @dataclass(slots=True)
 class Actor:
     name: str
-    acc: int   # accuracy (0–100-ish)
-    evd: int   # evasion (0–100-ish)
+    acc: int   # accuracy (0â€“100-ish)
+    evd: int   # evasion (0â€“100-ish)
     hp: int
 
 @dataclass(slots=True)

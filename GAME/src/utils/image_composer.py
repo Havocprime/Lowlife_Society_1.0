@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 from io import BytesIO
 from typing import Iterable, Tuple, Optional, List
 from PIL import Image, ImageDraw, ImageFont

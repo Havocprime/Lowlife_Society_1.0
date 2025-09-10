@@ -1,4 +1,4 @@
-# GAME/src/admin/freeze.py
+﻿# GAME/src/admin/freeze.py
 from __future__ import annotations
 import sqlite3
 from pathlib import Path
@@ -41,7 +41,7 @@ async def _freeze_gate(interaction: discord.Interaction) -> bool:
         # Quietly block
         try:
             await interaction.response.send_message(
-                f"🚫 Your account is temporarily frozen: {reason or 'policy hold'}",
+                f"ðŸš« Your account is temporarily frozen: {reason or 'policy hold'}",
                 ephemeral=True,
             )
         except discord.InteractionResponded:

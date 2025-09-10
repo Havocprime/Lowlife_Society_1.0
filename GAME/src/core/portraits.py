@@ -1,4 +1,4 @@
-from pathlib import Path
+﻿from pathlib import Path
 
 # Directory containing portrait images (png/jpg/webp). Update if different.
 PORTRAIT_DIR = Path("game/assets/portraits")

@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 import sqlite3
 from .db_path import DB_PATH, ensure_db_dir
 
@@ -13,7 +13,7 @@ def main() -> None:
             cx.execute("VACUUM")
         except sqlite3.Error:
             pass
-    print("OK — inventory wiped and inventory.id reset.")
+    print("OK â€” inventory wiped and inventory.id reset.")
 
 if __name__ == "__main__":
     main()

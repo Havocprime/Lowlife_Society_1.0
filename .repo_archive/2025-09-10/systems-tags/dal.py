@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 import json, sqlite3, os, time
 from typing import Optional, Dict, Any, List
 
@@ -236,7 +236,7 @@ def add_or_stack(
     metadata: Optional[dict] = None,
 ) -> int:
     """
-    Singleton per (owner,anchor,tag) — if present, stack; else insert. Returns instance id.
+    Singleton per (owner,anchor,tag) â€” if present, stack; else insert. Returns instance id.
     """
     meta_json = None if metadata is None else json.dumps(metadata)
     now = now_ms()
@@ -374,7 +374,7 @@ def mark_ticked(instance_id: int):
         )
 
 def set_state(instance_id: int, new_state: str):
-    """Don’t touch non-existent columns; keep it simple."""
+    """Donâ€™t touch non-existent columns; keep it simple."""
     with _conn() as con:
         con.execute("UPDATE tag_instances SET state=? WHERE id=?", (new_state, instance_id))
 

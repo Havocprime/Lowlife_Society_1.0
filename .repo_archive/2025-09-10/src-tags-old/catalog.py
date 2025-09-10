@@ -1,4 +1,4 @@
-# src/cogs/tags/catalog.py
+﻿# src/cogs/tags/catalog.py
 from __future__ import annotations
 from dataclasses import dataclass
 

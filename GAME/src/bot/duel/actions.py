@@ -1,4 +1,4 @@
-# FILE: src/bot/duel/actions.py
+﻿# FILE: src/bot/duel/actions.py
 from __future__ import annotations
 
 import math
@@ -90,7 +90,7 @@ def _consume_defense_text(defender: FighterState, used: str) -> str:
 
 def act_punch(ds: DuelState, idx: int) -> str:
     if ds.current_range != RangeGate.CLOSE:
-        return f"❌ Punch requires **Close** range."
+        return f"âŒ Punch requires **Close** range."
     atk, dfn = ds.fighter(idx), ds.foe(idx)
 
     # Defender may dodge?
@@ -123,7 +123,7 @@ def act_shoot(ds: DuelState, idx: int) -> str:
     }[ds.current_range]
 
     if gate == "OUT":
-        return f"❌ Target is **out of range**."
+        return f"âŒ Target is **out of range**."
 
     kit = get_combatkit(atk.user_id)
     wp = pick_weapon_for_range(kit, gate)
@@ -157,7 +157,7 @@ def act_grenade(ds: DuelState, idx: int) -> str:
     atk.stamina = clamp(atk.stamina - 10, 0, 100)
     if chance(GRENADE_HIT_PCT):
         dmg = roll(GRENADE_DMG)
-        text = f"{atk.display} **throws a grenade** — it **hits** for **{dmg}**."
+        text = f"{atk.display} **throws a grenade** â€” it **hits** for **{dmg}**."
         if dfn.cover == COVER_PARTIAL and chance(GRENADE_DESTROY_PARTIAL_PCT):
             dfn.cover = COVER_NONE
             text += " The blast **destroys their cover**!"
@@ -165,7 +165,7 @@ def act_grenade(ds: DuelState, idx: int) -> str:
         dfn.status_dodge = False
         _apply_damage(dfn, dmg)
         return text
-    return f"{atk.display} **throws a grenade** — it **misses**."
+    return f"{atk.display} **throws a grenade** â€” it **misses**."
 
 
 # ----------------------- Grapple / Choke Flow -----------------------
@@ -174,7 +174,7 @@ def act_grenade(ds: DuelState, idx: int) -> str:
 def act_grapple(ds: DuelState, idx: int) -> str:
     atk, dfn = ds.fighter(idx), ds.foe(idx)
     if ds.current_range != RangeGate.CLOSE:
-        return "❌ Grapple requires **Close** range."
+        return "âŒ Grapple requires **Close** range."
     atk.stamina = clamp(atk.stamina - 6, 0, 100)
     if chance(0.6):
         dfn.is_choked_by = atk.user_id
@@ -186,7 +186,7 @@ def act_choke(ds: DuelState, idx: int) -> str:
     atk, dfn = ds.fighter(idx), ds.foe(idx)
     if dfn.is_choked_by != atk.user_id and atk.choking_target != dfn.user_id:
         if ds.current_range != RangeGate.CLOSE or not chance(0.45):
-            return "❌ You need a **grapple** (or get lucky at Close) to choke."
+            return "âŒ You need a **grapple** (or get lucky at Close) to choke."
     atk.choking_target = dfn.user_id
     dfn.is_choked_by = atk.user_id
     atk.stamina = clamp(atk.stamina - CHOKE_STAM_DRAIN, 0, 100)
@@ -200,18 +200,18 @@ def act_choke(ds: DuelState, idx: int) -> str:
 def act_push(ds: DuelState, idx: int) -> str:
     atk, dfn = ds.fighter(idx), ds.foe(idx)
     if atk.choking_target != dfn.user_id:
-        return "❌ You can **Push** primarily when you’re controlling (e.g., during choke)."
+        return "âŒ You can **Push** primarily when youâ€™re controlling (e.g., during choke)."
     atk.choking_target = None
     dfn.is_choked_by = None
     before = ds.current_range
     ds.current_range = RangeGate(min(before + 1, RangeGate.OUT))
-    return f"{atk.display} **pushes** {dfn.display} off, breaking the choke ({RANGE_NAMES[before]} → {RANGE_NAMES[ds.current_range]})."
+    return f"{atk.display} **pushes** {dfn.display} off, breaking the choke ({RANGE_NAMES[before]} â†’ {RANGE_NAMES[ds.current_range]})."
 
 
 def act_gouge(ds: DuelState, idx: int) -> str:
     vic, atk = ds.fighter(idx), ds.foe(idx)
     if vic.is_choked_by != atk.user_id:
-        return "❌ **Gouge** is only available when **you are being choked**."
+        return "âŒ **Gouge** is only available when **you are being choked**."
     if chance(0.65):
         vic.is_choked_by = None
         atk.choking_target = None
@@ -257,7 +257,7 @@ async def resolve_pending_grenade(interaction, ds: DuelState, actor: FighterStat
     _apply_damage(actor, dmg)
     _log(
         ds,
-        f"💥 The grenade from **{src.display}** detonates near **{actor.display}** for **{dmg}**.",
+        f"ðŸ’¥ The grenade from **{src.display}** detonates near **{actor.display}** for **{dmg}**.",
     )
     ds.grenades_pending = pending  # write back, just in case
 

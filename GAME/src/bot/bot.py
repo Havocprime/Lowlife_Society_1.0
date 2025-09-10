@@ -1,4 +1,4 @@
-# GAME/src/bot/bot.py
+﻿# GAME/src/bot/bot.py
 from __future__ import annotations
 
 import asyncio
@@ -40,7 +40,7 @@ from src.core.settings import SETTINGS  # noqa: E402
 
 # TEMP: verify token is being read from env correctly
 tok = SETTINGS.discord_token or ""
-masked = (tok[:8] + "…" + tok[-6:]) if len(tok) > 16 else "(too short)"
+masked = (tok[:8] + "â€¦" + tok[-6:]) if len(tok) > 16 else "(too short)"
 log.info("Token loaded (len=%d): %s", len(tok), masked)
 if len(tok) < 40 or (" " in tok) or ("\n" in tok) or ("\r" in tok):
     log.error("Token looks malformed. Check GAME/.env DISCORD_TOKEN.")
@@ -91,7 +91,7 @@ def _hex_color(v):
 def _rel_ymdh(a: datetime | None, b: datetime | None = None) -> str:
     """Rough 'y_m_d_h ago' string (years, months, days, hours)."""
     if not a:
-        return "—"
+        return "â€”"
     if b is None:
         b = datetime.now(timezone.utc)
     from calendar import monthrange
@@ -151,18 +151,18 @@ def _snippet(s: str | None, n: int = 120) -> str:
     if not s:
         return ""
     s = s.replace("\n", " ").strip()
-    return (s[:n] + "…") if len(s) > n else s
+    return (s[:n] + "â€¦") if len(s) > n else s
 
 
 def _ch_label_from_payload(guild: discord.Guild, d: dict) -> str:
-    """Return '#channelname' if found, otherwise <#id> or '—'."""
+    """Return '#channelname' if found, otherwise <#id> or 'â€”'."""
     cid = d.get("channel_id") or d.get("channel") or d.get("cid")
     if isinstance(cid, dict):
         cid = cid.get("id")
     try:
         cid = int(cid)
     except Exception:
-        return "—"
+        return "â€”"
     ch = guild.get_channel(cid)
     return f"#{ch.name}" if ch else f"<#{cid}>"
 
@@ -205,7 +205,7 @@ class LowlifeTree(app_commands.CommandTree):
                     (str(getattr(interaction.user, "id", "")),),
                 ).fetchone()
             if row:
-                msg = f"🚫 Your account is temporarily frozen: **{row[0]}**"
+                msg = f"ðŸš« Your account is temporarily frozen: **{row[0]}**"
                 if not interaction.response.is_done():
                     await interaction.response.send_message(msg, ephemeral=True)
                 else:
@@ -259,7 +259,7 @@ class LowlifeBot(commands.Bot):
             from src.core import audit as _audit_mod
             audit_event = getattr(_audit_mod, "audit_event")
         except Exception as e:
-            log.warning("audit decorator unavailable (%s) — using no-op.", e)
+            log.warning("audit decorator unavailable (%s) â€” using no-op.", e)
 
             def audit_event(*_a, **_k):  # type: ignore
                 def deco(fn):
@@ -427,7 +427,7 @@ class LowlifeBot(commands.Bot):
             pending = getattr(member, "pending", None)
 
             last_acted_raw = last_event_time(member.id)
-            last_acted_pretty = _fmt_ts_local(last_acted_raw) if last_acted_raw else "—"
+            last_acted_pretty = _fmt_ts_local(last_acted_raw) if last_acted_raw else "â€”"
 
             badges = []
             try:
@@ -442,20 +442,20 @@ class LowlifeBot(commands.Bot):
 
             notes = list_admin_notes(interaction.guild.id, member.id, 2)  # type: ignore
             notes_lines = (
-                [f"`{ts}` — <@{aid}> — {note}" for (_nid, ts, aid, note) in notes] if notes else []
+                [f"`{ts}` â€” <@{aid}> â€” {note}" for (_nid, ts, aid, note) in notes] if notes else []
             )
 
             header = "\n".join(
                 [
                     f"{member.mention} --",
                     f"ID -- `{member.id}`",
-                    f"Account Created -- `{created.isoformat().replace('+00:00','Z') if created else '—'}` ({_rel_ymdh(created)})",
-                    f"Joined Guild -- `{joined.isoformat().replace('+00:00','Z') if joined else '—'}` ({_rel_ymdh(joined)})",
+                    f"Account Created -- `{created.isoformat().replace('+00:00','Z') if created else 'â€”'}` ({_rel_ymdh(created)})",
+                    f"Joined Guild -- `{joined.isoformat().replace('+00:00','Z') if joined else 'â€”'}` ({_rel_ymdh(joined)})",
                 ]
             )
 
             e = discord.Embed(
-                title="🛠️ Admin Inspector — Full Profile",
+                title="ðŸ› ï¸ Admin Inspector â€” Full Profile",
                 description=header,
                 colour=discord.Color.blurple(),
             )
@@ -467,20 +467,20 @@ class LowlifeBot(commands.Bot):
             e.add_field(
                 name="Status / Devices",
                 value=f"Current Status: {status} <{last_acted_pretty}>\n"
-                f"🖥 {dev['desktop']}\n📱 {dev['mobile']}\n🌐 {dev['web']}",
+                f"ðŸ–¥ {dev['desktop']}\nðŸ“± {dev['mobile']}\nðŸŒ {dev['web']}",
                 inline=False,
             )
             if activities:
                 e.add_field(name="Activities", value="; ".join(activities)[:1024], inline=False)
 
-            e.add_field(name="Top Roles", value=(", ".join(top3) or "—"), inline=False)
+            e.add_field(name="Top Roles", value=(", ".join(top3) or "â€”"), inline=False)
             e.add_field(
-                name="⚠️ High-Risk Perms (top 5)", value=(", ".join(risky) or "—"), inline=False
+                name="âš ï¸ High-Risk Perms (top 5)", value=(", ".join(risky) or "â€”"), inline=False
             )
 
             trusted = _is_trusted(member)
-            e.add_field(name="Trusted", value=("Yes ✅" if trusted else "No ❌"), inline=True)
-            e.add_field(name="Accent", value=f"`{_hex_color(accent_val) or '—'}`", inline=True)
+            e.add_field(name="Trusted", value=("Yes âœ…" if trusted else "No âŒ"), inline=True)
+            e.add_field(name="Accent", value=f"`{_hex_color(accent_val) or 'â€”'}`", inline=True)
 
             if premium_since:
                 e.add_field(
@@ -501,8 +501,8 @@ class LowlifeBot(commands.Bot):
                     inline=True,
                 )
 
-            e.add_field(name="Badges", value=(", ".join(badges) or "—")[:1024], inline=False)
-            e.add_field(name="Msg Counts", value=f"7d: `{msg7}` • 30d: `{msg30}`", inline=True)
+            e.add_field(name="Badges", value=(", ".join(badges) or "â€”")[:1024], inline=False)
+            e.add_field(name="Msg Counts", value=f"7d: `{msg7}` â€¢ 30d: `{msg30}`", inline=True)
             e.add_field(name="Log DB", value=f"`{str(DB_PATH)}`", inline=True)
 
             # recent actions (from your compact events table)
@@ -512,13 +512,13 @@ class LowlifeBot(commands.Bot):
                 recents = recent_events(member.id, 50)
 
             def _recent_line(ts, kind, data):
-                ch = _ch_label_from_payload(interaction.guild, data) if interaction.guild else "—"  # type: ignore
+                ch = _ch_label_from_payload(interaction.guild, data) if interaction.guild else "â€”"  # type: ignore
                 txt = _snippet(_extract_text(data))
 
                 if kind == "message":
-                    prefix = "Msg";  body = txt or "—"
+                    prefix = "Msg";  body = txt or "â€”"
                 elif kind == "message_edit":
-                    prefix = "Edit"; body = txt or (data.get("after") or {}).get("content") or "—"
+                    prefix = "Edit"; body = txt or (data.get("after") or {}).get("content") or "â€”"
                 elif kind == "message_delete":
                     prefix = "Del";  body = txt or (data.get("before") or {}).get("content") or "unknown"
                 elif kind == "message_bulk_delete":
@@ -538,26 +538,26 @@ class LowlifeBot(commands.Bot):
                         mob = str(after_snap.get("mobile") or "").strip()
                         web = str(after_snap.get("web") or "").strip()
                         if desk and desk.lower() != "offline":
-                            devbits.append(f"🖥 {desk}")
+                            devbits.append(f"ðŸ–¥ {desk}")
                         if mob and mob.lower() != "offline":
-                            devbits.append(f"📱 {mob}")
+                            devbits.append(f"ðŸ“± {mob}")
                         if web and web.lower() != "offline":
-                            devbits.append(f"🌐 {web}")
+                            devbits.append(f"ðŸŒ {web}")
                         acts = after_snap.get("activities") or []
                         act_txt = ", ".join([str(a) for a in acts][:2])
 
                         parts = []
                         if sb or sa:
-                            parts.append(f"{sb or '—'} → {sa or '—'}")
-                        tail = " • ".join([p for p in (" | ".join(devbits) if devbits else "", act_txt) if p])
+                            parts.append(f"{sb or 'â€”'} â†’ {sa or 'â€”'}")
+                        tail = " â€¢ ".join([p for p in (" | ".join(devbits) if devbits else "", act_txt) if p])
                         if tail:
                             parts.append(tail)
-                        body = " — ".join(parts) if parts else ""
+                        body = " â€” ".join(parts) if parts else ""
                 else:
                     prefix = kind.replace("_", " ").title()
                     body = txt or ""
 
-                return f"{_fmt_ts_local(ts)}  {prefix}@{ch} - {body or '—'}"
+                return f"{_fmt_ts_local(ts)}  {prefix}@{ch} - {body or 'â€”'}"
 
             pretty = []
             for row in recents[:20]:
@@ -573,16 +573,16 @@ class LowlifeBot(commands.Bot):
                     data = {}
                 line = _recent_line(ts, kind, data)
                 if len(line) > 120:
-                    line = line[:117] + "…"
+                    line = line[:117] + "â€¦"
                 pretty.append(line)
 
-            out = "\n".join(pretty) if pretty else "None recorded yet — start chatting to populate this!"
+            out = "\n".join(pretty) if pretty else "None recorded yet â€” start chatting to populate this!"
             while len(out) > 1024 and len(pretty) > 1:
                 pretty.pop()
                 out = "\n".join(pretty)
 
             e.add_field(name="Recent Actions", value=out, inline=False)
-            e.set_footer(text=f"{BUILD_TAG} — Use /note_list to view all, /note_add to add, /note_delete to remove")
+            e.set_footer(text=f"{BUILD_TAG} â€” Use /note_list to view all, /note_add to add, /note_delete to remove")
 
             s = io.StringIO()
             w = csv.writer(s)
@@ -633,14 +633,14 @@ class LowlifeBot(commands.Bot):
             if GUILD_ID and guild_added and target_guild:
                 try:
                     gcmds = await self.tree.sync(guild=discord.Object(id=GUILD_ID))
-                    log.info("startup sync — Guild: %d • Global: %s", len(gcmds), g_count)
+                    log.info("startup sync â€” Guild: %d â€¢ Global: %s", len(gcmds), g_count)
                     log.info("slash commands guild-synced: %d cmds to %s", len(gcmds), GUILD_ID)
                 except Exception as e:
                     log.warning("Guild sync failed for %s (%s).", GUILD_ID, e)
-                    log.info("startup sync — Guild: failed • Global: %s", g_count)
+                    log.info("startup sync â€” Guild: failed â€¢ Global: %s", g_count)
             else:
                 log.info(
-                    "startup sync — Guild: skipped (%s) • Global: %s",
+                    "startup sync â€” Guild: skipped (%s) â€¢ Global: %s",
                     ("not in guild" if GUILD_ID else "no GUILD_ID"),
                     g_count,
                 )
@@ -678,7 +678,7 @@ class LowlifeBot(commands.Bot):
             # Global sync
             try:
                 gcmds = await bound_sync()
-                log.info("bootstrap sync (unwrapped): global ok — %d cmds", len(gcmds))
+                log.info("bootstrap sync (unwrapped): global ok â€” %d cmds", len(gcmds))
             except Exception as e:
                 log.warning("bootstrap sync (unwrapped): global sync failed: %s", e)
 
@@ -686,14 +686,14 @@ class LowlifeBot(commands.Bot):
             if GUILD_ID:
                 try:
                     gcmds = await bound_sync(guild=discord.Object(id=GUILD_ID))
-                    log.info("bootstrap sync (unwrapped): guild ok — %d cmds to %s", len(gcmds), GUILD_ID)
+                    log.info("bootstrap sync (unwrapped): guild ok â€” %d cmds to %s", len(gcmds), GUILD_ID)
                 except Exception as e:
                     log.warning("bootstrap sync (unwrapped): guild sync failed: %s", e)
         except Exception:
             log.exception("bootstrap sync (unwrapped) failed completely")
 
     async def on_ready(self):
-        log.info("Logged in as %s (%s) — %s", self.user, getattr(self.user, "id", "?"), BUILD_TAG)
+        log.info("Logged in as %s (%s) â€” %s", self.user, getattr(self.user, "id", "?"), BUILD_TAG)
         await self._bootstrap_sync_once()
 
     # ---------- HEARTBEAT: graceful shutdown ----------

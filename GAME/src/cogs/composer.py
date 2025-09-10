@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 import discord
 from discord import app_commands
 from discord.ext import commands
@@ -60,7 +60,7 @@ class Composer(commands.Cog):
 
         text_overlays = []
         if text:
-            # Example: "32|120|-20|36; -24|160|40|28" → damage numbers at two spots
+            # Example: "32|120|-20|36; -24|160|40|28" â†’ damage numbers at two spots
             # Or "DMG: -32|140|10|28"
             try:
                 for t in text.split(";"):

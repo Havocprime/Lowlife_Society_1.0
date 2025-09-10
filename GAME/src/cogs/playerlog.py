@@ -1,4 +1,4 @@
-# ======================================================================
+﻿# ======================================================================
 # FILE: GAME/src/cogs/playerlog.py
 # ======================================================================
 from __future__ import annotations
@@ -13,7 +13,7 @@ from discord import app_commands, Interaction
 from discord.ext import commands, tasks
 
 from src.services.tags_iter import collect_players_with_damage_tags
-from src.tags import registry as tag_registry
+from src.cogs.tags import registry as tag_registry
 
 TICK_SECONDS = 5  # HP-drain tick cadence
 
@@ -189,7 +189,7 @@ class PlayerLogCog(commands.Cog):
             return
         mention = f"<@{owner_id}>" if owner_kind == "discord" else f"`{owner_kind}:{owner_id}`"
         try:
-            await ch.send(f"💀 **DEAD** {mention} — reason: tag_expired:`{tag_name}` (inst:{instance_id})")
+            await ch.send(f"ðŸ’€ **DEAD** {mention} â€” reason: tag_expired:`{tag_name}` (inst:{instance_id})")
         except Exception:
             log.exception("death broadcast failed")
 
@@ -219,7 +219,7 @@ class PlayerLogCog(commands.Cog):
                             source_ref="expire",
                         )
 
-                        # If fatal_on_expire → declare death (and try to set HP=0)
+                        # If fatal_on_expire â†’ declare death (and try to set HP=0)
                         if row.get("fatal_on_expire"):
                             await _force_hp_zero(row["owner_kind"], int(row["owner_id"]))
                             # Ensure a single death event + CRITICAL line
@@ -278,36 +278,36 @@ class PlayerLogCog(commands.Cog):
                 anchor = f" @ `{r['anchor_path']}`" if r.get("anchor_path") else ""
                 src = ""
                 if r.get("source_kind"):
-                    src = f" · src:`{r['source_kind']}{':' + r['source_ref'] if r.get('source_ref') else ''}`"
+                    src = f" Â· src:`{r['source_kind']}{':' + r['source_ref'] if r.get('source_ref') else ''}`"
                 if k == "hp.delta":
                     dh = r.get("delta_hp") or 0
                     ha = r.get("hp_after")
-                    return f"- `{t}` · **HP {dh:+d}** → `{ha}`{src}"
+                    return f"- `{t}` Â· **HP {dh:+d}** â†’ `{ha}`{src}"
                 elif k in ("tag.applied", "tag.tick", "tag.expired"):
                     tag = r.get("tag_name") or f"id:{r.get('tag_id')}"
                     extra = ""
                     if k == "tag.tick" and r.get("delta_hp") is not None:
-                        extra = f" · hp {r['delta_hp']:+d} → `{r.get('hp_after')}`"
+                        extra = f" Â· hp {r['delta_hp']:+d} â†’ `{r.get('hp_after')}`"
                     if k == "tag.expired" and (r.get("metadata") or {}).get("fatal_on_expire"):
-                        extra += " · **FATAL**"
-                    return f"- `{t}` · **{k}** · *{tag}*{anchor}{extra}{src}"
+                        extra += " Â· **FATAL**"
+                    return f"- `{t}` Â· **{k}** Â· *{tag}*{anchor}{extra}{src}"
                 elif k == "player.death":
                     why = (r.get("metadata") or {}).get("reason") or "unknown"
-                    return f"- `{t}` · **PLAYER DEATH** · reason:`{why}`"
+                    return f"- `{t}` Â· **PLAYER DEATH** Â· reason:`{why}`"
                 elif k == "player.revive":
                     md = (r.get("metadata") or {})
                     hp_to = md.get("set_hp")
                     ok = md.get("ok")
-                    return f"- `{t}` · **PLAYER REVIVE** · hp→`{hp_to}` {'✅' if ok else '⚠️'}{src}"
+                    return f"- `{t}` Â· **PLAYER REVIVE** Â· hpâ†’`{hp_to}` {'âœ…' if ok else 'âš ï¸'}{src}"
                 else:
-                    return f"- `{t}` · **{k}**{anchor}{src}"
+                    return f"- `{t}` Â· **{k}**{anchor}{src}"
 
-            lines = [f"**Owner:** `{owner_kind}:{owner_id}` · Showing last {len(rows)} event(s)"]
+            lines = [f"**Owner:** `{owner_kind}:{owner_id}` Â· Showing last {len(rows)} event(s)"]
             lines += [fmt_row(r) for r in rows]
             await itx.followup.send("\n".join(lines), ephemeral=True)
         except Exception:
             log.error("[playerlog] trace=%s\n%s", trace, traceback.format_exc())
-            await itx.followup.send(f"⚠️ Something broke. Trace `{trace}`.", ephemeral=True)
+            await itx.followup.send(f"âš ï¸ Something broke. Trace `{trace}`.", ephemeral=True)
 
     # ------------------------------ /revive ----------------------------
     @app_commands.command(name="revive", description="Admin: restore HP and log a revive")
@@ -345,7 +345,7 @@ class PlayerLogCog(commands.Cog):
         except Exception:
             log.debug("revive append_event failed", exc_info=True)
 
-        msg = f"Revive {'✅' if ok else '⚠️'} — set HP → `{target_hp}` for `{owner_kind}:{owner_id}`"
+        msg = f"Revive {'âœ…' if ok else 'âš ï¸'} â€” set HP â†’ `{target_hp}` for `{owner_kind}:{owner_id}`"
         await itx.followup.send(msg, ephemeral=True)
 
 

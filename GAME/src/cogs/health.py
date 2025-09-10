@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 import discord
 from discord import app_commands
 from discord.ext import commands
@@ -28,7 +28,7 @@ class HealthCog(commands.Cog):
 
         txt = (
             f"**Build**: {interaction.client.__class__.__name__}\n"
-            f"**Game DB**: `{GAME_DB}` — {'OK' if ok else 'ERR'} ({detail})\n"
+            f"**Game DB**: `{GAME_DB}` â€” {'OK' if ok else 'ERR'} ({detail})\n"
             f"**Events DB**: `{EVENTS_DB}`\n"
         )
         await interaction.response.send_message(txt, ephemeral=True)

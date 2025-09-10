@@ -1,4 +1,4 @@
-FILE srclootroller.py
+﻿FILE srclootroller.py
 import json, random, pathlib
 from typing import Dict, Any, List, Tuple
 

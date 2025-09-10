@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 import os, sys, asyncio, traceback, uuid, datetime as dt
 from pathlib import Path
 from typing import Any, Optional
@@ -52,7 +52,7 @@ def setup_error_reporting(bot: discord.Client) -> None:
         trace = report_exception(error, context=info)
         try:
             await ack_once(interaction, ephemeral=True)
-            await interaction.followup.send(f"⚠️ Something broke. Trace **{trace.split(':')[0]}**", ephemeral=True)
+            await interaction.followup.send(f"âš ï¸ Something broke. Trace **{trace.split(':')[0]}**", ephemeral=True)
         except Exception:
             pass
 

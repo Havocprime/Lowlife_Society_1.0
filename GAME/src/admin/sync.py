@@ -1,4 +1,4 @@
-# src/admin/sync.py
+﻿# src/admin/sync.py
 from __future__ import annotations
 import asyncio
 import inspect
@@ -172,7 +172,7 @@ class SyncCog(commands.Cog):
             return await interaction.response.send_message("Nope.", ephemeral=True)
 
         await interaction.response.send_message(
-            "⏳ Bulk sync queued in background. I’ll follow up here when it finishes.",
+            "â³ Bulk sync queued in background. Iâ€™ll follow up here when it finishes.",
             ephemeral=True,
         )
 
@@ -222,13 +222,13 @@ class SyncCog(commands.Cog):
                     else:
                         parts.append(f"Global: {synced_global}")
 
-                summary = " • ".join(parts) if parts else "No operations"
-                await interaction.followup.send(f"✅ Sync complete — {summary}.", ephemeral=True)
+                summary = " â€¢ ".join(parts) if parts else "No operations"
+                await interaction.followup.send(f"âœ… Sync complete â€” {summary}.", ephemeral=True)
 
             except Exception as e:
                 log.exception("/sync runner failed")
                 try:
-                    await interaction.followup.send(f"⚠️ Sync error: `{type(e).__name__}: {e}`", ephemeral=True)
+                    await interaction.followup.send(f"âš ï¸ Sync error: `{type(e).__name__}: {e}`", ephemeral=True)
                 except Exception:
                     pass
 
@@ -273,7 +273,7 @@ class SyncCog(commands.Cog):
             )
 
         await interaction.response.send_message(
-            f"⏳ Upserting `/{cmd.name}` to guild **{gid}**…", ephemeral=True
+            f"â³ Upserting `/{cmd.name}` to guild **{gid}**â€¦", ephemeral=True
         )
 
         async def runner():
@@ -299,13 +299,13 @@ class SyncCog(commands.Cog):
                 else:
                     await self._create_guild_cmd_http(app_id, gid, payload)
                     what = "created"
-                await interaction.followup.send(f"✅ `/{cmd.name}` {what} on guild **{gid}**.", ephemeral=True)
+                await interaction.followup.send(f"âœ… `/{cmd.name}` {what} on guild **{gid}**.", ephemeral=True)
             except discord.HTTPException as e:
                 log.warning("sync_one failed: %s", e)
-                await interaction.followup.send(f"⚠️ sync_one failed: `{e}`", ephemeral=True)
+                await interaction.followup.send(f"âš ï¸ sync_one failed: `{e}`", ephemeral=True)
             except Exception as e:
                 log.exception("sync_one unexpected error")
-                await interaction.followup.send(f"⚠️ sync_one error: `{type(e).__name__}: {e}`", ephemeral=True)
+                await interaction.followup.send(f"âš ï¸ sync_one error: `{type(e).__name__}: {e}`", ephemeral=True)
 
         asyncio.create_task(runner())
 
@@ -314,7 +314,7 @@ class SyncCog(commands.Cog):
         if not interaction.user.guild_permissions.manage_guild:
             return await interaction.response.send_message("Nope.", ephemeral=True)
         cmds = [c for c in self.bot.tree.get_commands() if isinstance(c, app_commands.Command)]
-        lines = [f"/{c.name} — {c.description or '(no desc)'}" for c in sorted(cmds, key=lambda x: x.name)]
+        lines = [f"/{c.name} â€” {c.description or '(no desc)'}" for c in sorted(cmds, key=lambda x: x.name)]
         text = "\n".join(lines) if lines else "No commands found in this process."
         await interaction.response.send_message(text[:1900], ephemeral=True)
 
@@ -322,7 +322,7 @@ class SyncCog(commands.Cog):
     async def sync_status(self, interaction: discord.Interaction):
         flag = getattr(self.bot, "_synced_once", False)
         await interaction.response.send_message(
-            f"synced_once={flag} • DEV_GUILD_ID={DEV_GUILD_ID} • SYNC_ON_READY={int(SYNC_ON_READY)}",
+            f"synced_once={flag} â€¢ DEV_GUILD_ID={DEV_GUILD_ID} â€¢ SYNC_ON_READY={int(SYNC_ON_READY)}",
             ephemeral=True,
         )
 

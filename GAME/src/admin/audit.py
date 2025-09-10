@@ -1,4 +1,4 @@
-# GAME/src/admin/audit.py
+﻿# GAME/src/admin/audit.py
 from __future__ import annotations
 import discord
 from discord import app_commands
@@ -29,7 +29,7 @@ class AuditCog(commands.Cog):
             pass
 
         await interaction.followup.send(
-            "Heads-up: **/audit_recent** is legacy and can exceed Discord’s 2,000-char limit.\n"
+            "Heads-up: **/audit_recent** is legacy and can exceed Discordâ€™s 2,000-char limit.\n"
             "Use **/audit_recent_paged** instead (Prev/Next buttons, CSV-safe).",
             ephemeral=True,
         )

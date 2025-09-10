@@ -1,4 +1,4 @@
-# GAME/src/cogs/admin_backfill.py
+﻿# GAME/src/cogs/admin_backfill.py
 from __future__ import annotations
 import traceback
 import discord
@@ -40,7 +40,7 @@ class BackfillCog(commands.Cog):
         except Exception as e:
             # Surface a short error + keep the full trace in logs
             tb = traceback.format_exc(limit=2)
-            await inter.followup.send(f"⚠️ Backfill failed: `{e.__class__.__name__}: {e}`\n``{tb}``", ephemeral=True)
+            await inter.followup.send(f"âš ï¸ Backfill failed: `{e.__class__.__name__}: {e}`\n``{tb}``", ephemeral=True)
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(BackfillCog(bot))

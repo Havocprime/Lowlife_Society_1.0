@@ -1,4 +1,4 @@
-# ======================================================================
+﻿# ======================================================================
 # FILE: GAME/src/cogs/suggestions.py
 # ======================================================================
 from __future__ import annotations
@@ -139,7 +139,7 @@ class ReviewView(discord.ui.View):
         dm_text = None
         if status == TicketStatus.DENIED:
             dm_text = (
-                f"Hey! Your Lowlife ticket **#{self.ticket_id}** wasn’t accepted this time.\n"
+                f"Hey! Your Lowlife ticket **#{self.ticket_id}** wasnâ€™t accepted this time.\n"
                 f"Moderator note: {reason or '(none)'}"
             )
         elif status == TicketStatus.HESITANT:
@@ -163,7 +163,7 @@ class ReviewView(discord.ui.View):
                 pass
 
         await interaction.response.send_message(
-            f"Ticket #{self.ticket_id} → **{status.value}**", ephemeral=True
+            f"Ticket #{self.ticket_id} â†’ **{status.value}**", ephemeral=True
         )
 
     @discord.ui.button(label="Accept", style=discord.ButtonStyle.success, custom_id="lowlife:suggest:accept")
@@ -201,7 +201,7 @@ class SuggestionModal(discord.ui.Modal):
         )
         # NEW: subcategory only used when Type is Consumables
         self.subkind = discord.ui.TextInput(
-            label="Consumables (Food/Drink/Medical/Other)",  # shortened to ≤45 chars
+            label="Consumables (Food/Drink/Medical/Other)",  # shortened to â‰¤45 chars
             style=discord.TextStyle.short,
             min_length=0,
             max_length=12,
@@ -229,7 +229,7 @@ class SuggestionModal(discord.ui.Modal):
         )
         if remain > 0 and not is_staff:
             await interaction.response.send_message(
-                f"You're submitting too fast — try again in {int(remain)}s.", ephemeral=True
+                f"You're submitting too fast â€” try again in {int(remain)}s.", ephemeral=True
             )
             return
         if not is_staff:
@@ -364,10 +364,10 @@ class SuggestionsCog(commands.Cog):
             title="Suggestions / Requests / Bug Reports",
             description=(
                 "Have an idea or issue? Press the button below to open a submission form.\n\n"
-                "• Be specific (what/why/impact)\n"
-                "• Include context or examples\n"
-                "• One idea per ticket helps reviewers\n"
-                "• If your Type is **Consumables**, fill the subcategory (Food / Drink / Medical / Other)"
+                "â€¢ Be specific (what/why/impact)\n"
+                "â€¢ Include context or examples\n"
+                "â€¢ One idea per ticket helps reviewers\n"
+                "â€¢ If your Type is **Consumables**, fill the subcategory (Food / Drink / Medical / Other)"
             ),
             color=discord.Color.yellow(),
         )
@@ -378,10 +378,10 @@ class SuggestionsCog(commands.Cog):
     async def myticket(self, interaction: discord.Interaction):
         rows = dal.list_tickets_by_user(interaction.guild_id or 0, interaction.user.id, limit=10, offset=0)
         if not rows:
-            await interaction.response.send_message("You don’t have any tickets yet.", ephemeral=True)
+            await interaction.response.send_message("You donâ€™t have any tickets yet.", ephemeral=True)
             return
         lines = [
-            f"**#{t.id}** [{t.status}] — {(t.content[:120] + '…') if len(t.content) > 120 else t.content}"
+            f"**#{t.id}** [{t.status}] â€” {(t.content[:120] + 'â€¦') if len(t.content) > 120 else t.content}"
             for t in rows
         ]
         await interaction.response.send_message("\n".join(lines), ephemeral=True)
@@ -404,8 +404,8 @@ class SuggestionsCog(commands.Cog):
             return
         lines = []
         for t in rows:
-            snippet = (t.content[:140] + "…") if len(t.content) > 140 else t.content
-            lines.append(f"**#{t.id}** [{t.status}] by <@{t.user_id}> – {snippet}")
+            snippet = (t.content[:140] + "â€¦") if len(t.content) > 140 else t.content
+            lines.append(f"**#{t.id}** [{t.status}] by <@{t.user_id}> â€“ {snippet}")
         await interaction.response.send_message("\n".join(lines), ephemeral=True)
 
     @tickets.command(name="view", description="View a ticket's full text.")
@@ -457,7 +457,7 @@ class SuggestionsCog(commands.Cog):
         dm_text: Optional[str] = None
         if status == TicketStatus.DENIED:
             dm_text = (
-                f"Hey! Your Lowlife ticket **#{ticket_id}** wasn’t accepted this time.\n"
+                f"Hey! Your Lowlife ticket **#{ticket_id}** wasnâ€™t accepted this time.\n"
                 f"Moderator note: {reason or '(none)'}"
             )
         elif status == TicketStatus.HESITANT:
@@ -480,7 +480,7 @@ class SuggestionsCog(commands.Cog):
             except Exception:
                 pass
 
-        await interaction.response.send_message(f"Ticket #{ticket_id} → **{status.value}**", ephemeral=True)
+        await interaction.response.send_message(f"Ticket #{ticket_id} â†’ **{status.value}**", ephemeral=True)
 
     # NEW: /tickets search
     @tickets.command(name="search", description="Search tickets by text (admin).")
@@ -498,8 +498,8 @@ class SuggestionsCog(commands.Cog):
             return
         out = []
         for t in rows:
-            snippet = (t.content[:140] + "…") if len(t.content) > 140 else t.content
-            out.append(f"**#{t.id}** [{t.status}] by <@{t.user_id}> — {snippet}")
+            snippet = (t.content[:140] + "â€¦") if len(t.content) > 140 else t.content
+            out.append(f"**#{t.id}** [{t.status}] by <@{t.user_id}> â€” {snippet}")
         await interaction.response.send_message("\n".join(out), ephemeral=True)
 
     # NEW: /tickets note

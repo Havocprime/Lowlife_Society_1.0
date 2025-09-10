@@ -1,4 +1,4 @@
-# GAME/src/cogs/admin/sync.py
+﻿# GAME/src/cogs/admin/sync.py
 from __future__ import annotations
 import asyncio, logging, os, random
 from typing import Optional

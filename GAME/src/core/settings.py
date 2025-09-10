@@ -1,4 +1,4 @@
-# GAME/src/core/settings.py
+﻿# GAME/src/core/settings.py
 from __future__ import annotations
 
 import os
@@ -47,7 +47,7 @@ class Settings:
     # Guild wiring
     guild_id: int | None
     welcome_channel_id: int | None
-    active_work_channel_id: int | None   # <— NEW
+    active_work_channel_id: int | None   # <â€” NEW
 
     # Asset / images
     welcome_images_dir: str | None
@@ -64,7 +64,7 @@ class Settings:
             discord_token=os.getenv("DISCORD_TOKEN", "").strip(),
             guild_id=gid,
             welcome_channel_id=_env_int("WELCOME_CHANNEL_ID"),
-            active_work_channel_id=_env_int("ACTIVE_WORK_CHANNEL_ID"),   # <— NEW
+            active_work_channel_id=_env_int("ACTIVE_WORK_CHANNEL_ID"),   # <â€” NEW
             welcome_images_dir=os.getenv("WELCOME_IMAGES_DIR") or os.getenv("MUGSHOT_DIR"),
             db_path=Path(os.getenv("DB_PATH", str(VAR_DIR / "lowlife.db"))),
             app_env=os.getenv("APP_ENV", "dev").lower(),

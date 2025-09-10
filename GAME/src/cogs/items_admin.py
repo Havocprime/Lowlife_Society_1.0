@@ -1,4 +1,4 @@
-# GAME/src/cogs/items_admin.py
+﻿# GAME/src/cogs/items_admin.py
 from __future__ import annotations
 
 import logging
@@ -75,7 +75,7 @@ class ItemsAdminCog(commands.Cog):
                 row = cur.fetchone()
                 if row:
                     await interaction.followup.send(
-                        f"❌ Item **{name}** already exists (id `{row['id']}`).", ephemeral=True
+                        f"âŒ Item **{name}** already exists (id `{row['id']}`).", ephemeral=True
                     )
                     return
 
@@ -85,7 +85,7 @@ class ItemsAdminCog(commands.Cog):
                 # Deterministic id by name (matches grant path we used earlier)
                 item_id = abs(hash((name, "catalog"))) % (2**31)
 
-                # Insert using existing columns so we don’t require schema changes
+                # Insert using existing columns so we donâ€™t require schema changes
                 cur.execute(
                     """
                     INSERT INTO items (
@@ -108,7 +108,7 @@ class ItemsAdminCog(commands.Cog):
 
             log.info("/createitem: '%s' class=%s id=%s", name, item_class, item_id)
             await interaction.followup.send(
-                f"✅ Created item **{name}** (class `{item_class}`, id `{item_id}`) in catalog.",
+                f"âœ… Created item **{name}** (class `{item_class}`, id `{item_id}`) in catalog.",
                 ephemeral=True,
             )
         except Exception as e:

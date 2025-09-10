@@ -1,4 +1,4 @@
-# ===== FILE: GAME/src/db/migrate.py ==========================================
+﻿# ===== FILE: GAME/src/db/migrate.py ==========================================
 from __future__ import annotations
 
 from .schema_version import migrate_to_latest, EXPECTED_VERSION

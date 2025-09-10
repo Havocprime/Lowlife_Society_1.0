@@ -1,4 +1,4 @@
-# GAME/src/admin/audit_paged.py
+﻿# GAME/src/admin/audit_paged.py
 from __future__ import annotations
 import json
 import sqlite3
@@ -37,20 +37,20 @@ def _extract_text(d: dict) -> str:
 
 
 def _ch_label(guild: Optional[discord.Guild], d: dict) -> str:
-    """Return '#name' if channel is known, otherwise <#id> or '—'."""
+    """Return '#name' if channel is known, otherwise <#id> or 'â€”'."""
     cid = d.get("channel_id") or d.get("channel") or d.get("cid")
     if isinstance(cid, dict):
         cid = cid.get("id")
     cid = _to_int(cid)
     if not cid:
-        return "—"
+        return "â€”"
     ch = guild.get_channel(cid) if guild else None
     return f"#{ch.name}" if ch else f"<#{cid}>"
 
 
 def _trim(s: str, n: int = 110) -> str:
     s = s.replace("\n", " ").strip()
-    return (s[: n - 1] + "…") if len(s) > n else s
+    return (s[: n - 1] + "â€¦") if len(s) > n else s
 
 
 # ---------- data access ----------
@@ -136,7 +136,7 @@ class AuditPagedView(discord.ui.View):
 
             line = f"{created_at}  {kind}  @{label}  {_trim(txt) if txt else ''}".rstrip()
             if len(line) > 140:
-                line = line[:137] + "…"
+                line = line[:137] + "â€¦"
             pretty.append(line)
 
         desc = "\n".join(pretty) if pretty else "No recent actions found."
@@ -144,7 +144,7 @@ class AuditPagedView(discord.ui.View):
             pretty.pop()
             desc = "\n".join(pretty)
 
-        title = f"Events — page {self.page + 1}/{self.page_count}"
+        title = f"Events â€” page {self.page + 1}/{self.page_count}"
         if self.kind:
             title += f" (kind: {self.kind})"
         if self.actor_id:

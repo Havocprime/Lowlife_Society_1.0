@@ -1,4 +1,4 @@
-# ===== FILE: GAME/src/db/verify_db.py ========================================
+﻿# ===== FILE: GAME/src/db/verify_db.py ========================================
 from __future__ import annotations
 
 from .schema_version import get_version, EXPECTED_VERSION, _connect  # type: ignore

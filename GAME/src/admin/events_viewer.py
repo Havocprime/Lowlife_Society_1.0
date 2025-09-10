@@ -1,4 +1,4 @@
-# GAME/src/admin/events_viewer.py
+﻿# GAME/src/admin/events_viewer.py
 from __future__ import annotations
 
 import io
@@ -48,7 +48,7 @@ def _db_path() -> Path:
 
 def _chan_mention(guild: Optional[discord.Guild], channel_id: Optional[int]) -> str:
     if not guild or not channel_id:
-        return "—"
+        return "â€”"
     ch = guild.get_channel(channel_id) or guild.get_thread(channel_id)
     return ch.mention if ch else f"<#{channel_id}>"
 
@@ -57,7 +57,7 @@ def _safe_sub(s: Optional[str], n: int = 120) -> str:
     if not s:
         return ""
     s = s.replace("\n", " ").strip()
-    return s if len(s) <= n else s[: n - 1] + "…"
+    return s if len(s) <= n else s[: n - 1] + "â€¦"
 
 
 # ======================================================================================
@@ -74,7 +74,7 @@ events_group = app_commands.Group(
 
 @events_group.command(name="recent", description="Show recent events with optional filters.")
 @app_commands.describe(
-    limit="How many rows (1–50, default 15)",
+    limit="How many rows (1â€“50, default 15)",
     kind="Filter by event kind (e.g. message, presence, msg/create, member/join)",
     user="Only events by this user",
     channel="Only events in this channel",
@@ -133,16 +133,16 @@ async def events_recent(
     lines: List[str] = []
     for (rid, ts, k, gid, cid, uid, content) in rows:
         ch = _chan_mention(inter.guild, cid if isinstance(cid, int) else None)
-        who = f"<@{uid}>" if uid else "—"
-        lines.append(f"`#{rid}` `{ts}` • **{k}** • {who} @ {ch}\n{_safe_sub(content, 140)}")
+        who = f"<@{uid}>" if uid else "â€”"
+        lines.append(f"`#{rid}` `{ts}` â€¢ **{k}** â€¢ {who} @ {ch}\n{_safe_sub(content, 140)}")
 
     desc = "\n\n".join(lines) if lines else "_No events matched._"
     emb = discord.Embed(
-        title=f"Events — recent (≤{limit})",
+        title=f"Events â€” recent (â‰¤{limit})",
         description=desc,
         colour=discord.Color.blurple(),
     )
-    emb.set_footer(text=f"DB: {dbp} • since {since_iso}")
+    emb.set_footer(text=f"DB: {dbp} â€¢ since {since_iso}")
     await inter.followup.send(embed=emb, ephemeral=True)
 
 
@@ -183,20 +183,20 @@ async def events_stats(
         await inter.followup.send("No rows in that window.", ephemeral=True)
         return
 
-    lines = [f"**{k or '—'}** — `{n}`" for (k, n) in stats]
+    lines = [f"**{k or 'â€”'}** â€” `{n}`" for (k, n) in stats]
     emb = discord.Embed(
-        title=f"Events — stats (last {hours}h)",
+        title=f"Events â€” stats (last {hours}h)",
         description="\n".join(lines),
         colour=discord.Color.blurple(),
     )
-    emb.set_footer(text=f"DB: {dbp} • since {since_iso}")
+    emb.set_footer(text=f"DB: {dbp} â€¢ since {since_iso}")
     await inter.followup.send(embed=emb, ephemeral=True)
 
 
 # -------- NEW: /events export (CSV) --------
 @events_group.command(name="export", description="Export filtered events to CSV.")
 @app_commands.describe(
-    limit="How many rows to export (1–500, default 200)",
+    limit="How many rows to export (1â€“500, default 200)",
     kind="Filter by event kind",
     user="Only events by this user",
     channel="Only events in this channel",
@@ -284,7 +284,7 @@ class EventsViewer(commands.Cog):
 
     @app_commands.command(name="events_recent", description="[Alias] Show recent events")
     @app_commands.describe(
-        limit="How many rows (1–50, default 15)",
+        limit="How many rows (1â€“50, default 15)",
         kind="Filter by event kind",
         user="Only events by this user",
         channel="Only events in this channel",
@@ -316,7 +316,7 @@ class EventsViewer(commands.Cog):
 
     @app_commands.command(name="events_export", description="[Alias] Export filtered events to CSV")
     @app_commands.describe(
-        limit="How many rows to export (1–500, default 200)",
+        limit="How many rows to export (1â€“500, default 200)",
         kind="Filter by event kind",
         user="Only events by this user",
         channel="Only events in this channel",

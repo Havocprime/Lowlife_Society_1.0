@@ -1,4 +1,4 @@
-# GAME/src/admin/investigate.py
+﻿# GAME/src/admin/investigate.py
 from __future__ import annotations
 import os
 import io
@@ -59,10 +59,10 @@ class InvestigateCog(commands.Cog):
         chunks: list[str] = []
         for r in rows:
             ts = r.get("ts")
-            et = r.get("action_type") or "—"
-            ch = f"<#{r['channel_id']}>" if r.get("channel_id") else "—"
+            et = r.get("action_type") or "â€”"
+            ch = f"<#{r['channel_id']}>" if r.get("channel_id") else "â€”"
             msg = (r.get("content") or "")[:180]
-            chunks.append(f"`{ts}` • **{et}** • {ch}\n{msg}")
+            chunks.append(f"`{ts}` â€¢ **{et}** â€¢ {ch}\n{msg}")
 
         # Paginate every ~8 lines
         page_size = 8
@@ -142,13 +142,13 @@ class InvestigateCog(commands.Cog):
         chunks: list[str] = []
         for r in rows[:50]:
             ts = r.get("ts")
-            et = r.get("action_type") or "—"
-            ch = f"<#{r['channel_id']}>" if r.get("channel_id") else "—"
+            et = r.get("action_type") or "â€”"
+            ch = f"<#{r['channel_id']}>" if r.get("channel_id") else "â€”"
             msg = (r.get("content") or "")[:200]
-            chunks.append(f"`{ts}` • **{et}** • {ch}\n{msg}")
+            chunks.append(f"`{ts}` â€¢ **{et}** â€¢ {ch}\n{msg}")
 
         embed = discord.Embed(
-            title=f"Search: “{query}”",
+            title=f"Search: â€œ{query}â€",
             description="\n\n".join(chunks),
             color=discord.Color.blurple(),
         )
@@ -184,9 +184,9 @@ class InvestigateCog(commands.Cog):
         lines: list[str] = []
         for r in rows:
             ts = r.get("ts")
-            et = r.get("action_type") or "—"
-            ch = f"<#{r['channel_id']}>" if r.get("channel_id") else "—"
-            lines.append(f"`{ts}` • **{et}** • {ch}")
+            et = r.get("action_type") or "â€”"
+            ch = f"<#{r['channel_id']}>" if r.get("channel_id") else "â€”"
+            lines.append(f"`{ts}` â€¢ **{et}** â€¢ {ch}")
             c = r.get("content") or ""
             if c:
                 lines.append(f"> {c[:180]}")

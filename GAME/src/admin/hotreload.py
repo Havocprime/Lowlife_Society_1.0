@@ -1,4 +1,4 @@
-# GAME/src/admin/hotreload.py
+﻿# GAME/src/admin/hotreload.py
 from __future__ import annotations
 import discord
 from discord import app_commands

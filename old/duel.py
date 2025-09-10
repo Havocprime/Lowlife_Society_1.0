@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import discord
 from discord import app_commands
@@ -27,7 +27,7 @@ def register_duel(tree: app_commands.CommandTree) -> None:
     async def duel_cmd(interaction: discord.Interaction, opponent: discord.Member) -> None:
         if opponent.id == interaction.user.id:
             await interaction.response.send_message(
-                "Pick an opponent who isn’t you 😅", ephemeral=True
+                "Pick an opponent who isnâ€™t you ðŸ˜…", ephemeral=True
             )
             return
         ch_id = interaction.channel_id
@@ -67,7 +67,7 @@ def register_duel(tree: app_commands.CommandTree) -> None:
             await interaction.response.send_message("No duel in this channel.", ephemeral=True)
             return
         dmg, note = compute_attack(s["range"])
-        s["log"].append(f"Attack → {dmg} dmg. {note}")
+        s["log"].append(f"Attack â†’ {dmg} dmg. {note}")
         await interaction.response.send_message(embed=build_combat_embed(s))
 
     @tree.command(

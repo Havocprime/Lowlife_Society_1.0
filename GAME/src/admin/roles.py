@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 import discord
 from discord import app_commands
 from discord.ext import commands
@@ -12,13 +12,13 @@ class RoleAdmin(commands.Cog):
     @require_role(Role.ADMIN)
     async def set_admin_role(self, interaction: discord.Interaction, role: discord.Role):
         set_role_ids("admin_role_ids", {role.id})
-        await interaction.response.send_message(f"✅ Admin role set to **{role.name}**.", ephemeral=True)
+        await interaction.response.send_message(f"âœ… Admin role set to **{role.name}**.", ephemeral=True)
 
     @app_commands.command(name="set_mod_role", description="ADMIN: set moderator role (replaces list).")
     @require_role(Role.ADMIN)
     async def set_mod_role(self, interaction: discord.Interaction, role: discord.Role):
         set_role_ids("mod_role_ids", {role.id})
-        await interaction.response.send_message(f"✅ Mod role set to **{role.name}**.", ephemeral=True)
+        await interaction.response.send_message(f"âœ… Mod role set to **{role.name}**.", ephemeral=True)
 
     @app_commands.command(name="show_roles", description="Show configured admin/mod role IDs.")
     @require_role(Role.ADMIN)

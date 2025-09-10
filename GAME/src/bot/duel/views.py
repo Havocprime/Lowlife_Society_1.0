@@ -1,4 +1,4 @@
-# FILE: src/bot/duel/views.py
+﻿# FILE: src/bot/duel/views.py
 """
 Discord Views & HUD plumbing:
 - All the interactive buttons
@@ -79,14 +79,14 @@ def make_view(state: DuelState, client: discord.Client, viewer_id: int) -> disco
             return FinalizeView(state, client, victor_id=victor_id, target_id=target_id)
         return DuelLogView(state)
 
-    # v0.3 — Choke flow menus:
+    # v0.3 â€” Choke flow menus:
     if state.choking:
         choker_id, victim_id = state.choking
         if state.current().user_id == choker_id and viewer_id == choker_id:
-            # Choker's turn → Choke / Push
+            # Choker's turn â†’ Choke / Push
             return ChokeView(state, client)
         if state.current().user_id == victim_id and viewer_id == victim_id:
-            # Victim's turn → Gouge (only here), Wrestle, Punch
+            # Victim's turn â†’ Gouge (only here), Wrestle, Punch
             return ChokedVictimView(state, client)
         return DuelLogView(state)
 
@@ -215,10 +215,10 @@ class DuelMainView(discord.ui.View):
                     "damage": dmg,
                 }
                 self.state.push(
-                    f"💣 {thrower.name} lobs a grenade! It lands near {target.name} and will detonate at the start of their turn."
+                    f"ðŸ’£ {thrower.name} lobs a grenade! It lands near {target.name} and will detonate at the start of their turn."
                 )
             else:
-                self.state.push(f"💣 {thrower.name} throws a grenade but it **misses** the mark.")
+                self.state.push(f"ðŸ’£ {thrower.name} throws a grenade but it **misses** the mark.")
         self.state.end_turn()
         from .ai import maybe_ai_take_turn
 
@@ -274,7 +274,7 @@ class DuelMainView(discord.ui.View):
 
     @discord.ui.button(label="Take Cover", style=discord.ButtonStyle.secondary, row=1)
     async def btn_take_cover(self, inter: discord.Interaction, btn: discord.ui.Button):
-        """Toggle Partial → Full cover for this user; also updates map flags."""
+        """Toggle Partial â†’ Full cover for this user; also updates map flags."""
         from .ai import maybe_ai_take_turn
 
         if not self._is_my_turn(inter):
@@ -333,7 +333,7 @@ class DuelMainView(discord.ui.View):
         try:
             if self.state.active:
                 self.state.active = False
-                self.state.push("⏱️ Duel timed out due to inactivity.")
+                self.state.push("â±ï¸ Duel timed out due to inactivity.")
                 for item in self.children:
                     item.disabled = True
                 await update_public_result(self.client, self.state, "Timed out due to inactivity.")
@@ -365,7 +365,7 @@ class GrappleView(discord.ui.View):
             self.state.choking = (me.user_id, foe.user_id)
             self.state.breath[foe.user_id] = self.state.breath.get(foe.user_id, 50)
             self.state.bloodflow[foe.user_id] = self.state.bloodflow.get(foe.user_id, 50)
-            self.state.push(f"🫵 {me.name} secures a **choke** on {foe.name}!")
+            self.state.push(f"ðŸ«µ {me.name} secures a **choke** on {foe.name}!")
         else:
             self.state.push(f"{me.name} reaches for a choke but **fails**.")
         self.state.end_turn()
@@ -428,7 +428,7 @@ class GrappleView(discord.ui.View):
         if random.random() <= p:
             self.state.grappling = False
             self.state.choking = None
-            self.state.push(f"🧷 {me.name} **breaks free** from the grapple!")
+            self.state.push(f"ðŸ§· {me.name} **breaks free** from the grapple!")
         else:
             self.state.positioning[me.user_id] = iclamp(my_pos - 5, 0, 100)
             self.state.positioning[foe.user_id] = iclamp(their_pos + 5, 0, 100)
@@ -481,14 +481,14 @@ class ChokeView(discord.ui.View):
         self.state.bloodflow[target] = iclamp(
             self.state.bloodflow.get(target, 50) - random.randint(4, 8), 0, 100
         )
-        self.state.push(f"🫀 {self.state.current().name} **tightens the choke**.")
+        self.state.push(f"ðŸ«€ {self.state.current().name} **tightens the choke**.")
         if self.state.breath[target] <= 0 or self.state.bloodflow[target] <= 0:
             self.state.unconscious.add(target)
             record_hit(self.state, choker, target, "strangled", "")
             winner = self.state.winner()
             if winner:
                 self.state.finisher = (winner.user_id, target)
-                msg = "☠️ Your opponent is **unconscious**. Choose their fate."
+                msg = "â˜ ï¸ Your opponent is **unconscious**. Choose their fate."
                 if not self.state.log_lines or self.state.log_lines[-1] != msg:
                     self.state.add_raw(msg)
         self.state.end_turn()
@@ -513,7 +513,7 @@ class ChokeView(discord.ui.View):
                 self.state.positioning.get(target, 50) + 10, 0, 100
             )
         self.state.push(
-            f"🫁 {self.state.current().name} **pushes off**, breaking the choke and creating space."
+            f"ðŸ« {self.state.current().name} **pushes off**, breaking the choke and creating space."
         )
         self.state.end_turn()
         await maybe_ai_take_turn(inter, self.state)
@@ -664,7 +664,7 @@ class FinalizeView(discord.ui.View):
             return
         victor = self.state.a if self.state.a.user_id == self.victor_id else self.state.b
         target = self.state.a if self.state.a.user_id == self.target_id else self.state.b
-        self.state.add_raw(f"🕊️ {victor.name} shows **mercy** to {target.name}.")
+        self.state.add_raw(f"ðŸ•Šï¸ {victor.name} shows **mercy** to {target.name}.")
         self.state.last_hit[self.target_id] = {"by": self.victor_id, "type": "mercy", "weapon": ""}
         self.state.finisher = None
         self.state.active = False
@@ -679,7 +679,7 @@ class FinalizeView(discord.ui.View):
         target = self.state.a if self.state.a.user_id == self.target_id else self.state.b
         dmg = random.randint(1, 7)
         target.hp = max(0, target.hp - dmg)
-        self.state.push(f"👊 {victor.name} **beats** the unconscious {target.name} for **{dmg}**.")
+        self.state.push(f"ðŸ‘Š {victor.name} **beats** the unconscious {target.name} for **{dmg}**.")
         record_hit(self.state, self.victor_id, self.target_id, "punch", "Fists")
         if target.hp <= 0:
             self.state.finisher = None
@@ -705,7 +705,7 @@ class FinalizeView(discord.ui.View):
                 ok_msg = " (added to inventory)"
         except Exception as e:
             log.warning("Kidnap inventory add failed: %s", e)
-        self.state.add_raw(f"🧿 {victor.name} **kidnaps** {target.name}.{ok_msg}")
+        self.state.add_raw(f"ðŸ§¿ {victor.name} **kidnaps** {target.name}.{ok_msg}")
         self.state.last_hit[self.target_id] = {"by": self.victor_id, "type": "kidnap", "weapon": ""}
         self.state.finisher = None
         self.state.active = False
@@ -730,7 +730,7 @@ async def maybe_offer_finisher(
     if loser.user_id in state.unconscious and state.active:
         if not getattr(state, "finisher", None):
             state.finisher = (w.user_id, loser.user_id)
-        msg = "☠️ Your opponent is **unconscious**. Choose their fate."
+        msg = "â˜ ï¸ Your opponent is **unconscious**. Choose their fate."
         if not state.log_lines or state.log_lines[-1] != msg:
             state.add_raw(msg)
         return FinalizeView(state, inter.client, victor_id=w.user_id, target_id=loser.user_id)
@@ -754,7 +754,7 @@ async def end_if_finished_or_offer(state: DuelState, inter: discord.Interaction)
             state.finisher = None
             state.active = False
             summary = finish_summary(state)
-            state.push(f"🏆 {winner.name} wins!")
+            state.push(f"ðŸ† {winner.name} wins!")
             await update_public_result(inter, state, summary)
     await hud_update_auto(inter, state, inter.user)
 
@@ -820,7 +820,7 @@ async def _apply_and_log(inter: discord.Interaction, state: DuelState, fn):
 
 
 # FILE: src/bot/duel/views.py
-# …(existing code)…
+# â€¦(existing code)â€¦
 
 # --- Public exports / legacy alias ---
 DuelView = DuelMainView  # keep older imports working

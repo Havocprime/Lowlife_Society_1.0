@@ -1,4 +1,4 @@
-# GAME/src/systems/tags/schema.py
+﻿# GAME/src/systems/tags/schema.py
 from __future__ import annotations
 
 import logging

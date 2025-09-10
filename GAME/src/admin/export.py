@@ -1,4 +1,4 @@
-# GAME/src/admin/export.py
+﻿# GAME/src/admin/export.py
 from __future__ import annotations
 
 import subprocess
@@ -23,9 +23,9 @@ class ExportCmd(commands.Cog):
         script = "scripts/export_players.py" if kind == "players" else "scripts/export_events.py"
         try:
             out = subprocess.check_output([sys.executable, script], text=True)
-            await interaction.followup.send(f"✅ Exported: `{out.strip()}`", ephemeral=True)
+            await interaction.followup.send(f"âœ… Exported: `{out.strip()}`", ephemeral=True)
         except subprocess.CalledProcessError as e:
-            await interaction.followup.send(f"❌ Export failed: {e}", ephemeral=True)
+            await interaction.followup.send(f"âŒ Export failed: {e}", ephemeral=True)
 
 
 async def setup(bot: commands.Bot):
