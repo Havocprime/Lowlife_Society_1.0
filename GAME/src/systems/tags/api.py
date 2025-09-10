@@ -1,10 +1,97 @@
+# GAME/src/systems/tags/api.py
 from __future__ import annotations
+
 import json
+import logging
+import inspect
 from typing import Any, Dict, Optional
 
 from . import dal
 from .registry import REGISTRY
 
+import os
+
+log = logging.getLogger("tags.api")
+
+# Log the compat warning only once per process.
+_COMPAT_LOGGED_ONCE = False
+
+# Cache the DAL signature once at import (safe).
+try:
+    _DAL_ADD_OR_STACK_PARAMS = tuple(inspect.signature(dal.add_or_stack).parameters)
+except Exception:
+    _DAL_ADD_OR_STACK_PARAMS = ()
+
+# --- compatibility wrapper for DAL calls ------------------------------
+def _safe_add_or_stack(**kwargs):
+    """
+    Call dal.add_or_stack while stripping any kwargs that the current
+    DAL implementation doesn't accept (e.g., 'polarity', 'kind').
+    This keeps us compatible across older/newer DAL versions.
+    """
+    global _COMPAT_LOGGED_ONCE
+
+    try:
+        # Fast path if the DAL accepts everything we send
+        return dal.add_or_stack(**kwargs)
+    except TypeError:
+        # Filter to the parameters actually supported by the DAL
+        allowed = set(_DAL_ADD_OR_STACK_PARAMS) or set(
+            inspect.signature(dal.add_or_stack).parameters
+        )
+        filtered = {k: v for k, v in kwargs.items() if k in allowed}
+
+        # Log once which params we dropped (if any)
+        if not _COMPAT_LOGGED_ONCE:
+            dropped = sorted(set(kwargs).difference(filtered))
+            if dropped:
+                log.info("compat: add_or_stack dropped params %s", dropped)
+                _COMPAT_LOGGED_ONCE = True
+
+        return dal.add_or_stack(**filtered)
+
+
+log = logging.getLogger("tags.api")
+
+# Log the compat warning only once per process.
+_COMPAT_LOGGED_ONCE = False
+
+# Cache the DAL signature once at import (safe).
+try:
+    _DAL_ADD_OR_STACK_PARAMS = tuple(inspect.signature(dal.add_or_stack).parameters)
+except Exception:
+    _DAL_ADD_OR_STACK_PARAMS = ()
+
+# --- compatibility wrapper for DAL calls ------------------------------
+def _safe_add_or_stack(**kwargs):
+    """
+    Call dal.add_or_stack while stripping any kwargs that the current
+    DAL implementation doesn't accept (e.g., 'polarity', 'kind').
+    This keeps us compatible across older/newer DAL versions.
+    """
+    global _COMPAT_LOGGED_ONCE
+
+    try:
+        # Fast path if the DAL accepts everything we send
+        return dal.add_or_stack(**kwargs)
+    except TypeError:
+        # Filter to the parameters actually supported by the DAL
+        allowed = set(_DAL_ADD_OR_STACK_PARAMS) or set(
+            inspect.signature(dal.add_or_stack).parameters
+        )
+        filtered = {k: v for k, v in kwargs.items() if k in allowed}
+
+        # By default, do NOT print anything. You can opt-in by setting TAGS_COMPAT_LOG=1
+        if not _COMPAT_LOGGED_ONCE and os.getenv("TAGS_COMPAT_LOG", "0") == "1":
+            dropped = sorted(set(kwargs).difference(filtered))
+            if dropped:
+                # use WARNING and only once, if enabled
+                log.warning("compat: add_or_stack dropped params %s", dropped)
+                _COMPAT_LOGGED_ONCE = True
+
+        return dal.add_or_stack(**filtered)
+
+# --- public API --------------------------------------------------------
 def apply_tag(
     *,
     owner_kind: str,
@@ -12,8 +99,8 @@ def apply_tag(
     anchor_path: str,
     tag_name: str,
     stacks: int = 1,
-    duration_ms: Optional[int] = None,
     intensity: float = 1.0,
+    duration_ms: Optional[int] = None,
     polarity: Optional[str] = None,
     confidence: Optional[float] = None,
     source_kind: Optional[str] = None,
@@ -21,66 +108,168 @@ def apply_tag(
     metadata: Optional[Dict[str, Any]] = None,
 ) -> int:
     """
-    High-level tag applier that:
-      - looks up the catalog row by name,
-      - inserts/stacks the instance,
-      - triggers the registry 'on_apply' hook if present.
-    Returns the tag_instance id.
+    High-level tag applier:
+      1) look up catalog row,
+      2) insert/stack the instance (scheduling tick/expiry),
+      3) invoke registry['on_apply'] if present.
+    Returns tag_instance id.
     """
-    row = dal.get_tag_by_name(tag_name)
-    if not row:
+    tag = dal.get_tag_by_name(tag_name)
+    if not tag:
         raise ValueError(f"Tag '{tag_name}' not found in catalog")
 
-    tag = dict(row)
-    # initial state (if dynamic)
-    initial_state = None
+    # Optional state-machine initial state (safe if column missing/empty)
+    initial_state: Optional[str] = None
     try:
         sm = json.loads(tag.get("state_machine_json") or "{}")
-        initial_state = sm.get("initial")
+        initial_state = sm.get("initial") or None
     except Exception:
         initial_state = None
 
-    inst_id = dal.add_or_stack(
+    # Effective scheduling values (catalog defaults unless overridden)
+    eff_duration_ms: Optional[int] = (
+        duration_ms if duration_ms is not None
+        else (int(tag.get("duration_ms") or 0) or None)
+    )
+    eff_tick_ms: Optional[int] = int(tag.get("tick_ms") or 0) or None
+
+    # Fold confidence into metadata (retained even if DAL has no column)
+    meta = dict(metadata or {})
+    if confidence is not None:
+        meta["_confidence"] = float(confidence)
+
+    # Use compatibility wrapper so older DALs (without 'polarity' etc.) still work.
+    inst_id = _safe_add_or_stack(
         owner_kind=owner_kind,
         owner_id=owner_id,
         anchor_path=anchor_path,
-        tag_id=tag["id"],
-        stacks=stacks,
-        intensity=intensity,
+        tag_id=int(tag["id"]),
+        stacks=int(stacks),
+        intensity=float(intensity),
         polarity=polarity or tag.get("polarity"),
-        confidence=confidence,
-        duration_ms=duration_ms,
-        state=initial_state,
+        state=initial_state or "active",
+        duration_ms=eff_duration_ms,
+        tick_ms=eff_tick_ms,
         source_kind=source_kind,
         source_ref=source_ref,
-        metadata=metadata,
+        metadata=meta,
     )
 
-    # Fire on-apply if defined
-    script_key = tag.get("script_key")
-    if script_key and script_key in REGISTRY:
-        cb = REGISTRY[script_key].get("on_apply")
-        if cb:
-            ctx = {
-                "instance_id": inst_id,
-                "owner_kind": owner_kind,
-                "owner_id": owner_id,
-                "anchor_path": anchor_path,
-                "stacks": stacks,
-                "intensity": intensity,
-                "polarity": polarity or tag.get("polarity"),
-                "confidence": confidence,
-                "metadata": metadata or {},
-                "state": initial_state,
-                "script_key": script_key,
-                "tag_name": tag_name,
-                "tag_id": tag["id"],
-            }
-            try:
-                cb(ctx)
-            except Exception:
-                # Never fail the apply for a bad hook
-                import logging, traceback
-                logging.getLogger("tags.api").warning("on_apply failed for %s:\n%s", script_key, traceback.format_exc())
+    # Fire on-apply hook (never fail the apply if the hook throws)
+    script_key = (tag.get("script_key") or dal.normalize_key(tag.get("name", "")))
+    handler = REGISTRY.get(script_key, {}).get("on_apply")
+    if handler:
+        ctx = {
+            "instance_id": inst_id,
+            "owner_kind": owner_kind,
+            "owner_id": int(owner_id),
+            "anchor_path": anchor_path,
+            "stacks": int(stacks),
+            "intensity": float(intensity),
+            "polarity": polarity or tag.get("polarity"),
+            "confidence": confidence,
+            "metadata": meta,
+            "state": initial_state or "active",
+            "script_key": script_key,
+            "tag_name": tag_name,
+            "tag_id": int(tag["id"]),
+        }
+        try:
+            handler(ctx)
+        except Exception:
+            # Keep this quiet too; per-player logs will have details.
+            logging.getLogger("tags.api").warning("on_apply failed for %s", script_key, exc_info=True)
+
+    return inst_id
+
+
+
+# --- public API --------------------------------------------------------
+def apply_tag(
+    *,
+    owner_kind: str,
+    owner_id: int,
+    anchor_path: str,
+    tag_name: str,
+    stacks: int = 1,
+    intensity: float = 1.0,
+    duration_ms: Optional[int] = None,
+    polarity: Optional[str] = None,
+    confidence: Optional[float] = None,
+    source_kind: Optional[str] = None,
+    source_ref: Optional[str] = None,
+    metadata: Optional[Dict[str, Any]] = None,
+) -> int:
+    """
+    High-level tag applier:
+      1) look up catalog row,
+      2) insert/stack the instance (scheduling tick/expiry),
+      3) invoke registry['on_apply'] if present.
+    Returns tag_instance id.
+    """
+    tag = dal.get_tag_by_name(tag_name)
+    if not tag:
+        raise ValueError(f"Tag '{tag_name}' not found in catalog")
+
+    # Optional state-machine initial state (safe if column missing/empty)
+    initial_state: Optional[str] = None
+    try:
+        sm = json.loads(tag.get("state_machine_json") or "{}")
+        initial_state = sm.get("initial") or None
+    except Exception:
+        initial_state = None
+
+    # Effective scheduling values (catalog defaults unless overridden)
+    eff_duration_ms: Optional[int] = (
+        duration_ms if duration_ms is not None
+        else (int(tag.get("duration_ms") or 0) or None)
+    )
+    eff_tick_ms: Optional[int] = int(tag.get("tick_ms") or 0) or None
+
+    # Fold confidence into metadata (retained even if DAL has no column)
+    meta = dict(metadata or {})
+    if confidence is not None:
+        meta["_confidence"] = float(confidence)
+
+    # Use compatibility wrapper so older DALs (without 'polarity' etc.) still work.
+    inst_id = _safe_add_or_stack(
+        owner_kind=owner_kind,
+        owner_id=owner_id,
+        anchor_path=anchor_path,
+        tag_id=int(tag["id"]),
+        stacks=int(stacks),
+        intensity=float(intensity),
+        polarity=polarity or tag.get("polarity"),
+        state=initial_state or "active",
+        duration_ms=eff_duration_ms,
+        tick_ms=eff_tick_ms,
+        source_kind=source_kind,
+        source_ref=source_ref,
+        metadata=meta,
+    )
+
+    # Fire on-apply hook (never fail the apply if the hook throws)
+    script_key = (tag.get("script_key") or dal.normalize_key(tag.get("name", "")))
+    handler = REGISTRY.get(script_key, {}).get("on_apply")
+    if handler:
+        ctx = {
+            "instance_id": inst_id,
+            "owner_kind": owner_kind,
+            "owner_id": int(owner_id),
+            "anchor_path": anchor_path,
+            "stacks": int(stacks),
+            "intensity": float(intensity),
+            "polarity": polarity or tag.get("polarity"),
+            "confidence": confidence,
+            "metadata": meta,
+            "state": initial_state or "active",
+            "script_key": script_key,
+            "tag_name": tag_name,
+            "tag_id": int(tag["id"]),
+        }
+        try:
+            handler(ctx)
+        except Exception:
+            log.warning("on_apply failed for %s", script_key, exc_info=True)
 
     return inst_id

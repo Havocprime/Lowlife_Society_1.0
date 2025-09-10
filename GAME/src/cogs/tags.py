@@ -1,5 +1,10 @@
+# GAME/src/cogs/tags.py
 from __future__ import annotations
-import os, json, logging, traceback, uuid, difflib
+
+# Route all tag creation through the API (which already handles DAL compatibility)
+from src.systems.tags.api import apply_tag
+
+import os, logging, traceback, uuid, difflib, json
 from typing import Optional, Callable, Tuple
 
 import discord
@@ -9,23 +14,50 @@ from discord.ext import commands
 from src.systems.tags.schema import ensure_tags_schema  # runtime schema guard
 from src.systems.tags import dal as tag_dal
 from src.systems.tags.engine import TagEngine
-from src.systems.tags.api import apply_tag
 from src.db import dal as core_dal  # your main DAL
 from src.services import health as health_svc  # ✅ persisted health
 
 log = logging.getLogger("tags.cog")
 ENGINE = TagEngine()
 
-
 # ------------------------------ config ------------------------------
+
 
 def _enabled() -> bool:
     return os.getenv("TAGS_ENABLED", "0") == "1"
 
 FALLBACK_OWNER_KIND = os.getenv("TAGS_FALLBACK_OWNER_KIND", "discord")
 
+# ------------------------------ helpers (MODULE SCOPE!) -----------------------------
 
-# ------------------------------ helpers -----------------------------
+
+class TagsCog(commands.Cog):
+    def __init__(self, bot: commands.Bot):
+        self.bot = bot
+
+    async def cog_load(self):
+        try:
+            ensure_tags_schema()
+            log.info("Tags schema ensured.")
+        except Exception as e:
+            log.exception("Failed to ensure tags schema: %s", e)
+
+        # 🔇 Quiet chatty modules so only death CRITICAL lines hit the console
+        for noisy in (
+            "tags.registry",
+            "tags.engine",
+            "tags.api",     # silences the compat line if TAGS_COMPAT_LOG is not set
+            "health",
+            "heartbeat",    # those periodic pulses
+        ):
+            logging.getLogger(noisy).setLevel(logging.WARNING)
+
+        if _enabled():
+            await ENGINE.start()
+
+    async def cog_unload(self):
+        if _enabled():
+            await ENGINE.stop()
 
 # Robust owner resolver (player if available; else discord)
 def _resolve_owner(user: discord.abc.User) -> Tuple[str, int]:
@@ -35,12 +67,7 @@ def _resolve_owner(user: discord.abc.User) -> Tuple[str, int]:
     2) If none work, fall back to ('discord', discord_id).
     """
     candidates: list[tuple[str, Callable]] = []
-    for name in (
-        "get_or_create_player",
-        "get_or_create_account",
-        "player_get_or_create",
-        "ensure_player",
-    ):
+    for name in ("get_or_create_player", "get_or_create_account", "player_get_or_create", "ensure_player"):
         fn = getattr(core_dal, name, None)
         if callable(fn):
             candidates.append((name, fn))
@@ -85,11 +112,9 @@ def _canonical_tag_name(requested: str) -> Optional[str]:
     names = _catalog_names()
     if requested in names:
         return requested
-    # case-insensitive exact match
     lowered = {n.lower(): n for n in names}
     if requested.lower() in lowered:
         return lowered[requested.lower()]
-    # alias mapping
     alias = _ALIASES.get(requested.lower())
     if alias and alias in names:
         return alias
@@ -97,10 +122,95 @@ def _canonical_tag_name(requested: str) -> Optional[str]:
 
 def _suggest_names(requested: str, limit: int = 3) -> list[str]:
     names = _catalog_names()
-    # include alias targets once
     choices = list({*names, *(_ALIASES.values())})
     return difflib.get_close_matches(requested, choices, n=limit, cutoff=0.5)
 
+def _parse_severity(value: str | int | None) -> int:
+    """Map 'light/medium/heavy' or '1/2/3' (as str/int) → 1..3, default 3."""
+    if value is None:
+        return 3
+    s = str(value).strip().lower()
+    if s.isdigit():
+        try:
+            return max(1, min(3, int(s)))
+        except Exception:
+            return 3
+    mapping = {
+        "light": 1, "lite": 1, "minor": 1,
+        "medium": 2, "moderate": 2,
+        "heavy": 3, "severe": 3,
+    }
+    return mapping.get(s, 3)
+
+async def _apply_gunshot(
+    itx: Interaction,
+    *,
+    owner_kind: str,
+    owner_id: int,
+    target: discord.Member | discord.User,
+    anchor_path: str,
+    stacks: int,
+) -> None:
+    """Core implementation used by both /dev_gunshot and /wound_gunshot."""
+    gsw_name = _canonical_tag_name("Gunshot Wound")
+    if not gsw_name:
+        await itx.followup.send("❌ `Gunshot Wound` is not in the catalog. Run **/tag_seed** first.", ephemeral=True)
+        return
+
+    iid = apply_tag(
+        owner_kind=owner_kind,
+        owner_id=owner_id,
+        anchor_path=anchor_path,
+        tag_name=gsw_name,
+        stacks=max(1, int(stacks)),
+        duration_ms=None,
+        source_kind="cmd",
+        source_ref="gunshot",
+    )
+
+    bleed_name = _canonical_tag_name("Bleeding")
+    if bleed_name:
+        apply_tag(
+            owner_kind=owner_kind,
+            owner_id=owner_id,
+            anchor_path=anchor_path,
+            tag_name=bleed_name,
+            stacks=max(1, int(stacks) - 1),
+            duration_ms=None,
+            source_kind="cmd",
+            source_ref="gunshot",
+        )
+
+    await itx.followup.send(
+        f"🟢 Applied **Gunshot Wound** (sev {stacks}) @ `{anchor_path}` on {target.mention} "
+        f"(owner=`{owner_kind}:{owner_id}`, instance #{iid})",
+        ephemeral=True,
+    )
+
+# ------------------------------ seeding -----------------------------
+
+_DEFAULT_CATALOG = [
+    {"name": "Bleeding",       "kind": "dynamic", "polarity": "negative", "config_json": None},
+    {"name": "Gunshot Wound",  "kind": "event",   "polarity": "negative", "config_json": None},
+]
+
+def _seed_catalog() -> tuple[int, int]:
+    """
+    Insert defaults if missing.
+    Returns (inserted_count, total_rows_after).
+    """
+    con = tag_dal._conn()
+    inserted = 0
+    for row in _DEFAULT_CATALOG:
+        cur = con.execute(
+            "INSERT OR IGNORE INTO tags (name, kind, polarity, config_json) VALUES (?, ?, ?, ?)",
+            (row["name"], row["kind"], row["polarity"], row["config_json"]),
+        )
+        inserted += cur.rowcount if hasattr(cur, "rowcount") else 0
+    cur = con.execute("SELECT COUNT(*) AS c FROM tags")
+    total = cur.fetchone()["c"]
+    con.commit()
+    return (inserted, total)
 
 # ------------------------------ cog --------------------------------
 
@@ -109,12 +219,15 @@ class TagsCog(commands.Cog):
         self.bot = bot
 
     async def cog_load(self):
-        # Ensure schema before ticker does any queries
         try:
             ensure_tags_schema()
             log.info("Tags schema ensured.")
         except Exception as e:
             log.exception("Failed to ensure tags schema: %s", e)
+
+        # Quiet chatty modules; player deaths still appear as CRITICAL via playerlog.kill
+        for noisy in ("tags.registry", "tags.engine", "health"):
+            logging.getLogger(noisy).setLevel(logging.WARNING)
 
         if _enabled():
             await ENGINE.start()
@@ -137,7 +250,7 @@ class TagsCog(commands.Cog):
                 "SELECT name, kind, polarity FROM tags ORDER BY name LIMIT 200"
             ).fetchall()
             if not rows:
-                return await itx.followup.send("Catalog is empty. Run the seed script.", ephemeral=True)
+                return await itx.followup.send("Catalog is empty. Run /tag_seed.", ephemeral=True)
             lines = [
                 f"- **{r['name']}**  ({(r['kind'] or 'dynamic')}{(' · ' + r['polarity']) if r['polarity'] else ''})"
                 for r in rows
@@ -285,7 +398,7 @@ class TagsCog(commands.Cog):
 
     @app_commands.command(name="dev_gunshot", description="[DEV] Apply a Gunshot Wound (and auto-bleed) to a user")
     @app_commands.describe(
-        severity="light | medium | heavy",
+        severity="light | medium | heavy | 1 | 2 | 3",
         anchor_path="Where to attach (e.g., body:Left Bicep)",
         user="Target user (defaults to you)",
     )
@@ -305,61 +418,74 @@ class TagsCog(commands.Cog):
         try:
             target = user or itx.user
             owner_kind, owner_id = _resolve_owner(target)
-
-            sev_map = {
-                "light": 1, "lite": 1, "minor": 1,
-                "medium": 2, "moderate": 2,
-                "heavy": 3, "severe": 3,
-            }
-            stacks = sev_map.get(severity.lower(), 3)
-
-            # Apply Gunshot Wound
-            gsw_name = _canonical_tag_name("Gunshot Wound") or "Gunshot Wound"
-            iid = apply_tag(
+            stacks = _parse_severity(severity)
+            await _apply_gunshot(
+                itx,
                 owner_kind=owner_kind,
                 owner_id=owner_id,
+                target=target,
                 anchor_path=anchor_path,
-                tag_name=gsw_name,
                 stacks=stacks,
-                duration_ms=None,
-                source_kind="cmd",
-                source_ref="dev_gunshot",
-            )
-
-            # Optional: also ensure Bleeding present (if catalog has it)
-            bleed_name = _canonical_tag_name("Bleeding")
-            if bleed_name:
-                apply_tag(
-                    owner_kind=owner_kind,
-                    owner_id=owner_id,
-                    anchor_path=anchor_path,
-                    tag_name=bleed_name,
-                    stacks=max(1, stacks - 1),  # tiny scale with severity
-                    duration_ms=None,
-                    source_kind="cmd",
-                    source_ref="dev_gunshot",
-                )
-
-            await itx.followup.send(
-                f"🟢 Applied **Gunshot Wound** ({severity}) @ `{anchor_path}` on {target.mention} "
-                f"(owner=`{owner_kind}:{owner_id}`, instance #{iid})",
-                ephemeral=True,
             )
         except Exception:
             log.error("[dev_gunshot] trace=%s\n%s", trace, traceback.format_exc())
             await itx.followup.send(f"⚠️ Something broke. Trace `{trace}`.", ephemeral=True)
 
-    @app_commands.command(name="wound_gunshot", description="[DEV] Alias of /dev_gunshot")
+    @app_commands.command(name="wound_gunshot", description="[DEV] Numeric version of /dev_gunshot (1–3)")
+    @app_commands.describe(
+        severity="1 (light), 2 (medium), 3 (heavy)",
+        anchor_path="Where to attach (e.g., body:Left Bicep)",
+        user="Target user (defaults to you)",
+    )
     async def wound_gunshot(
         self,
         itx: Interaction,
-        severity: str = "heavy",
+        severity: app_commands.Range[int, 1, 3] = 3,
         anchor_path: str = "body:Left Bicep",
         user: Optional[discord.Member] = None,
     ):
-        await self.dev_gunshot(itx, severity=severity, anchor_path=anchor_path, user=user)
+        if not _enabled():
+            return await itx.response.send_message("Tags disabled.", ephemeral=True)
 
+        await itx.response.defer(ephemeral=True)
+        trace = uuid.uuid4().hex[:8]
+
+        try:
+            target = user or itx.user
+            owner_kind, owner_id = _resolve_owner(target)
+            await _apply_gunshot(
+                itx,
+                owner_kind=owner_kind,
+                owner_id=owner_id,
+                target=target,
+                anchor_path=anchor_path,
+                stacks=int(severity),
+            )
+        except Exception:
+            log.error("[wound_gunshot] trace=%s\n%s", trace, traceback.format_exc())
+            await itx.followup.send(f"⚠️ Something broke. Trace `{trace}`.", ephemeral=True)
+
+    # ----------------------- Seeder (always available) -----------------------
+
+    @app_commands.command(name="tag_seed", description="Seed the tag catalog with defaults (Bleeding, Gunshot Wound)")
+    async def tag_seed(self, itx: Interaction):
+        # Intentionally available even if TAGS_ENABLED=0 so you can prepare the DB.
+        await itx.response.defer(ephemeral=True)
+        trace = uuid.uuid4().hex[:8]
+        try:
+            ensure_tags_schema()
+            inserted, total = _seed_catalog()
+            con = tag_dal._conn()
+            rows = con.execute("SELECT name, kind, polarity FROM tags ORDER BY name").fetchall()
+            lines = [
+                f"Seeded {inserted} tag(s). Catalog now has {total} rows.",
+                *[f"- **{r['name']}**  ({(r['kind'] or 'dynamic')}{(' · ' + r['polarity']) if r['polarity'] else ''})" for r in rows]
+            ]
+            await itx.followup.send("\n".join(lines), ephemeral=True)
+        except Exception:
+            log.error("[tag_seed] trace=%s\n%s", trace, traceback.format_exc())
+            await itx.followup.send(f"⚠️ Seeding failed. Trace `{trace}`. Check logs.", ephemeral=True)
 
 async def setup(bot: commands.Bot):
-    if _enabled():
-        await bot.add_cog(TagsCog(bot))
+    # Always register the cog so commands are visible.
+    await bot.add_cog(TagsCog(bot))
