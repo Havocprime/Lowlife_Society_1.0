@@ -287,8 +287,18 @@ class LowlifeBot(commands.Bot):
             "src.cogs.admin_backfill",
             "src.cogs.heartbeat_taps",
             "src.cogs.tags",
+            "src.cogs.playerlog",
 
         ]
+
+        async def load_extensions(bot):
+            import importlib
+            for ext in STARTUP_EXTENSIONS:
+                try:
+                    await bot.load_extension(ext)
+                    logging.getLogger("boot").info("loaded extension: %s", ext)
+                except Exception:
+                    logging.getLogger("boot").exception("failed to load extension: %s", ext)
 
         async def try_load(module: str):
             try:

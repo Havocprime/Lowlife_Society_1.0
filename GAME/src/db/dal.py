@@ -130,6 +130,9 @@ def get_or_create_player(discord_id: str, username: Optional[str], display_name:
             (discord_id,),
         ).fetchone()
         return _row_to_player(row)
+    def ensure_player(discord_id:int)->int: ...
+# or get_or_create_player / player_get_or_create / get_or_create_account
+
 
 def set_player_alias(discord_id: str, alias: str) -> None:
     with get_conn() as cx:

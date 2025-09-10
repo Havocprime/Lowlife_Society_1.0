@@ -52,6 +52,10 @@ class TagsCog(commands.Cog):
         ):
             logging.getLogger(noisy).setLevel(logging.WARNING)
 
+        import logging as _logging
+        _logging.getLogger("tags.registry").setLevel(_logging.WARNING)
+        _logging.getLogger("health").setLevel(_logging.WARNING)
+
         if _enabled():
             await ENGINE.start()
 
