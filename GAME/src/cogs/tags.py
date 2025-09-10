@@ -540,41 +540,41 @@ class TagsCog(commands.Cog):
                 # Not fatal; older builds may not export ensure_seed_tags at module level
                 pass
 
-                # inside tag_seed(...)
-                con = tag_dal._conn()
+            # inside tag_seed(...)
+            con = tag_dal._conn()
 
-                # show which DB we’re actually talking to
-                db_path = _which_db(con)
-                lines = [f"🗄️ DB: `{db_path}`"]
+            # show which DB we’re actually talking to
+            db_path = _which_db(con)
+            lines = [f"🗄️ DB: `{db_path}`"]
 
-                # create tag_keys if it doesn't exist yet
-                has_tag_keys = bool(con.execute(
-                    "SELECT 1 FROM sqlite_master WHERE type='table' AND name='tag_keys'"
-                ).fetchone())
+            # create tag_keys if it doesn't exist yet
+            has_tag_keys = bool(con.execute(
+                "SELECT 1 FROM sqlite_master WHERE type='table' AND name='tag_keys'"
+            ).fetchone())
 
-                if not has_tag_keys:
-                    lines.append("ℹ️ `tag_keys` not found — creating and seeding from seed catalog.")
-                    _ensure_tag_keys_table(con)
-                    _migrate_seed_catalog_into_tag_keys(con)
-                    has_tag_keys = True
+            if not has_tag_keys:
+                lines.append("ℹ️ `tag_keys` not found — creating and seeding from seed catalog.")
+                _ensure_tag_keys_table(con)
+                _migrate_seed_catalog_into_tag_keys(con)
+                has_tag_keys = True
 
-                # list tag_keys (primary) and tags (legacy) if present
-                if has_tag_keys:
-                    c = con.execute("SELECT COUNT(*) FROM tag_keys").fetchone()[0]
-                    lines.append(f"🔧 `tag_keys` present — {c} key(s).")
-                    for r in con.execute("SELECT key, family, max_intensity FROM tag_keys ORDER BY key").fetchall():
-                        lines.append(f"- **{r['key']}**  (family:`{r['family']}`, max:{int(r['max_intensity'])})")
+            # list tag_keys (primary) and tags (legacy) if present
+            if has_tag_keys:
+                c = con.execute("SELECT COUNT(*) FROM tag_keys").fetchone()[0]
+                lines.append(f"🔧 `tag_keys` present — {c} key(s).")
+                for r in con.execute("SELECT key, family, max_intensity FROM tag_keys ORDER BY key").fetchall():
+                    lines.append(f"- **{r['key']}**  (family:`{r['family']}`, max:{int(r['max_intensity'])})")
 
-                if con.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='tags'").fetchone():
-                    c = con.execute("SELECT COUNT(*) FROM tags").fetchone()[0]
-                    lines.append(f"\n📚 `tags` table present — {c} row(s).")
-                    for r in con.execute("SELECT name, COALESCE(kind,'dynamic') AS kind, polarity FROM tags ORDER BY name").fetchall():
-                        pol = f" · {r['polarity']}" if r['polarity'] else ""
-                        lines.append(f"- **{r['name']}**  ({r['kind']}{pol})")
+            if con.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='tags'").fetchone():
+                c = con.execute("SELECT COUNT(*) FROM tags").fetchone()[0]
+                lines.append(f"\n📚 `tags` table present — {c} row(s).")
+                for r in con.execute("SELECT name, COALESCE(kind,'dynamic') AS kind, polarity FROM tags ORDER BY name").fetchall():
+                    pol = f" · {r['polarity']}" if r['polarity'] else ""
+                    lines.append(f"- **{r['name']}**  ({r['kind']}{pol})")
 
-                msg = "\n".join(lines)
-                if len(msg) > 1900: msg = msg[:1900] + "\n…"
-                await itx.followup.send(msg, ephemeral=True)
+            msg = "\n".join(lines)
+            if len(msg) > 1900: msg = msg[:1900] + "\n…"
+            await itx.followup.send(msg, ephemeral=True)
 
 
             con = tag_dal._conn()
