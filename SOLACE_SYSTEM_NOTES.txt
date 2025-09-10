@@ -1,0 +1,35 @@
+TRAUMA is a system by which - when the player drops under 30% hp, fight/flight is engaged. If they drop lower than 25% traumas begin to appear.
+Every time damage is taken under 25%
+
+
+Im super excited about the Solace system, its essentially forced player progression, but how substantial it is is based off your recent actions / previous choices.
+
+So basically it takes place as a project zomboid styled perk system- if youre firmiliar with that game. Essentially in PZ - 'perks' have positive or negative influences, I think they call them traits.
+
+But yeah most "positive" traits require negativite repercussions/investment
+You have a flat neutral amount of 'points' you can spend.
+Spend points buys perks that appear during meditation/reflection/solace.
+
+It sounds really simple at first- because its just basic gaming logic.
+Spend points - Buy traits - rinse repeat.
+
+But the traits all have caveats/drawbacks that allow us to 'forcibly' develop characters,   Most of the time theyre not isolated to one positive and one negative, but rather bundles of traits. And the player has to pick between two bundles that make the most sense to them>
+
+Hard of hearing / Fear of blood / Restless Sleep / Claustrophobic / Agoraphobic / Smoker / Weak Stomach / Night Owl / Brawler / Axe-pert / Adrenaline Junkie / Dextrous / Iron Gut / Savage / Sanity Decrease / Sanity Increase / Cold Blooded Killer / Bloodthirsty / Ruthless / No Morals / Cannibalism?
+
+Killing other players enacts trauma by default. Trauma is a basic stat that lives with your character once they undergo traumatic events, its also a token we use to judge certain actions/npc reactions/access.
+
+ Dropping under 30% HP enacts flight or fight & trauma.
+Whatever happens locally after this creates a trauma log, the trauma log will have all traumatic actions given / recieved / outcome of state, and they will be logged individually against the player until 'processed'.
+
+Trauma can be dealt with multiple ways:
+
+Drugs - Horizontal progression, Deal with it later, you need something to wipe out the jitters and aches and get you smooth again.
+
+Neutrality - Technically a negative way to deal with trauma, by not deciding the consequences grow over time. If your traits window doesnt change within a 7 day period - they begin to develop and auto apply. (This is for pruning inactive characters in the city, and is basically a moss mechanic that grows onto the player slowly crumbling their character over a week/tick. If the player returns after a period they'll have to put in work to reclaim their character, or more likely, limp it to some way to benefit the next character and restart.
+
+Therapy - Costs money, lets you shape your traumas.
+Essentially the therapist takes over and when you and them are in session they can see into your solace-window, accessing all the choices around your traits, and they can manipulate these packages by shaping them, ie randomizing the group of traits over and over until it looks better than it started. This is entirely based on the therapists int/ego/social skills.
+Think of it as a second talent tree, that somebody else controls.
+Doesnt matter who else. Just as long as you trust them to not fuck it up.
+Anyone can perform therapy on anyone else, its just often not worth it unless its a high skill level being used.
