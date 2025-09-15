@@ -1,6 +1,7 @@
 ﻿# GAME/src/cogs/heartbeat_taps.py
 from __future__ import annotations
 
+import os
 import logging
 import discord
 from discord import app_commands, Interaction
@@ -8,8 +9,32 @@ from discord.ext import commands
 
 log = logging.getLogger("hb.taps")
 
+
 def _hb(bot: commands.Bot):
     return getattr(bot, "_heartbeat", None)
+
+
+def _dash() -> str:
+    """Em dash with ASCII fallback if HEARTBEAT_ASCII=1."""
+    if os.getenv("HEARTBEAT_ASCII", "").strip().lower() in ("1", "true", "yes", "on"):
+        return "-"
+    try:
+        return "\N{EM DASH}"  # —
+    except Exception:
+        return "-"
+
+
+def _demojibake(s: str | None) -> str:
+    """Fix already-garbled text that was mis-decoded as latin-1."""
+    if not s:
+        return ""
+    if "â" not in s and "Ã" not in s:
+        return s
+    try:
+        return s.encode("latin1").decode("utf-8")
+    except Exception:
+        return s
+
 
 class HeartbeatTaps(commands.Cog):
     """
@@ -90,11 +115,15 @@ class HeartbeatTaps(commands.Cog):
             h.inc_work()
             await interaction.response.send_message("Heartbeat ticked (activity+work).", ephemeral=True)
         else:
-            await interaction.response.send_message(
-                f"Heartbeat â€” spinner:`{h.cfg.enable_spinner}` "
-                f"logging:`{h.cfg.enable_logging}` tick:`{h.tick}`",
-                ephemeral=True,
+            DASH = _dash()
+            msg = (
+                f"Heartbeat {DASH} "
+                f"spinner:`{getattr(h.cfg, 'enable_spinner', False)}` {DASH} "
+                f"logging:`{getattr(h.cfg, 'enable_logging', False)}` {DASH} "
+                f"tick:`{getattr(h, 'tick', getattr(h, '_tick', 0))}`"
             )
+            await interaction.response.send_message(_demojibake(msg), ephemeral=True)
+
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(HeartbeatTaps(bot))

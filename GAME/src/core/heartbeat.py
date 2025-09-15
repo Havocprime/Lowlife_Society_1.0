@@ -10,7 +10,7 @@ from collections import deque
 log = logging.getLogger("heartbeat")
 
 # Safe in most terminals; for pure ASCII use: ("-","\\","|","/")
-SPINNER = ("â ‹","â ™","â ¸","â ´","â ¦","â ‡")
+SPINNER = ("‹","™","¸","´","¦","‡")
 
 @dataclass
 class HeartbeatConfig:
