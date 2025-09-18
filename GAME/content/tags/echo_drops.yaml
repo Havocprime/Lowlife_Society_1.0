@@ -1,0 +1,19 @@
+key: fx.drug.echo_drops
+name: Echo Drops
+ns: fx
+kind: BUFF
+category: drug
+excludes_group: drug.high
+default_severity: 1
+base_duration_s: 420
+visible: PUBLIC
+effects:
+- id: hearing
+type: PERCEPTION_MOD
+params:
+audio_radius: 0.25
+detection_bonus: 0.2
+- id: focus_cost
+type: STAT_REGEN
+params:
+sanity_per_min: -1

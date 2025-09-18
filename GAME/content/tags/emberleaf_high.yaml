@@ -1,0 +1,25 @@
+key: fx.drug.emberleaf_high
+name: Emberleaf High
+ns: fx
+kind: BUFF
+category: drug
+icon: drug_emberleaf
+excludes_group: drug.high
+default_severity: 2
+base_duration_s: 900
+visible: PUBLIC
+effects:
+- id: calm
+type: ATTR_ADD
+params:
+CHA: 1
+WIS: 1
+- id: time_soften
+type: TIMESCALE_MOD
+params:
+local_game_timescale: 0.8
+- id: perception_shift
+type: PERCEPTION_MOD
+params:
+social_read: 0.15
+threat_detection: -0.10

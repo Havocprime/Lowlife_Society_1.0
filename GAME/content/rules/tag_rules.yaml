@@ -1,0 +1,36 @@
+- when: combat.hit
+if:
+damage_type: pierce
+body_zone: [arm, torso]
+do:
+apply:
+key: phys.wound.bleeding
+severity: 2
+duration_s: 300
+
+
+- when: item.consumed
+if:
+item_key: emberleaf_oil
+do:
+apply:
+key: fx.drug.emberleaf_high
+severity: 2
+duration_s: 1200
+
+
+- when: time.entered_zone
+if:
+zone: Industrial
+time: night
+do:
+apply:
+key: env.time.night
+
+
+- when: item.used
+if:
+item_key: coagulant_syringe
+do:
+remove:
+key: phys.wound.bleeding

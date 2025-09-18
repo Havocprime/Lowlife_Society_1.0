@@ -1,0 +1,23 @@
+key: phys.wound.bleeding
+name: Bleeding
+ns: phys
+kind: DEBUFF
+category: wound
+icon: tag_bleed
+default_severity: 2
+max_severity: 10
+stack_mode: SEVERITY
+resist_key: res_bleed
+base_duration_s: 600
+duration_mode: REAL
+visible: PUBLIC
+effects:
+- id: bleed_dot
+type: DOT
+params:
+hp_per_tick: 1 # base per tick; severity scaling occurs via content balancing later
+tick_s: 2
+- id: stamina_drain
+type: STAT_REGEN
+params:
+sta_per_min: -3

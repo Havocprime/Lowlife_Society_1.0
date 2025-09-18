@@ -1,0 +1,12 @@
+key: env.time.night
+name: Nighttime
+ns: env
+kind: CONTEXT
+category: time
+stack_mode: NONE
+visible: PUBLIC
+effects:
+- id: stealth
+type: ROLL_MOD
+params:
+stealth: 0.15

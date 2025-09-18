@@ -1,0 +1,16 @@
+key: phys.wound.bruise
+name: Bruise
+ns: phys
+kind: DEBUFF
+category: wound
+default_severity: 1
+max_severity: 10
+stack_mode: SEVERITY
+base_duration_s: 7200
+visible: PUBLIC
+effects:
+- id: pain_mod
+type: ROLL_MOD
+params:
+movement_accuracy: -0.02 # treat as per-severity scaled in a later pass
+aim_stability: -0.01

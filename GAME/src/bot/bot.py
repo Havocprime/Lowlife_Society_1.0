@@ -331,6 +331,8 @@ class LowlifeBot(commands.Bot):
             "src.cogs.heartbeat_taps",
             "src.cogs.tags",
             "src.cogs.playerlog",
+            "src.cogs.tags_admin",
+            
         ]
 
         async def try_load(module: str):

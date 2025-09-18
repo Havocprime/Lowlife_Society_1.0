@@ -1,0 +1,14 @@
+key: soc.state.wanted
+name: Wanted Level
+ns: soc
+kind: STATE
+category: legal
+default_severity: 1
+max_severity: 10
+stack_mode: SEVERITY
+visible: PUBLIC
+effects:
+- id: price_penalty
+type: ECON_MULT
+params:
+vendor_sell: 0.98

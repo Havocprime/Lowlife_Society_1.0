@@ -1,0 +1,89 @@
+Role,Tier,Ladder(s),Notes
+Universal Scavenger,T0,Scavenging,Baseline: everyone can scavenge
+Industrial Scrapper,T1,Scavenging / Industrial,"Strips metal, wiring, basic salvage"
+Auto Vulture,T2,Scavenging / Industrial,Salvages wrecked vehicles for usable parts
+Builder (Scav),T2,Scavenging / Industrial,"Collects construction materials, fort mats"
+Auto Breaker,T3,Scavenging / Industrial,Matches parts and crafts high-tier car mods
+Structural Reclaimer,T3,Scavenging / Industrial,Converts rubble into fortification components
+Scrapyard Boss,T4,Scavenging / Industrial,Controls regional scrap/parts flow (pivot node)
+Warlord (Scav),T4,Scavenging / Industrial,Supplies fortified materials to enforcers
+Chem Scavenger,T1,Scavenging / Chemistry,Collects household chemicals and cutters
+Urban Forager,T2,Scavenging / Chemistry,Good at finding reagents and low-tier precursors
+Biohazard Diver,T2,Scavenging / Chemistry,Extracts hospital/lab waste (hazmat risks)
+Street Alchemist,T3,Scavenging / Chemistry,Produces low–mid tier consumables
+Toxic Recycler,T3,Scavenging / Chemistry,Extracts high-value compounds from hazardous waste
+Pharma Ghost,T4,Scavenging / Chemistry,Monopolizes pharmaceutical scrap and rare reagents
+Hazmat Alchemist,T4,Scavenging / Chemistry,Refines exotic compounds for cartels & clinics
+Street Picker,T1,Scavenging / Street,Pickpocketing and small-item salvage
+Grifter Scavenger,T2,Scavenging / Street,"Specializes in wallets, small valuables, IDs"
+Relic Picker,T2,Scavenging / Street,"Finds collectibles, antiques, niche goods"
+Identity Thief,T3,Scavenging / Street & Fraud,Sanitizes IDs and creates false identities
+Black Market Picker,T3,Scavenging / Street,Networks with collectors and fences
+Wraith,T4,Scavenging / Street & Fraud,Wraith: master identity node; supplies fraud rings
+Fence,T4,Fencing / Smuggling,Launders and resells stolen goods; front operator
+Tech Salvager,T1,Scavenging / Tech,Harvests electronics and basic chips
+Circuit Rat,T2,Scavenging / Tech,"Strips PCBs, harvests useful modules"
+Data Scraper,T2,Scavenging / Tech,Extracts fragments from flash drives & drives
+Chip Harvester,T3,Scavenging / Tech,Pulls usable chips for custom gear
+Data Necro,T3,Scavenging / Tech,Reconstructs corrupted files and intel
+Circuit Architect,T4,Scavenging / Tech,"Builds black-market gear (scramblers, drone parts)"
+Data Kingpin,T4,Scavenging / Tech & Info,Aggregates/indexes data; major info broker (pivot)
+Street Mixer,T1,Drugs / Chemistry,Makes low-end cut drugs from scavenged reagents
+Apprentice Chemist,T2,Drugs / Chemistry,"Stable recipes, better yields than mixers"
+Lab Operator,T3,Drugs / Chemistry,Scales production; central mid/high chem role
+Drug Kingpin,T4,Drugs / Cartel,City-level control of consumables economy
+Courier / Mule,T1,Smuggling,Small package runs; low risk deliveries
+Runner,T2,Smuggling,Larger shipments; requires basic crew support
+Route Captain,T3,Smuggling,Plans routes and bribes; coordinates runners
+Smuggling Kingpin,T4,Smuggling,Controls cross-border or cross-city transport
+Burglar,T1,Theft / Burglary,"Break-ins, low-value theft"
+Safecracker,T2,Theft / Burglary,Specializes in safes and secured targets
+Professional Thief,T3,Theft / Heists,"High-value thefts, specialized targets"
+Heist Specialist,T3,Heists,Crew role; planner/executor for large scores
+Heist Mastermind,T4,Heists,Organizes multi-stage legendary jobs
+Boost Kid,T1,Car Theft,Steals cars for joyrides or quick flips
+Wheelman,T2,Car Theft / Drivers,Specialized driver & getaway specialist
+Chop Shop Operator,T3,Car Theft,Strips and resells vehicle parts
+Auto Boss,T4,Car Theft,Coordinates theft rings and fences cars
+Stick-Up Kid,T1,Robbery,Corner store/low-level robberies
+Armed Robber,T2,Robbery,Heavier targets with weapons
+Scammer,T1,Fraud,Small cons and quick scams
+Fraud Syndicate Operator,T3,Fraud,Runs organized credit/identity fraud
+White Collar Lord,T4,Fraud / Finance,Top-level money moves & fronts
+Script Kiddie,T1,Cyber,Low-skill hacking attempts
+System Intruder,T2,Cyber,Mid-tier system bypasses
+Cyber Heist Hacker,T3,Cyber,Corporate hacks and data thefts
+Digital Kingpin,T4,Cyber,Runs darknet markets & cyber syndicates
+Street Launderer,T1,Finance,"Small-scale cash cycling (e.g., laundromats)"
+Front Operator,T2,Finance,Owns legal businesses to hide cash
+Shell Game Boss,T3,Finance,Runs complex shell and offshore schemes
+Financial Architect,T4,Finance,Designs syndicate-level laundering networks
+Street Collector,T1,Racketeering,Basic protection collections
+Crew Racket Enforcer,T2,Racketeering,Manages territory & extortion operations
+Racketeer Boss,T3,Racketeering,Runs multiple rackets; collects major revenue
+Crime Syndicate Head,T4,Racketeering,Top of the organized crime ladder
+Street Muscle,T1,Enforcer / Violence,Low-tier hired muscle
+Crew Enforcer,T2,Enforcer,Collection & protection duties
+Pro Enforcer,T3,Enforcer,Professional-level enforcer operations
+Syndicate Warlord,T4,Enforcer,Leads militias and large-scale violence
+Tinkerer,T1,Manufacturer,Small mods and repairs
+Workshop Operator,T2,Manufacturer,Runs workshop production
+Black Market Manufacturer,T3,Manufacturer,Produces black-market gear
+Underground Armsmith,T4,Manufacturer,"Top-tier, syndicate-grade weapon maker"
+Cleaner,Specialist,Support,Removes evidence and reduces heat
+Street Fixer,T1,Fixer / Middleman,Connects small jobs and crews
+Contract Broker,T2,Fixer,Sources contracts and manages cuts
+District Fixer,T3,Fixer,Runs a district-level fixer network
+Legendary Fixer,T4,Fixer,Top of the fixer ladder; connects major players
+Patch Kid,T1,Medic,Basic field medical patchwork
+Underground Medic,T2,Medic,Better tools & procedures
+Organ Broker,T3,Medic,High-value illegal medical services
+Black Clinic Operator,T4,Medic,Runs full illegal surgical/clinic service
+Hustler,T1,Vice / Nightlife,Low-end club/front vendor
+Bar Manager,T2,Vice / Nightlife,Manages venue operations
+Club Owner,T3,Vice / Nightlife,Runs venue that launders & hosts deals
+Vice Lord,T4,Vice / Nightlife,City-level control of clubs & fronts
+Rumor Monger,T1,Info / Influence,Spreads gossip and small intel
+Snitch / Scout,T2,Info / Influence,Gathers actionable field intel
+Information Broker,T3,Info / Influence,Sells reliable intel to buyers
+Shadow King,T4,Info / Influence,Master manipulator of info & leverage
