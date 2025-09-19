@@ -85,7 +85,7 @@ def register_embed_demo(tree: app_commands.CommandTree):
         if not IMAGE_PATH.exists():
             await interaction.response.send_message(
                 content=(
-                    f"âš ï¸ Image not found at `{IMAGE_PATH}`.\n"
+                    f"âš ï¸ Image not found at `{IMAGE_PATH}`.\n"
                     "Please place your provided image there, or update IMAGE_PATH in `embed_demo.py`."
                 ),
                 ephemeral=True,
@@ -125,7 +125,7 @@ class EmbedDemo(commands.Cog):
     async def combat_embed_template_cog(self, interaction: discord.Interaction):
         if not IMAGE_PATH.exists():
             await interaction.response.send_message(
-                content=f"âš ï¸ Image not found at `{IMAGE_PATH}`.", ephemeral=True
+                content=f"âš ï¸ Image not found at `{IMAGE_PATH}`.", ephemeral=True
             )
             return
 

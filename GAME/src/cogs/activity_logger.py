@@ -600,7 +600,7 @@ class ActivityLogger(commands.Cog):
                     self.alert_channel_id
                 )
                 if isinstance(ch, discord.abc.Messageable):
-                    e = discord.Embed(title="âš  Risky permissions changed", color=0xFD9644)
+                    e = discord.Embed(title="âš  Risky permissions changed", color=0xFD9644)
                     e.add_field(name="User", value=f"{after.mention} (`{after.id}`)", inline=False)
                     if gained:
                         e.add_field(name="Gained", value=", ".join(gained), inline=False)

@@ -84,7 +84,7 @@ class CustodianDetectors(commands.Cog):
             # ping mods quietly (best-effort)
             try:
                 await message.channel.send(
-                    f"âš ï¸ Custodian: flagged <@{message.author.id}> for spam burst "
+                    f"âš ï¸ Custodian: flagged <@{message.author.id}> for spam burst "
                     f"({SPAM_N}/{SPAM_T}s).{' Auto-frozen.' if AUTO_FREEZE else ''}",
                     delete_after=10
                 )

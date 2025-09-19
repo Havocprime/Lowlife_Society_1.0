@@ -75,7 +75,7 @@ async def maybe_ai_take_turn(inter, state: DuelState):
                 winner = state.winner()
                 if winner:
                     state.finisher = (winner.user_id, target)
-                    msg = "â˜ ï¸ Your opponent is **unconscious**. Choose their fate."
+                    msg = "â˜ ï¸ Your opponent is **unconscious**. Choose their fate."
                     if not state.log_lines or state.log_lines[-1] != msg:
                         state.add_raw(msg)
             state.end_turn()

@@ -272,7 +272,7 @@ class AdminInspector(commands.Cog):
         )
 
         e = discord.Embed(
-            title="ðŸ› ï¸ Admin Inspector â€” Full Profile",
+            title="ðŸ› ï¸ Admin Inspector â€” Full Profile",
             description=header,
             colour=discord.Color.blurple(),
         )
@@ -291,7 +291,7 @@ class AdminInspector(commands.Cog):
 
         e.add_field(name="Top Roles", value=(", ".join(top3) or "â€”"), inline=False)
         e.add_field(
-            name="âš ï¸ High-Risk Perms (top 5)", value=(", ".join(high_risk) or "â€”"), inline=False
+            name="âš ï¸ High-Risk Perms (top 5)", value=(", ".join(high_risk) or "â€”"), inline=False
         )
         e.add_field(name="Trusted", value=("Yes âœ…" if trusted else "No âŒ"), inline=True)
         e.add_field(name="Accent", value=f"`{_hex_color(accent_val) or 'â€”'}`", inline=True)

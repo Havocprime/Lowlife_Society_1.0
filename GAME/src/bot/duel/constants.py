@@ -14,8 +14,8 @@ GLYPH_GRAPPLE = "ðŸ¤¼"  # special glyph shown when grappling
 
 # --- Lane background tiles ---
 # Bottom-lane background tile (day/night); we kept these neutral for dark Discord themes.
-BG_NIGHT = "â €"  # blank braille space (renders as very subtle dotless gap)
-BG_DAY = "â €"
+BG_NIGHT = "â €"  # blank braille space (renders as very subtle dotless gap)
+BG_DAY = "â €"
 TOP_BG = " "  # not rendered to Discord as a separate field; string-composed only
 
 # --- Trail tokens (used to mark every tile traversed) ---

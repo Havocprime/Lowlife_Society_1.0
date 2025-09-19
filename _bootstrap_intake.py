@@ -381,7 +381,7 @@ class AdminInspector(commands.Cog):
                 "permissions_false": [p for p, allowed in dict(member.guild_permissions).items() if not allowed],
             }
         }
-        e = discord.Embed(title="ðŸ› ï¸ Admin Inspector", description=f"Full dump for {member.mention}", colour=discord.Color.blurple())
+        e = discord.Embed(title="ðŸ› ï¸ Admin Inspector", description=f"Full dump for {member.mention}", colour=discord.Color.blurple())
         e.add_field(name="ID", value=f"`{member.id}`", inline=True)
         e.add_field(name="Account Created", value=f"`{data['user']['created_at']}`", inline=True)
         e.add_field(name="Joined Guild", value=f"`{data['member']['joined_at'] or 'â€”'}`", inline=True)

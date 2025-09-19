@@ -298,7 +298,7 @@ class PlayerLogCog(commands.Cog):
                     md = (r.get("metadata") or {})
                     hp_to = md.get("set_hp")
                     ok = md.get("ok")
-                    return f"- `{t}` Â· **PLAYER REVIVE** Â· hpâ†’`{hp_to}` {'âœ…' if ok else 'âš ï¸'}{src}"
+                    return f"- `{t}` Â· **PLAYER REVIVE** Â· hpâ†’`{hp_to}` {'âœ…' if ok else 'âš ï¸'}{src}"
                 else:
                     return f"- `{t}` Â· **{k}**{anchor}{src}"
 
@@ -307,7 +307,7 @@ class PlayerLogCog(commands.Cog):
             await itx.followup.send("\n".join(lines), ephemeral=True)
         except Exception:
             log.error("[playerlog] trace=%s\n%s", trace, traceback.format_exc())
-            await itx.followup.send(f"âš ï¸ Something broke. Trace `{trace}`.", ephemeral=True)
+            await itx.followup.send(f"âš ï¸ Something broke. Trace `{trace}`.", ephemeral=True)
 
     # ------------------------------ /revive ----------------------------
     @app_commands.command(name="revive", description="Admin: restore HP and log a revive")
@@ -345,7 +345,7 @@ class PlayerLogCog(commands.Cog):
         except Exception:
             log.debug("revive append_event failed", exc_info=True)
 
-        msg = f"Revive {'âœ…' if ok else 'âš ï¸'} â€” set HP â†’ `{target_hp}` for `{owner_kind}:{owner_id}`"
+        msg = f"Revive {'âœ…' if ok else 'âš ï¸'} â€” set HP â†’ `{target_hp}` for `{owner_kind}:{owner_id}`"
         await itx.followup.send(msg, ephemeral=True)
 
 

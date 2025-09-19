@@ -43,7 +43,7 @@ UNICODE_TILESET = Tileset(
         },
         "enemies": {
             "default": "âœ–",  # defeat marker / enemy
-            "boss": "â˜ ï¸",
+            "boss": "â˜ ï¸",
             "npc": "â—¼ï¸",
         },
         "cover": {
@@ -69,7 +69,7 @@ UNICODE_TILESET = Tileset(
         },
         "status": {
             "ok": "ðŸŸ¢",
-            "hurt": "ðŸŸ ",
+            "hurt": "ðŸŸ ",
             "down": "ðŸ”´",
             "hidden": "ðŸ•¶ï¸",
             "alert": "ðŸš¨",
