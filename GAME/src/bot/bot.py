@@ -6,11 +6,14 @@ import os, sys
 os.environ.setdefault("PYTHONIOENCODING", "utf-8")
 os.environ.setdefault("PYTHONUTF8", "1")
 try:
-    # Python 3.7+; harmless on non-TTYs
     sys.stdout.reconfigure(encoding="utf-8")
     sys.stderr.reconfigure(encoding="utf-8")
 except Exception:
     pass
+
+# --- Feature flags (simple on/off switch for Tag system) ---
+FEATURE_TAGS = os.getenv("FEATURE_TAGS", "1") == "1"
+
 # --------------------------------------------------------------------------------
 
 import asyncio
@@ -56,7 +59,7 @@ logging.basicConfig(
 logging.getLogger("discord.gateway").setLevel(logging.ERROR)
 log = logging.getLogger("boot")
 
-BUILD_TAG = "bot.py:v6g-utf8-hardened+demojibake"
+BUILD_TAG = "bot.py:v6k-utf8-guard+http-scrub+all-senders"
 
 # ---------- paths & env ----------
 for p in (GAME_DIR, SRC_DIR, REPO_DIR):
@@ -76,6 +79,16 @@ if len(tok) < 40 or (" " in tok) or ("\n" in tok) or ("\r" in tok):
 
 TOKEN = SETTINGS.discord_token
 GUILD_ID = SETTINGS.guild_id
+
+# ---- Try the deep guard early (it may add its own wrappers) ----
+try:
+    from src.utils.utf8_guard import install_utf8_guard
+    install_utf8_guard(logger=log)
+    log.info("utf8 deep-guard installed")
+    _DEEP_GUARD_OK = True
+except Exception:
+    log.exception("failed to install utf8 deep-guard")
+    _DEEP_GUARD_OK = False
 
 # event helpers (for /inspect_full)
 from src.core.events import (  # noqa: E402
@@ -113,19 +126,36 @@ except Exception:
 
 # ---------- Encoding helpers ----------
 def demojibake(s: str | None) -> str:
-    """
-    If text went through UTF-8→CP1252 mojibake (e.g., shows as 'â€”', 'â€¦'),
-    try to recover it. Safe fallback: original string.
-    """
+    """If text went through UTF-8→CP1252 mojibake (â€” / ðŸ…), try to recover."""
     if not s:
         return ""
-    # quick signal to avoid touching normal ASCII
-    if "â" not in s and "Ã" not in s:
+    # Fast exit if clearly clean ASCII
+    if all(ord(ch) < 128 for ch in s):
         return s
-    try:
-        return s.encode("latin1").decode("utf-8")
-    except Exception:
-        return s
+
+    # Heuristic: if it *looks* baked, attempt repairs (cp1252 and latin1)
+    # Markers cover lines like â”€â”€â”€, ðŸ•, Iâ€™ll, âœ…
+    markers = ("Ã", "Â", "â", "ð", "�", "”", "€", "™")
+    if not any(m in s for m in markers):
+        # Still normalize NBSP and friends
+        return s.replace("\u00A0", " ")
+
+    def _one(x: str) -> str:
+        try:
+            return x.encode("cp1252").decode("utf-8")
+        except Exception:
+            try:
+                return x.encode("latin1").decode("utf-8")
+            except Exception:
+                return x
+
+    prev = s
+    for _ in range(3):  # triple-pass to unwind doubles like Ã¢â‚¬â„¢
+        fixed = _one(prev)
+        if fixed == prev:
+            break
+        prev = fixed
+    return prev.replace("\u00A0", " ")
 
 
 # ---------- small helpers ----------
@@ -137,13 +167,11 @@ def _hex_color(v):
 
 
 def _rel_ymdh(a: datetime | None, b: datetime | None = None) -> str:
-    """Rough 'y_m_d_h ago' string (years, months, days, hours)."""
     if not a:
         return "—"
     if b is None:
         b = datetime.now(timezone.utc)
     from calendar import monthrange
-
     y = b.year - a.year - ((b.month, b.day, b.hour) < (a.month, a.day, a.hour))
     ay = a.replace(year=a.year + y)
     m = (b.year - ay.year) * 12 + b.month - ay.month - (b.day < ay.day)
@@ -154,20 +182,15 @@ def _rel_ymdh(a: datetime | None, b: datetime | None = None) -> str:
     delta = b - anchor
     d = delta.days
     h = delta.seconds // 3600
-
     parts = []
-    if y:
-        parts.append(f"{y}_years")
-    if m:
-        parts.append(f"{m}_months")
-    if d:
-        parts.append(f"{d}_days")
+    if y: parts.append(f"{y}_years")
+    if m: parts.append(f"{m}_months")
+    if d: parts.append(f"{d}_days")
     parts.append(f"{h}_hours")
     return "_".join(parts) + " ago"
 
 
 def _fmt_ts_local(ts_in) -> str:
-    """DD/MM/YY H:MM AM/PM in LA time if available; accepts iso 'Z', seconds, ms, datetime."""
     try:
         if isinstance(ts_in, datetime):
             dt = ts_in
@@ -203,7 +226,6 @@ def _snippet(s: str | None, n: int = 120) -> str:
 
 
 def _ch_label_from_payload(guild: discord.Guild, d: dict) -> str:
-    """Return '#channelname' if found, otherwise <#id> or '—'."""
     cid = d.get("channel_id") or d.get("channel") or d.get("cid")
     if isinstance(cid, dict):
         cid = cid.get("id")
@@ -237,13 +259,139 @@ def _is_trusted(member: discord.Member) -> bool:
         return False
 
 
+# =============== Always-on cp1252/latin1 → UTF-8 repair layer ==================
+def _utf8_clean(s: str | None) -> str | None:
+    if not isinstance(s, str) or not s:
+        return s
+    # normalize NBSP quickly
+    s = s.replace("\u00A0", " ")
+    # try deep de-mojibake if it looks baked
+    return demojibake(s)
+
+def _clean_embed(e: discord.Embed | None) -> discord.Embed | None:
+    if not isinstance(e, discord.Embed):
+        return e
+    if e.title:
+        e.title = _utf8_clean(e.title) or ""
+    if e.description:
+        e.description = _utf8_clean(e.description) or ""
+    for i, f in enumerate(list(e.fields)):
+        e.set_field_at(i,
+            name=_utf8_clean(f.name) or "",
+            value=_utf8_clean(f.value) or "",
+            inline=f.inline,
+        )
+    try:
+        ft = getattr(e.footer, "text", None)
+        if ft:
+            e.set_footer(text=_utf8_clean(ft) or "", icon_url=getattr(e.footer, "icon_url", discord.Embed.Empty))
+    except Exception:
+        pass
+    try:
+        an = getattr(e.author, "name", None)
+        if an:
+            e.set_author(name=_utf8_clean(an) or "", icon_url=getattr(e.author, "icon_url", discord.Embed.Empty))
+    except Exception:
+        pass
+    return e
+
+def _clean_args_kwargs(args, kwargs):
+    # positional content (Messageable.send allows content as first arg)
+    if args and isinstance(args[0], str):
+        args = list(args)
+        args[0] = _utf8_clean(args[0])
+    if "content" in kwargs and isinstance(kwargs["content"], str):
+        kwargs["content"] = _utf8_clean(kwargs["content"])
+    if "embed" in kwargs and kwargs["embed"]:
+        kwargs["embed"] = _clean_embed(kwargs["embed"])
+    if "embeds" in kwargs and kwargs["embeds"]:
+        kwargs["embeds"] = [_clean_embed(e) for e in kwargs["embeds"]]
+    # also sanitize allowed_mentions.parse strings just in case
+    if "allowed_mentions" in kwargs:
+        am = kwargs["allowed_mentions"]
+        try:
+            if hasattr(am, "to_dict"):
+                d = am.to_dict()
+                for k, v in list(d.items()):
+                    if isinstance(v, str):
+                        d[k] = _utf8_clean(v)
+                kwargs["allowed_mentions"] = discord.AllowedMentions(**{k: v for k, v in d.items() if k in {"everyone","users","roles","replied_user"}})
+        except Exception:
+            pass
+    return args, kwargs
+
+def _wrap_once(obj, attr, tag):
+    """Wrap obj.attr only once; tag marks the function."""
+    try:
+        orig = getattr(obj, attr)
+        if getattr(orig, "__utf8_wrap_tag__", None) == tag:
+            return
+        async def wrapper(*args, **kwargs):
+            a, k = _clean_args_kwargs(args, kwargs)
+            return await orig(*a, **k)
+        wrapper.__utf8_wrap_tag__ = tag  # type: ignore[attr-defined]
+        setattr(obj, attr, wrapper)
+    except Exception:
+        log.exception("utf8 wrap failed for %s.%s", getattr(obj, "__name__", obj), attr)
+
+def install_cp1252_repair_layer():
+    # Interaction first reply / edit
+    _wrap_once(discord.InteractionResponse, "send_message", "utf8_fix")
+    _wrap_once(discord.InteractionResponse, "edit_message",  "utf8_fix")
+    _wrap_once(discord.Interaction,          "edit_original_response", "utf8_fix")
+    # Webhook followups (ephemeral/non-ephemeral) & edits
+    try:
+        from discord.webhook.async_ import Webhook
+        _wrap_once(Webhook, "send",         "utf8_fix")
+        _wrap_once(Webhook, "edit_message", "utf8_fix")
+    except Exception:
+        log.exception("utf8 wrap for Webhook failed")
+    # ctx.send / channel.send / reply
+    _wrap_once(discord.abc.Messageable, "send", "utf8_fix")
+    try:
+        _wrap_once(discord.Message, "reply", "utf8_fix")
+    except Exception:
+        pass
+    # message.edit
+    _wrap_once(discord.Message, "edit", "utf8_fix")
+    log.info("utf8 cp1252-repair layer active")
+
+# ===============================================================================
+# =============== HTTP JSON UTF-8 scrub (deep clean right before send) ==========
+from discord.http import HTTPClient
+
+def _scrub_json(obj):
+    if obj is None:
+        return None
+    if isinstance(obj, str):
+        return demojibake(obj)
+    if isinstance(obj, list):
+        return [_scrub_json(x) for x in obj]
+    if isinstance(obj, tuple):
+        return tuple(_scrub_json(x) for x in obj)
+    if isinstance(obj, dict):
+        return {k: _scrub_json(v) for k, v in obj.items()}
+    return obj
+
+_HTTP_request_orig = HTTPClient.request
+async def _HTTP_request_scrubbed(self, route, **kwargs):
+    if "json" in kwargs and kwargs["json"] is not None:
+        kwargs["json"] = _scrub_json(kwargs["json"])
+    # ensure aiohttp doesn't try to ascii-escape
+    kwargs.setdefault("headers", {})
+    if isinstance(kwargs["headers"], dict):
+        if "Content-Type" not in kwargs["headers"]:
+            kwargs["headers"]["Content-Type"] = "application/json; charset=utf-8"
+    return await _HTTP_request_orig(self, route, **kwargs)
+
+HTTPClient.request = _HTTP_request_scrubbed  # type: ignore[attr-defined]
+logging.getLogger("boot").info("http json utf8 scrub installed")
+# ===============================================================================
+
+
 # ---------- Global gate via CommandTree ----------
 class LowlifeTree(app_commands.CommandTree):
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        """
-        Global gate: block frozen accounts before any slash command runs.
-        Uses the same DB path as the custodian_cog for consistency.
-        """
         try:
             import sqlite3
             dbp = Path(__file__).parents[2] / "db" / "audit.sqlite"
@@ -253,14 +401,13 @@ class LowlifeTree(app_commands.CommandTree):
                     (str(getattr(interaction.user, "id", "")),),
                 ).fetchone()
             if row:
-                msg = f"🚫 Your account is temporarily frozen: **{row[0]}**"
+                msg = f"🚫 Your account is temporarily frozen: **{demojibake(row[0])}**"
                 if not interaction.response.is_done():
                     await interaction.response.send_message(msg, ephemeral=True)
                 else:
                     await interaction.followup.send(msg, ephemeral=True)
                 return False
         except Exception:
-            # fail open; do not block commands on DB hiccups
             pass
         return True
 
@@ -273,8 +420,13 @@ class LowlifeBot(commands.Bot):
         self._bootstrap_synced: bool = False
 
     async def setup_hook(self):
-        # global crash/error capture
         setup_error_reporting(self)
+
+        # Always install our cp1252 repair layer (even if deep guard was OK)
+        try:
+            install_cp1252_repair_layer()
+        except Exception:
+            log.exception("failed to install cp1252 repair layer")
 
         # --- Custodian schema on boot ---
         try:
@@ -303,13 +455,21 @@ class LowlifeBot(commands.Bot):
             audit_event = getattr(_audit_mod, "audit_event")
         except Exception as e:
             log.warning("audit decorator unavailable (%s) — using no-op.", e)
-
             def audit_event(*_a, **_k):  # type: ignore
                 def deco(fn):
                     return fn
                 return deco
 
-        # Base cogs to load
+        # ----------------------------- COG LOADING -----------------------------
+        async def try_load(module: str):
+            try:
+                await self.load_extension(module)
+                log.info("loaded extension: %s", module)
+            except Exception:
+                log.exception("failed to load %s", module)
+
+        feature_tags_on = os.getenv("FEATURE_TAGS", "1") == "1"
+
         COGS = [
             "src.cogs.activity_logger",
             "src.cogs.admin_inspector",
@@ -329,23 +489,14 @@ class LowlifeBot(commands.Bot):
             "src.cogs.profile",
             "src.cogs.admin_backfill",
             "src.cogs.heartbeat_taps",
-            "src.cogs.tags",
             "src.cogs.playerlog",
-            "src.cogs.tags_admin",
-            
         ]
-
-        async def try_load(module: str):
-            try:
-                await self.load_extension(module)
-                log.info("loaded extension: %s", module)
-            except Exception:
-                log.exception("failed to load %s", module)
+        if feature_tags_on:
+            COGS += ["src.cogs.tags", "src.cogs.tags_admin"]
 
         for module in COGS:
             await try_load(module)
 
-        # Extra/feature/admin cogs (best-effort)
         for module in (
             "src.cogs.events",
             "src.admin.sync",
@@ -478,8 +629,7 @@ class LowlifeBot(commands.Bot):
             notes = list_admin_notes(interaction.guild.id, member.id, 2)  # type: ignore
             notes_lines = (
                 [f"`{ts}` — <@{aid}> — {demojibake(note)}" for (_nid, ts, aid, note) in notes]
-                if notes
-                else []
+                if notes else []
             )
 
             header = "\n".join(
@@ -504,7 +654,7 @@ class LowlifeBot(commands.Bot):
             e.add_field(
                 name="Status / Devices",
                 value=f"Current Status: {status} <{last_acted_pretty}>\n"
-                f"🖥️ {dev['desktop']}\n📱 {dev['mobile']}\n🌐 {dev['web']}",
+                      f"🖥️ {dev['desktop']}\n📱 {dev['mobile']}\n🌐 {dev['web']}",
                 inline=False,
             )
             if activities:
@@ -544,7 +694,6 @@ class LowlifeBot(commands.Bot):
             e.add_field(name="Msg Counts", value=f"7d: `{msg7}` • 30d: `{msg30}`", inline=True)
             e.add_field(name="Log DB", value=f"`{str(DB_PATH)}`", inline=True)
 
-            # recent actions (from your compact events table)
             try:
                 recents = recent_events(member.id, 50, interaction.guild.id)  # type: ignore[attr-defined]
             except TypeError:
@@ -553,7 +702,6 @@ class LowlifeBot(commands.Bot):
             def _recent_line(ts, kind, data):
                 ch = _ch_label_from_payload(interaction.guild, data) if interaction.guild else "—"  # type: ignore
                 txt = _snippet(_extract_text(data))
-
                 if kind == "message":
                     prefix = "Msg";  body = txt or "—"
                 elif kind == "message_edit":
@@ -570,32 +718,24 @@ class LowlifeBot(commands.Bot):
                     if not body:
                         sb = str(data.get("status_before") or data.get("before") or "").strip()
                         sa = str(data.get("status_after") or data.get("after") or "").strip()
-
                         after_snap = data.get("after") if isinstance(data.get("after"), dict) else {}
                         devbits = []
                         desk = str(after_snap.get("desktop") or "").strip()
                         mob = str(after_snap.get("mobile") or "").strip()
                         web = str(after_snap.get("web") or "").strip()
-                        if desk and desk.lower() != "offline":
-                            devbits.append("🖥️ " + desk)
-                        if mob and mob.lower() != "offline":
-                            devbits.append("📱 " + mob)
-                        if web and web.lower() != "offline":
-                            devbits.append("🌐 " + web)
+                        if desk and desk.lower() != "offline": devbits.append("🖥️ " + desk)
+                        if mob and mob.lower() != "offline":  devbits.append("📱 " + mob)
+                        if web and web.lower() != "offline":  devbits.append("🌐 " + web)
                         acts = after_snap.get("activities") or []
                         act_txt = ", ".join([str(a) for a in acts][:2])
-
                         parts = []
-                        if sb or sa:
-                            parts.append(f"{sb or '—'} → {sa or '—'}")
+                        if sb or sa: parts.append(f"{sb or '—'} → {sa or '—'}")
                         tail = " • ".join([p for p in (" | ".join(devbits) if devbits else "", act_txt) if p])
-                        if tail:
-                            parts.append(tail)
+                        if tail: parts.append(tail)
                         body = " — ".join(parts) if parts else ""
                 else:
                     prefix = kind.replace("_", " ").title()
                     body = txt or ""
-
                 return f"{_fmt_ts_local(ts)}  {prefix}@{ch} - {demojibake(body) or '—'}"
 
             pretty = []
@@ -629,7 +769,7 @@ class LowlifeBot(commands.Bot):
             for ts, kind, payload in recents:
                 w.writerow([ts, kind, payload])
             f = discord.File(io.BytesIO(s.getvalue().encode("utf-8")), filename=f"recent_actions_{member.id}.csv")
-            await interaction.followup.send(embed=e, file=f, ephemeral=True)
+            await interaction.followup.send(embed=_clean_embed(e), file=f, ephemeral=True)
 
         # ----- register & SYNC with safe guild handling -----
         async def register_and_sync():
@@ -639,7 +779,6 @@ class LowlifeBot(commands.Bot):
                 if "already registered" not in str(e).lower():
                     log.warning("add_command(global,inspect_full) failed: %s", e)
 
-            # debug inventory
             try:
                 all_cmds = list(self.tree.get_commands())
                 log.info("pre-sync: tree has %d top-level commands", len(all_cmds))
@@ -684,7 +823,6 @@ class LowlifeBot(commands.Bot):
                     g_count,
                 )
 
-            # Inventory: list what got registered (walk groups safely)
             def _log_cmd(c: app_commands.Command | app_commands.ContextMenu | app_commands.Group):
                 qname = getattr(c, "qualified_name", getattr(c, "name", "?"))
                 cb = getattr(c, "callback", None)
@@ -701,27 +839,17 @@ class LowlifeBot(commands.Bot):
         await register_and_sync()
 
     async def _bootstrap_sync_once(self):
-        """
-        One-time emergency sync to break the 'guarded sync' deadlock.
-        We call the ORIGINAL (unwrapped) CommandTree.sync directly, bypassing admin.sync's guard.
-        """
         if self._bootstrap_synced:
             return
         self._bootstrap_synced = True
-
-        # obtain the original (unwrapped) function object
         try:
             orig_sync_fn = inspect.unwrap(app_commands.CommandTree.sync)
             bound_sync = orig_sync_fn.__get__(self.tree, app_commands.CommandTree)
-
-            # Global sync
             try:
                 gcmds = await bound_sync()
                 log.info("bootstrap sync (unwrapped): global ok — %d cmds", len(gcmds))
             except Exception as e:
                 log.warning("bootstrap sync (unwrapped): global sync failed: %s", e)
-
-            # Guild sync
             if GUILD_ID:
                 try:
                     gcmds = await bound_sync(guild=discord.Object(id=GUILD_ID))
@@ -735,7 +863,6 @@ class LowlifeBot(commands.Bot):
         log.info("Logged in as %s (%s) — %s", self.user, getattr(self.user, "id", "?"), BUILD_TAG)
         await self._bootstrap_sync_once()
 
-    # ---------- HEARTBEAT: graceful shutdown ----------
     async def close(self):
         try:
             if self._heartbeat:
@@ -748,7 +875,7 @@ class LowlifeBot(commands.Bot):
 def build_bot() -> LowlifeBot:
     intents = discord.Intents.default()
     intents.guilds = True
-    intents.members = True         # required for on_member_join
+    intents.members = True
     intents.presences = True
     intents.message_content = True
     return LowlifeBot(command_prefix="!", intents=intents, tree_cls=LowlifeTree)

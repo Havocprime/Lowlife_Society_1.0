@@ -39,7 +39,7 @@ class TagSeedCog(commands.Cog):
         except Exception:
             tb = traceback.format_exc()
             await itx.response.send_message(
-                f"âš ï¸ Seeding failed. Check logs.\n```\n{tb}\n```",
+                f"âš ï¸ Seeding failed. Check logs.\n```\n{tb}\n```",
                 ephemeral=True,
             )
 

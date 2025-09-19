@@ -56,7 +56,7 @@ def register_inventory(tree: app_commands.CommandTree) -> None:
     @app_commands.describe(item_id="ID of the item to equip (see /inv listitems or /inv show).")
     async def equip(inter: discord.Interaction, item_id: str):
         ok, msg = await equip_item(inter.user.id, item_id)
-        await _safe_reply(inter, content=("âœ… " if ok else "âš ï¸ ") + msg, ephemeral=True)
+        await _safe_reply(inter, content=("âœ… " if ok else "âš ï¸ ") + msg, ephemeral=True)
         if ok:
             items, eq = await get_inventory(inter.user.id)
             await inter.followup.send(embed=_inv_embed(inter.user, items, eq), ephemeral=True)
@@ -65,7 +65,7 @@ def register_inventory(tree: app_commands.CommandTree) -> None:
     @app_commands.describe(slot=f"One of: {', '.join(SLOTS)}")
     async def unequip(inter: discord.Interaction, slot: str):
         ok, msg = await unequip_slot(inter.user.id, slot)
-        await _safe_reply(inter, content=("âœ… " if ok else "âš ï¸ ") + msg, ephemeral=True)
+        await _safe_reply(inter, content=("âœ… " if ok else "âš ï¸ ") + msg, ephemeral=True)
         if ok:
             items, eq = await get_inventory(inter.user.id)
             await inter.followup.send(embed=_inv_embed(inter.user, items, eq), ephemeral=True)

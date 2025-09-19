@@ -45,8 +45,8 @@ GLYPH_A_SMALL = "ðŸ”¶"
 GLYPH_B_SMALL = "ðŸ”·"
 GLYPH_GRAPPLE = "ðŸ¤¼"
 
-BG_NIGHT = "â €"  # bottom lane background, night
-BG_DAY = "â €"  # bottom lane background, day
+BG_NIGHT = "â €"  # bottom lane background, night
+BG_DAY = "â €"  # bottom lane background, day
 TOP_BG = " "  # spacer for the top row
 
 TRAIL_A = "â”€â”€â”€"
@@ -839,7 +839,7 @@ class ChokeView(discord.ui.View):
             winner = self.state.winner()
             if winner:
                 self.state.finisher = (winner.user_id, target)
-                msg = "â˜ ï¸ Your opponent is **unconscious**. Choose their fate."
+                msg = "â˜ ï¸ Your opponent is **unconscious**. Choose their fate."
                 if not self.state.log_lines or self.state.log_lines[-1] != msg:
                     self.state.add_raw(msg)
         self.state.end_turn()
@@ -962,7 +962,7 @@ async def _maybe_offer_finisher(
     if loser.user_id in state.unconscious and state.active:
         if not getattr(state, "finisher", None):
             state.finisher = (w.user_id, loser.user_id)
-        msg = "â˜ ï¸ Your opponent is **unconscious**. Choose their fate."
+        msg = "â˜ ï¸ Your opponent is **unconscious**. Choose their fate."
         if not state.log_lines or state.log_lines[-1] != msg:
             state.add_raw(msg)
         return FinalizeView(state, inter.client, victor_id=w.user_id, target_id=loser.user_id)
@@ -1041,7 +1041,7 @@ async def _maybe_ai_take_turn(inter: discord.Interaction, state: DuelState):
                 winner = state.winner()
                 if winner:
                     state.finisher = (winner.user_id, target)
-                    msg = "â˜ ï¸ Your opponent is **unconscious**. Choose their fate."
+                    msg = "â˜ ï¸ Your opponent is **unconscious**. Choose their fate."
                     if not state.log_lines or state.log_lines[-1] != msg:
                         state.add_raw(msg)
             state.end_turn()

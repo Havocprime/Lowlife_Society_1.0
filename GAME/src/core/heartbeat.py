@@ -153,7 +153,7 @@ class Heartbeat:
             if self.cfg.enable_spinner:
                 glyph = SPINNER[spinner_i]
                 spinner_i = (spinner_i + 1) % len(SPINNER)
-                # Example line: LOWLIFE â³ 12s âŒ work/60s=3  â ™  tick=127  lag=2ms
+                # Example line: LOWLIFE â³ 12s âŒ work/60s=3  â ™  tick=127  lag=2ms
                 msg = (
                     f"{self.cfg.label} â³{idle_s:>3}s âŒ work/60s={work_cnt:<3d}  "
                     f"{glyph}  tick={self._tick}  lag={int(loop_lag*1000)}ms"

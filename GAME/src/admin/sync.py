@@ -228,7 +228,7 @@ class SyncCog(commands.Cog):
             except Exception as e:
                 log.exception("/sync runner failed")
                 try:
-                    await interaction.followup.send(f"âš ï¸ Sync error: `{type(e).__name__}: {e}`", ephemeral=True)
+                    await interaction.followup.send(f"âš ï¸ Sync error: `{type(e).__name__}: {e}`", ephemeral=True)
                 except Exception:
                     pass
 
@@ -302,10 +302,10 @@ class SyncCog(commands.Cog):
                 await interaction.followup.send(f"âœ… `/{cmd.name}` {what} on guild **{gid}**.", ephemeral=True)
             except discord.HTTPException as e:
                 log.warning("sync_one failed: %s", e)
-                await interaction.followup.send(f"âš ï¸ sync_one failed: `{e}`", ephemeral=True)
+                await interaction.followup.send(f"âš ï¸ sync_one failed: `{e}`", ephemeral=True)
             except Exception as e:
                 log.exception("sync_one unexpected error")
-                await interaction.followup.send(f"âš ï¸ sync_one error: `{type(e).__name__}: {e}`", ephemeral=True)
+                await interaction.followup.send(f"âš ï¸ sync_one error: `{type(e).__name__}: {e}`", ephemeral=True)
 
         asyncio.create_task(runner())
 

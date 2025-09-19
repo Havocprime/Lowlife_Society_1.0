@@ -320,7 +320,7 @@ class LowlifeBot(commands.Bot):
                 f"Joined Guild -- `{joined.isoformat().replace('+00:00','Z') if joined else 'â€”'}` ({_rel_ymdh(joined)})",
             ])
 
-            e = discord.Embed(title="ðŸ› ï¸ Admin Inspector â€” Full Profile", description=header, colour=discord.Color.blurple())
+            e = discord.Embed(title="ðŸ› ï¸ Admin Inspector â€” Full Profile", description=header, colour=discord.Color.blurple())
             if avatar_url: e.set_thumbnail(url=avatar_url)
             if banner_url: e.set_image(url=banner_url)
 
@@ -334,7 +334,7 @@ class LowlifeBot(commands.Bot):
                 e.add_field(name="Activities", value="; ".join(activities)[:1024], inline=False)
 
             e.add_field(name="Top Roles", value=(", ".join(top3) or "â€”"), inline=False)
-            e.add_field(name="âš ï¸ High-Risk Perms (top 5)", value=(", ".join(risky) or "â€”"), inline=False)
+            e.add_field(name="âš ï¸ High-Risk Perms (top 5)", value=(", ".join(risky) or "â€”"), inline=False)
 
             trusted = _is_trusted(member)
             e.add_field(name="Trusted", value=("Yes âœ…" if trusted else "No âŒ"), inline=True)
