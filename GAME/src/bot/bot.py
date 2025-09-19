@@ -490,6 +490,7 @@ class LowlifeBot(commands.Bot):
             "src.cogs.admin_backfill",
             "src.cogs.heartbeat_taps",
             "src.cogs.playerlog",
+            "src.cogs.travel",
         ]
         if feature_tags_on:
             COGS += ["src.cogs.tags", "src.cogs.tags_admin"]
